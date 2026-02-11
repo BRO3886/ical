@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,8 +17,39 @@ import (
 	"github.com/olekukonko/tablewriter/tw"
 )
 
-// PrintEvents prints events in the specified format.
+// lastListPath returns the path to the cached event ID list.
+func lastListPath() string {
+	home, _ := os.UserHomeDir()
+	return filepath.Join(home, ".cal-last-list")
+}
+
+// SaveLastList writes event IDs to cache so row numbers can be used later.
+func SaveLastList(events []calendar.Event) {
+	ids := make([]string, len(events))
+	for i, e := range events {
+		ids[i] = e.ID
+	}
+	_ = os.WriteFile(lastListPath(), []byte(strings.Join(ids, "\n")+"\n"), 0644)
+}
+
+// LookupRowNumber returns the full event ID for a 1-based row number
+// from the last listing cache. Returns "" if not found.
+func LookupRowNumber(n int) string {
+	data, err := os.ReadFile(lastListPath())
+	if err != nil {
+		return ""
+	}
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	if n < 1 || n > len(lines) {
+		return ""
+	}
+	return lines[n-1]
+}
+
+// PrintEvents prints events in the specified format and caches event IDs
+// for row-number-based lookup by show/update/delete.
 func PrintEvents(events []calendar.Event, format string) {
+	SaveLastList(events)
 	switch format {
 	case "json":
 		printEventsJSON(events, os.Stdout)
@@ -67,9 +99,9 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 			Row:    tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignLeft}},
 		}),
 	)
-	t.Header("ID", "Time", "Title", "Calendar", "Location", "Duration")
+	t.Header("#", "Time", "Title", "Calendar", "Location", "Duration")
 
-	for _, e := range events {
+	for i, e := range events {
 		start := localizeTime(e.StartDate, e.TimeZone)
 		end := localizeTime(e.EndDate, e.TimeZone)
 		timeStr := parser.FormatTimeRange(start, end, e.AllDay)
@@ -85,7 +117,7 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 			title = title + " " + color.HiCyanString("↻")
 		}
 
-		t.Append(ShortID(e.ID), timeStr, title, calName, loc, dur)
+		t.Append(fmt.Sprintf("%d", i+1), timeStr, title, calName, loc, dur)
 	}
 
 	t.Render()
@@ -155,7 +187,7 @@ func printEventsJSON(events []calendar.Event, w io.Writer) {
 // Events — Plain
 
 func printEventsPlain(events []calendar.Event, w io.Writer) {
-	for _, e := range events {
+	for i, e := range events {
 		start := localizeTime(e.StartDate, e.TimeZone)
 		end := localizeTime(e.EndDate, e.TimeZone)
 		if e.AllDay {
@@ -163,14 +195,14 @@ func printEventsPlain(events []calendar.Event, w io.Writer) {
 			if e.Location != "" {
 				loc = " @ " + e.Location
 			}
-			fmt.Fprintf(w, "%s [All Day] %s (%s)%s\n", ShortID(e.ID), e.Title, e.Calendar, loc)
+			fmt.Fprintf(w, "#%d [All Day] %s (%s)%s\n", i+1, e.Title, e.Calendar, loc)
 		} else {
 			loc := ""
 			if e.Location != "" {
 				loc = " @ " + e.Location
 			}
-			fmt.Fprintf(w, "%s [%s-%s] %s (%s)%s\n",
-				ShortID(e.ID),
+			fmt.Fprintf(w, "#%d [%s-%s] %s (%s)%s\n",
+				i+1,
 				start.Format("15:04"),
 				end.Format("15:04"),
 				e.Title,
