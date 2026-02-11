@@ -1,0 +1,493 @@
+package ui
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/BRO3886/cal/internal/parser"
+	"github.com/BRO3886/go-eventkit"
+	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
+)
+
+// PrintEvents prints events in the specified format.
+func PrintEvents(events []calendar.Event, format string) {
+	switch format {
+	case "json":
+		printEventsJSON(events, os.Stdout)
+	case "plain":
+		printEventsPlain(events, os.Stdout)
+	default:
+		printEventsTable(events, os.Stdout)
+	}
+}
+
+// PrintCalendars prints calendars in the specified format.
+func PrintCalendars(calendars []calendar.Calendar, format string) {
+	switch format {
+	case "json":
+		printCalendarsJSON(calendars, os.Stdout)
+	case "plain":
+		printCalendarsPlain(calendars, os.Stdout)
+	default:
+		printCalendarsTable(calendars, os.Stdout)
+	}
+}
+
+// PrintEventDetail prints a single event with full details.
+func PrintEventDetail(event *calendar.Event, format string) {
+	switch format {
+	case "json":
+		data, _ := json.MarshalIndent(event, "", "  ")
+		fmt.Println(string(data))
+	case "plain":
+		printEventDetailPlain(event, os.Stdout)
+	default:
+		printEventDetailTable(event, os.Stdout)
+	}
+}
+
+// Events — Table
+
+func printEventsTable(events []calendar.Event, w io.Writer) {
+	if len(events) == 0 {
+		fmt.Fprintln(w, "No events found.")
+		return
+	}
+
+	t := tablewriter.NewTable(w,
+		tablewriter.WithConfig(tablewriter.Config{
+			Header: tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignCenter}},
+			Row:    tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignLeft}},
+		}),
+	)
+	t.Header("Time", "Title", "Calendar", "Location", "Duration")
+
+	for _, e := range events {
+		timeStr := parser.FormatTimeRange(e.StartDate, e.EndDate, e.AllDay)
+		title := truncate(e.Title, 40)
+		loc := truncate(e.Location, 25)
+		dur := parser.FormatDuration(e.StartDate, e.EndDate, e.AllDay)
+		calName := e.Calendar
+
+		if e.AllDay {
+			title = color.HiYellowString(title)
+		}
+		if e.Recurring {
+			title = title + " " + color.HiCyanString("↻")
+		}
+
+		t.Append(timeStr, title, calName, loc, dur)
+	}
+
+	t.Render()
+}
+
+// Events — JSON
+
+type eventJSON struct {
+	ID                 string                        `json:"id"`
+	Title              string                        `json:"title"`
+	StartDate          time.Time                     `json:"start_date"`
+	EndDate            time.Time                     `json:"end_date"`
+	AllDay             bool                          `json:"all_day"`
+	Calendar           string                        `json:"calendar"`
+	CalendarID         string                        `json:"calendar_id"`
+	Location           string                        `json:"location,omitempty"`
+	StructuredLocation *eventkit.StructuredLocation   `json:"structured_location,omitempty"`
+	Notes              string                        `json:"notes,omitempty"`
+	URL                string                        `json:"url,omitempty"`
+	Status             string                        `json:"status"`
+	Availability       string                        `json:"availability"`
+	Organizer          string                        `json:"organizer,omitempty"`
+	Attendees          []calendar.Attendee           `json:"attendees,omitempty"`
+	Recurring          bool                          `json:"recurring"`
+	RecurrenceRules    []eventkit.RecurrenceRule     `json:"recurrence_rules,omitempty"`
+	Alerts             []calendar.Alert              `json:"alerts,omitempty"`
+	TimeZone           string                        `json:"timezone,omitempty"`
+	CreatedAt          time.Time                     `json:"created_at"`
+	ModifiedAt         time.Time                     `json:"modified_at"`
+}
+
+func toEventJSON(e calendar.Event) eventJSON {
+	return eventJSON{
+		ID:                 e.ID,
+		Title:              e.Title,
+		StartDate:          e.StartDate,
+		EndDate:            e.EndDate,
+		AllDay:             e.AllDay,
+		Calendar:           e.Calendar,
+		CalendarID:         e.CalendarID,
+		Location:           e.Location,
+		StructuredLocation: e.StructuredLocation,
+		Notes:              e.Notes,
+		URL:                e.URL,
+		Status:             e.Status.String(),
+		Availability:       e.Availability.String(),
+		Organizer:          e.Organizer,
+		Attendees:          e.Attendees,
+		Recurring:          e.Recurring,
+		RecurrenceRules:    e.RecurrenceRules,
+		Alerts:             e.Alerts,
+		TimeZone:           e.TimeZone,
+		CreatedAt:          e.CreatedAt,
+		ModifiedAt:         e.ModifiedAt,
+	}
+}
+
+func printEventsJSON(events []calendar.Event, w io.Writer) {
+	out := make([]eventJSON, len(events))
+	for i, e := range events {
+		out[i] = toEventJSON(e)
+	}
+	data, _ := json.Marshal(out)
+	fmt.Fprintln(w, string(data))
+}
+
+// Events — Plain
+
+func printEventsPlain(events []calendar.Event, w io.Writer) {
+	for _, e := range events {
+		if e.AllDay {
+			loc := ""
+			if e.Location != "" {
+				loc = " @ " + e.Location
+			}
+			fmt.Fprintf(w, "[All Day] %s (%s)%s\n", e.Title, e.Calendar, loc)
+		} else {
+			loc := ""
+			if e.Location != "" {
+				loc = " @ " + e.Location
+			}
+			fmt.Fprintf(w, "[%s-%s] %s (%s)%s\n",
+				e.StartDate.Format("15:04"),
+				e.EndDate.Format("15:04"),
+				e.Title,
+				e.Calendar,
+				loc,
+			)
+		}
+	}
+}
+
+// Calendars — Table
+
+func printCalendarsTable(calendars []calendar.Calendar, w io.Writer) {
+	if len(calendars) == 0 {
+		fmt.Fprintln(w, "No calendars found.")
+		return
+	}
+
+	t := tablewriter.NewTable(w,
+		tablewriter.WithConfig(tablewriter.Config{
+			Header: tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignCenter}},
+			Row:    tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignLeft}},
+		}),
+	)
+	t.Header("Name", "Source", "Type", "Color", "ReadOnly")
+
+	for _, c := range calendars {
+		readOnly := ""
+		if c.ReadOnly {
+			readOnly = "yes"
+		}
+		t.Append(c.Title, c.Source, c.Type.String(), c.Color, readOnly)
+	}
+
+	t.Render()
+}
+
+// Calendars — JSON
+
+func printCalendarsJSON(calendars []calendar.Calendar, w io.Writer) {
+	data, _ := json.Marshal(calendars)
+	fmt.Fprintln(w, string(data))
+}
+
+// Calendars — Plain
+
+func printCalendarsPlain(calendars []calendar.Calendar, w io.Writer) {
+	for _, c := range calendars {
+		ro := ""
+		if c.ReadOnly {
+			ro = " (read-only)"
+		}
+		fmt.Fprintf(w, "%s [%s] %s%s\n", c.Title, c.Source, c.Type.String(), ro)
+	}
+}
+
+// Event Detail
+
+func printEventDetailTable(e *calendar.Event, w io.Writer) {
+	bold := color.New(color.Bold)
+
+	bold.Fprintf(w, "Title:        ")
+	fmt.Fprintln(w, e.Title)
+
+	bold.Fprintf(w, "Calendar:     ")
+	fmt.Fprintln(w, e.Calendar)
+
+	bold.Fprintf(w, "Status:       ")
+	fmt.Fprintln(w, e.Status.String())
+
+	bold.Fprintf(w, "Start:        ")
+	fmt.Fprintln(w, e.StartDate.Format("Mon, 02 Jan 2006 15:04 MST"))
+
+	bold.Fprintf(w, "End:          ")
+	fmt.Fprintln(w, e.EndDate.Format("Mon, 02 Jan 2006 15:04 MST"))
+
+	bold.Fprintf(w, "Duration:     ")
+	fmt.Fprintln(w, parser.FormatDuration(e.StartDate, e.EndDate, e.AllDay))
+
+	if e.AllDay {
+		bold.Fprintf(w, "All Day:      ")
+		fmt.Fprintln(w, "Yes")
+	}
+
+	if e.Location != "" {
+		bold.Fprintf(w, "Location:     ")
+		fmt.Fprintln(w, e.Location)
+	}
+
+	if e.StructuredLocation != nil {
+		bold.Fprintf(w, "Coordinates:  ")
+		fmt.Fprintf(w, "%.4f, %.4f\n", e.StructuredLocation.Latitude, e.StructuredLocation.Longitude)
+	}
+
+	if e.URL != "" {
+		bold.Fprintf(w, "URL:          ")
+		fmt.Fprintln(w, e.URL)
+	}
+
+	if e.Notes != "" {
+		bold.Fprintf(w, "Notes:        ")
+		fmt.Fprintln(w, e.Notes)
+	}
+
+	if e.Recurring {
+		bold.Fprintf(w, "Recurrence:   ")
+		for i, rule := range e.RecurrenceRules {
+			if i > 0 {
+				fmt.Fprint(w, "              ")
+			}
+			fmt.Fprintln(w, FormatRecurrenceRule(rule))
+		}
+	}
+
+	if len(e.Alerts) > 0 {
+		bold.Fprintf(w, "Alerts:       ")
+		for i, alert := range e.Alerts {
+			if i > 0 {
+				fmt.Fprint(w, "              ")
+			}
+			d := alert.RelativeOffset
+			if d < 0 {
+				d = -d
+			}
+			fmt.Fprintf(w, "%s before\n", formatAlertDuration(d))
+		}
+	}
+
+	if len(e.Attendees) > 0 {
+		bold.Fprintf(w, "Attendees:    ")
+		for i, att := range e.Attendees {
+			if i > 0 {
+				fmt.Fprint(w, "              ")
+			}
+			fmt.Fprintf(w, "%s <%s> [%s]\n", att.Name, att.Email, att.Status.String())
+		}
+	}
+
+	if e.Organizer != "" {
+		bold.Fprintf(w, "Organizer:    ")
+		fmt.Fprintln(w, e.Organizer)
+	}
+
+	if e.TimeZone != "" {
+		bold.Fprintf(w, "Timezone:     ")
+		fmt.Fprintln(w, e.TimeZone)
+	}
+
+	bold.Fprintf(w, "ID:           ")
+	fmt.Fprintln(w, e.ID)
+
+	bold.Fprintf(w, "Created:      ")
+	fmt.Fprintln(w, e.CreatedAt.Format("Mon, 02 Jan 2006 15:04 MST"))
+
+	bold.Fprintf(w, "Modified:     ")
+	fmt.Fprintln(w, e.ModifiedAt.Format("Mon, 02 Jan 2006 15:04 MST"))
+}
+
+func printEventDetailPlain(e *calendar.Event, w io.Writer) {
+	fmt.Fprintf(w, "Title: %s\n", e.Title)
+	fmt.Fprintf(w, "Calendar: %s\n", e.Calendar)
+	fmt.Fprintf(w, "Start: %s\n", e.StartDate.Format(time.RFC3339))
+	fmt.Fprintf(w, "End: %s\n", e.EndDate.Format(time.RFC3339))
+	if e.AllDay {
+		fmt.Fprintln(w, "All Day: Yes")
+	}
+	if e.Location != "" {
+		fmt.Fprintf(w, "Location: %s\n", e.Location)
+	}
+	if e.Notes != "" {
+		fmt.Fprintf(w, "Notes: %s\n", e.Notes)
+	}
+	fmt.Fprintf(w, "ID: %s\n", e.ID)
+}
+
+// FormatRecurrenceRule returns a human-readable recurrence description.
+func FormatRecurrenceRule(rule eventkit.RecurrenceRule) string {
+	var b strings.Builder
+
+	switch rule.Frequency {
+	case eventkit.FrequencyDaily:
+		if rule.Interval == 1 {
+			b.WriteString("Every day")
+		} else {
+			fmt.Fprintf(&b, "Every %d days", rule.Interval)
+		}
+	case eventkit.FrequencyWeekly:
+		if rule.Interval == 1 {
+			b.WriteString("Every week")
+		} else {
+			fmt.Fprintf(&b, "Every %d weeks", rule.Interval)
+		}
+		if len(rule.DaysOfTheWeek) > 0 {
+			days := make([]string, len(rule.DaysOfTheWeek))
+			for i, d := range rule.DaysOfTheWeek {
+				days[i] = d.DayOfTheWeek.String()[:3]
+			}
+			fmt.Fprintf(&b, " on %s", strings.Join(days, ", "))
+		}
+	case eventkit.FrequencyMonthly:
+		if rule.Interval == 1 {
+			b.WriteString("Every month")
+		} else {
+			fmt.Fprintf(&b, "Every %d months", rule.Interval)
+		}
+		if len(rule.DaysOfTheMonth) > 0 {
+			days := make([]string, len(rule.DaysOfTheMonth))
+			for i, d := range rule.DaysOfTheMonth {
+				days[i] = ordinal(d)
+			}
+			fmt.Fprintf(&b, " on the %s", strings.Join(days, ", "))
+		}
+		if len(rule.DaysOfTheWeek) > 0 {
+			for _, d := range rule.DaysOfTheWeek {
+				prefix := ""
+				if d.WeekNumber == -1 {
+					prefix = "last "
+				} else if d.WeekNumber > 0 {
+					prefix = ordinal(d.WeekNumber) + " "
+				}
+				fmt.Fprintf(&b, " on the %s%s", prefix, d.DayOfTheWeek.String()[:3])
+			}
+		}
+	case eventkit.FrequencyYearly:
+		if rule.Interval == 1 {
+			b.WriteString("Every year")
+		} else {
+			fmt.Fprintf(&b, "Every %d years", rule.Interval)
+		}
+	}
+
+	if rule.End != nil {
+		if rule.End.EndDate != nil {
+			fmt.Fprintf(&b, " until %s", rule.End.EndDate.Format("Jan 2, 2006"))
+		}
+		if rule.End.OccurrenceCount > 0 {
+			fmt.Fprintf(&b, " for %d occurrences", rule.End.OccurrenceCount)
+		}
+	}
+
+	return b.String()
+}
+
+func ordinal(n int) string {
+	if n < 0 {
+		return fmt.Sprintf("%d", n)
+	}
+	suffix := "th"
+	switch n % 10 {
+	case 1:
+		if n%100 != 11 {
+			suffix = "st"
+		}
+	case 2:
+		if n%100 != 12 {
+			suffix = "nd"
+		}
+	case 3:
+		if n%100 != 13 {
+			suffix = "rd"
+		}
+	}
+	return fmt.Sprintf("%d%s", n, suffix)
+}
+
+func formatAlertDuration(d time.Duration) string {
+	if d >= 24*time.Hour {
+		days := int(d.Hours() / 24)
+		if days == 1 {
+			return "1 day"
+		}
+		return fmt.Sprintf("%d days", days)
+	}
+	if d >= time.Hour {
+		hours := int(d.Hours())
+		mins := int(d.Minutes()) % 60
+		if mins > 0 {
+			return fmt.Sprintf("%dh %dm", hours, mins)
+		}
+		if hours == 1 {
+			return "1 hour"
+		}
+		return fmt.Sprintf("%d hours", hours)
+	}
+	mins := int(d.Minutes())
+	if mins == 1 {
+		return "1 minute"
+	}
+	return fmt.Sprintf("%d minutes", mins)
+}
+
+func truncate(s string, max int) string {
+	if len(s) <= max {
+		return s
+	}
+	return s[:max-3] + "..."
+}
+
+// ShortID returns the first 8 chars of an event ID.
+func ShortID(id string) string {
+	if len(id) <= 8 {
+		return id
+	}
+	return id[:8]
+}
+
+// PrintCreatedEvent prints summary info for a newly created event.
+func PrintCreatedEvent(e *calendar.Event) {
+	green := color.New(color.FgGreen, color.Bold)
+	green.Print("Created: ")
+	fmt.Printf("%s\n", e.Title)
+	fmt.Printf("  Calendar: %s\n", e.Calendar)
+	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(e.StartDate, e.EndDate, e.AllDay))
+	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
+}
+
+// PrintUpdatedEvent prints summary info for an updated event.
+func PrintUpdatedEvent(e *calendar.Event) {
+	green := color.New(color.FgGreen, color.Bold)
+	green.Print("Updated: ")
+	fmt.Printf("%s\n", e.Title)
+	fmt.Printf("  Calendar: %s\n", e.Calendar)
+	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(e.StartDate, e.EndDate, e.AllDay))
+	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
+}
