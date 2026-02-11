@@ -16,6 +16,16 @@ func ParseDate(input string) (time.Time, error) {
 
 // ParseDateRelativeTo parses a date string relative to the given time.
 // This allows testable date parsing without depending on wall clock.
+//
+// Supported inputs:
+//   - Keywords: "today", "tomorrow", "yesterday", "now"
+//   - End-of-period: "eod"/"end of day" (today 5pm), "eow"/"end of week" (Fri 5pm),
+//     "this week" (Sun 23:59), "next week" (next Mon), "next month" (1st of next month)
+//   - Relative: "in 3 hours", "in 2 weeks", "5 days ago"
+//   - Weekdays: "next friday", "monday 2pm", "friday at 3:30pm"
+//   - Month-day: "mar 15", "december 31 11:59pm"
+//   - Time only: "5pm", "17:00", "3:30pm"
+//   - Standard formats: ISO 8601, RFC 3339, US date, etc.
 func ParseDateRelativeTo(input string, now time.Time) (time.Time, error) {
 	input = strings.TrimSpace(input)
 	if input == "" {
@@ -42,11 +52,18 @@ func ParseDateRelativeTo(input string, now time.Time) (time.Time, error) {
 	case "eod", "end of day":
 		return todayAt(now, 17, 0), nil
 	case "eow", "end of week":
+		// Work week end: Friday 5pm. If already Friday, returns today 5pm.
 		daysUntilFriday := (5 - int(now.Weekday()) + 7) % 7
 		if daysUntilFriday == 0 {
 			return todayAt(now, 17, 0), nil
 		}
 		return todayAt(now.AddDate(0, 0, daysUntilFriday), 17, 0), nil
+	case "this week":
+		// Calendar week end: Sunday 23:59. If already Sunday, returns today 23:59.
+		// Distinct from "eow" which targets the work week (Friday 5pm).
+		daysUntilSunday := (7 - int(now.Weekday())) % 7
+		sunday := now.AddDate(0, 0, daysUntilSunday)
+		return todayAt(sunday, 23, 59), nil
 	case "next week":
 		return nextWeekdayAt(now, time.Monday, 0, 0), nil
 	case "next month":
@@ -99,7 +116,7 @@ func ParseDateRelativeTo(input string, now time.Time) (time.Time, error) {
 		return t, nil
 	}
 
-	return time.Time{}, fmt.Errorf("could not parse date: %q. Try formats like 'tomorrow 2pm' or '2026-03-15 14:00'", input)
+	return time.Time{}, fmt.Errorf("could not parse date: %q. Try: 'today', 'tomorrow 2pm', 'this week', 'eow', 'next friday', 'in 3 hours', or '2026-03-15 14:00'", input)
 }
 
 func tryStandardFormats(input string, loc *time.Location) (time.Time, error) {

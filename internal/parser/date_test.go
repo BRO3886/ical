@@ -94,6 +94,49 @@ func TestParseDateRelativeTo_EOW(t *testing.T) {
 	}
 }
 
+func TestParseDateRelativeTo_ThisWeek(t *testing.T) {
+	ist := mustLoadLoc(t, "Asia/Kolkata")
+
+	tests := []struct {
+		name string
+		now  time.Time
+		want time.Time
+	}{
+		{
+			"wednesday to sunday",
+			time.Date(2026, 2, 11, 10, 0, 0, 0, ist), // Wed
+			time.Date(2026, 2, 15, 23, 59, 0, 0, ist), // Sun 23:59
+		},
+		{
+			"monday to sunday",
+			time.Date(2026, 2, 9, 10, 0, 0, 0, ist), // Mon
+			time.Date(2026, 2, 15, 23, 59, 0, 0, ist), // Sun 23:59
+		},
+		{
+			"saturday to sunday",
+			time.Date(2026, 2, 14, 10, 0, 0, 0, ist), // Sat
+			time.Date(2026, 2, 15, 23, 59, 0, 0, ist), // Sun 23:59
+		},
+		{
+			"sunday returns same sunday",
+			time.Date(2026, 2, 15, 10, 0, 0, 0, ist), // Sun
+			time.Date(2026, 2, 15, 23, 59, 0, 0, ist), // same Sun 23:59
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseDateRelativeTo("this week", tt.now)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestParseDateRelativeTo_Relative(t *testing.T) {
 	ist := mustLoadLoc(t, "Asia/Kolkata")
 	now := refTime(ist)
@@ -618,7 +661,7 @@ func TestParseDateRelativeTo_CaseInsensitive(t *testing.T) {
 	ist := mustLoadLoc(t, "Asia/Kolkata")
 	now := refTime(ist)
 
-	inputs := []string{"Today", "TOMORROW", "Next Monday", "In 3 Hours", "EOD"}
+	inputs := []string{"Today", "TOMORROW", "Next Monday", "In 3 Hours", "EOD", "This Week"}
 	for _, input := range inputs {
 		t.Run(input, func(t *testing.T) {
 			_, err := ParseDateRelativeTo(input, now)
