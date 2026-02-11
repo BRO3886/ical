@@ -18,9 +18,10 @@ cal/
 │       ├── calendars.go         # List calendars
 │       ├── list.go              # List events (date range, filters)
 │       ├── show.go              # Show single event detail
-│       ├── add.go               # Create event (flags + interactive)
-│       ├── update.go            # Update event
-│       ├── delete.go            # Delete event (with confirmation)
+│       ├── add.go               # Create event (flags + interactive -i)
+│       ├── update.go            # Update event (flags + interactive -i)
+│       ├── delete.go            # Delete event (confirmation + pickEvent helper)
+│       ├── helpers.go           # Shared helpers (buildCalendarOptions, alert formatting)
 │       ├── today.go             # Shortcut: today's events
 │       ├── upcoming.go          # Shortcut: next N days
 │       ├── search.go            # Search events
@@ -49,6 +50,7 @@ cal/
 - `github.com/spf13/cobra` — CLI framework
 - `github.com/olekukonko/tablewriter` v1.x — table output (new API: `NewTable()`, `.Header()`, `.Append()`, `.Render()`)
 - `github.com/fatih/color` — terminal colors
+- `github.com/charmbracelet/huh` — interactive forms (add -i, update -i, event picker)
 
 ## Critical: Architecture Rules
 - **All reads/writes go through `go-eventkit/calendar`** — no direct EventKit or AppleScript
@@ -66,6 +68,7 @@ cal/
 - `olekukonko/tablewriter` v1.x — **new API**: `NewTable()`, `.Header()`, `.Append()`, `.Render()` (NOT the old `SetHeader`/`SetBorder` API)
 - `fatih/color` — terminal colors
 - `olekukonko/tablewriter/tw` — alignment constants (`tw.AlignLeft`)
+- `charmbracelet/huh` — interactive forms and select menus (ThemeCatppuccin)
 
 ## Build & Test
 ```bash
@@ -76,14 +79,17 @@ make completions                 # bash/zsh/fish
 ```
 
 ## Conventions
-- Short IDs: first 8 chars of full event identifier displayed in tables
-- Prefix matching: users can pass partial IDs to show/update/delete
+- Row numbers (`#1`, `#2`...) in event tables; cached to `~/.cal-last-list` for `show 2`/`update 3`/`delete 1`
+- Event IDs: entire UUID prefix before `:` is shared per calendar — short IDs don't disambiguate. Use row numbers or interactive picker instead
+- show/update/delete accept 0 args (interactive huh picker), row number, or full/partial event ID
+- `--to` dates: `endOfDayIfMidnight()` bumps midnight to 23:59:59 (in list, search, export, pickEvent)
 - All list/show commands support `-o json|table|plain`
 - Date display: human-readable by default, ISO 8601 in JSON
 - Confirmation prompt for delete, `--force` to skip
-- Natural language dates: "today", "tomorrow", "next friday", "in 3 hours", etc.
+- Natural language dates: "today", "tomorrow", "next friday", "in 3 hours", "this week", etc.
 - Recurrence display: human-readable ("Every 2 weeks on Mon, Wed")
 - Color coding: calendar colors shown, all-day events highlighted
+- Interactive mode (`-i`): add and update support guided huh forms
 
 ## Journal
 Engineering journals live in `journals/` dir. See `.claude/commands/journal.md` for the journaling command.

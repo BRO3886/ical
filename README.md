@@ -39,14 +39,20 @@ cal list -f "next monday" -t "next friday"
 # Search events
 cal search "standup" -c Work
 
-# Show event details (prefix ID matching)
-cal show a1b2c3d4
+# Show event details (interactive picker)
+cal show
+
+# Show by row number from last listing
+cal show 2
 
 # Create an event
 cal add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
 
-# Delete an event
-cal delete a1b2c3d4
+# Create interactively
+cal add -i
+
+# Delete an event (interactive picker)
+cal delete
 ```
 
 ## Commands
@@ -57,10 +63,10 @@ cal delete a1b2c3d4
 | `cal list` | List events in a date range |
 | `cal today` | Today's events |
 | `cal upcoming` | Events in next N days |
-| `cal show [id]` | Show event details |
-| `cal add [title]` | Create an event |
-| `cal update [id]` | Update an event |
-| `cal delete [id]` | Delete an event |
+| `cal show [# or id]` | Show event details (interactive picker if no arg) |
+| `cal add [title]` | Create an event (`-i` for interactive) |
+| `cal update [# or id]` | Update an event (`-i` for interactive) |
+| `cal delete [# or id]` | Delete an event (interactive picker if no arg) |
 | `cal search [query]` | Search events |
 | `cal export` | Export events (JSON/CSV/ICS) |
 | `cal import [file]` | Import events (JSON/CSV) |
@@ -91,6 +97,7 @@ All date flags accept natural language:
 | `2026-03-15 14:00` | ISO 8601 datetime |
 | `eod` | Today 5:00 PM |
 | `eow` | Friday 5:00 PM |
+| `this week` | Sunday 11:59 PM |
 | `2 hours ago`, `5 days ago` | Past relative |
 
 ## Event Listing
@@ -147,30 +154,33 @@ cal add "NYC Meeting" -s "tomorrow 2pm" -e "tomorrow 3pm" \
 ## Updating Events
 
 ```bash
-# Update title
-cal update a1b2c3d4 --title "New Title"
+# Interactive picker + guided form
+cal update -i
+
+# Update by row number from last listing
+cal update 2 --title "New Title"
 
 # Reschedule
-cal update a1b2c3d4 -s "tomorrow 2pm" -e "tomorrow 3pm"
-
-# Clear location
-cal update a1b2c3d4 --location ""
+cal update 3 -s "tomorrow 2pm" -e "tomorrow 3pm"
 
 # Update future occurrences of recurring event
-cal update a1b2c3d4 --span future --title "New Series Name"
+cal update 1 --span future --title "New Series Name"
 ```
 
 ## Deleting Events
 
 ```bash
-# With confirmation prompt
-cal delete a1b2c3d4
+# Interactive picker with confirmation
+cal delete
+
+# Delete by row number
+cal delete 3
 
 # Skip confirmation
-cal delete a1b2c3d4 -f
+cal delete 3 -f
 
 # Delete future occurrences
-cal delete a1b2c3d4 --span future
+cal delete 2 --span future
 ```
 
 ## Export & Import
@@ -195,12 +205,28 @@ cal import events.csv -c Personal
 cal import events.json --dry-run
 ```
 
-## ID Handling
+## Event Selection
 
-- **Display**: First 8 characters of the full event identifier
-- **Input**: Prefix matching — any unique prefix resolves to the full event
-- **Ambiguity**: If multiple events match, lists all matches with "did you mean?"
-- **JSON output**: Always includes the full ID
+Events can be selected in three ways:
+
+1. **Interactive picker** (no argument): `cal show`, `cal delete`, `cal update` — presents a searchable list
+2. **Row number** from the last listing: `cal show 2` picks event #2 from the last `cal ls`/`cal today` output
+3. **Full or partial event ID**: `cal show 577B8983-DF44-4665-...` — for scripting and automation
+
+```bash
+# List events (shows row numbers)
+cal ls
+#  #  TIME             TITLE          CALENDAR
+#  1  10:00 - 11:00    Standup        Work
+#  2  14:00 - 15:00    1:1 with Bob   Work
+
+# Then reference by number
+cal show 2
+cal update 2 -i
+cal delete 1
+```
+
+- **JSON output** (`-o json`): Always includes the full event ID for scripting
 
 ## Shell Completions
 
