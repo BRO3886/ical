@@ -67,7 +67,7 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 			Row:    tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignLeft}},
 		}),
 	)
-	t.Header("Time", "Title", "Calendar", "Location", "Duration")
+	t.Header("ID", "Time", "Title", "Calendar", "Location", "Duration")
 
 	for _, e := range events {
 		start := localizeTime(e.StartDate, e.TimeZone)
@@ -85,7 +85,7 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 			title = title + " " + color.HiCyanString("↻")
 		}
 
-		t.Append(timeStr, title, calName, loc, dur)
+		t.Append(ShortID(e.ID), timeStr, title, calName, loc, dur)
 	}
 
 	t.Render()
@@ -163,13 +163,14 @@ func printEventsPlain(events []calendar.Event, w io.Writer) {
 			if e.Location != "" {
 				loc = " @ " + e.Location
 			}
-			fmt.Fprintf(w, "[All Day] %s (%s)%s\n", e.Title, e.Calendar, loc)
+			fmt.Fprintf(w, "%s [All Day] %s (%s)%s\n", ShortID(e.ID), e.Title, e.Calendar, loc)
 		} else {
 			loc := ""
 			if e.Location != "" {
 				loc = " @ " + e.Location
 			}
-			fmt.Fprintf(w, "[%s-%s] %s (%s)%s\n",
+			fmt.Fprintf(w, "%s [%s-%s] %s (%s)%s\n",
+				ShortID(e.ID),
 				start.Format("15:04"),
 				end.Format("15:04"),
 				e.Title,
@@ -483,12 +484,14 @@ func truncate(s string, max int) string {
 	return s[:max-3] + "..."
 }
 
-// ShortID returns the first 8 chars of an event ID.
+// ShortID returns the first 13 chars of an event ID.
+// This covers two UUID segments (e.g. "577B8983-DF44") which is
+// enough to disambiguate events from the same source.
 func ShortID(id string) string {
-	if len(id) <= 8 {
+	if len(id) <= 13 {
 		return id
 	}
-	return id[:8]
+	return id[:13]
 }
 
 // PrintCreatedEvent prints summary info for a newly created event.

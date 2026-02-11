@@ -72,9 +72,14 @@ func findEventByPrefix(client *calendar.Client, prefix string) (*calendar.Event,
 		return &matches[0], nil
 	default:
 		var sb strings.Builder
-		fmt.Fprintf(&sb, "Multiple events match %q. Did you mean:\n", prefix)
+		fmt.Fprintf(&sb, "Multiple events match %q. Be more specific:\n", prefix)
 		for _, m := range matches {
-			fmt.Fprintf(&sb, "  %s  %s (%s)\n", ui.ShortID(m.ID), m.Title, m.StartDate.Format("Jan 02 15:04"))
+			// Show enough of the ID to disambiguate (first 22 chars covers 3 UUID segments)
+			displayID := m.ID
+			if len(displayID) > 22 {
+				displayID = displayID[:22]
+			}
+			fmt.Fprintf(&sb, "  %s  %s (%s)\n", displayID, m.Title, m.StartDate.Format("Jan 02 15:04"))
 		}
 		return nil, fmt.Errorf("%s", sb.String())
 	}
