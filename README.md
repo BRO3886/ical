@@ -1,0 +1,237 @@
+# cal
+
+A fast, native macOS Calendar CLI built on [go-eventkit](https://github.com/BRO3886/go-eventkit).
+
+Full CRUD for calendar events, natural language dates, recurrence support, import/export, and multiple output formats — all via EventKit (3000x faster than AppleScript).
+
+## Install
+
+```bash
+go install github.com/BRO3886/cal/cmd/cal@latest
+```
+
+Or build from source:
+
+```bash
+git clone https://github.com/BRO3886/cal.git
+cd cal
+make build
+# Binary at ./bin/cal
+```
+
+> **Requires macOS.** Uses cgo + EventKit. On first run, macOS will prompt for Calendar access.
+
+## Quick Start
+
+```bash
+# Today's agenda
+cal today
+
+# Next 7 days
+cal upcoming
+
+# Next 30 days, excluding noisy calendars
+cal upcoming -d 30 --exclude-calendar Birthdays --exclude-calendar "US Holidays"
+
+# List events in a date range
+cal list -f "next monday" -t "next friday"
+
+# Search events
+cal search "standup" -c Work
+
+# Show event details (prefix ID matching)
+cal show a1b2c3d4
+
+# Create an event
+cal add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
+
+# Delete an event
+cal delete a1b2c3d4
+```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `cal calendars` | List all calendars |
+| `cal list` | List events in a date range |
+| `cal today` | Today's events |
+| `cal upcoming` | Events in next N days |
+| `cal show [id]` | Show event details |
+| `cal add [title]` | Create an event |
+| `cal update [id]` | Update an event |
+| `cal delete [id]` | Delete an event |
+| `cal search [query]` | Search events |
+| `cal export` | Export events (JSON/CSV/ICS) |
+| `cal import [file]` | Import events (JSON/CSV) |
+| `cal version` | Show version info |
+| `cal completion` | Generate shell completions |
+
+## Global Flags
+
+| Flag | Short | Default | Description |
+|------|-------|---------|-------------|
+| `--output` | `-o` | `table` | Output format: `table`, `json`, `plain` |
+| `--no-color` | | `false` | Disable color output (also respects `NO_COLOR`) |
+
+## Natural Language Dates
+
+All date flags accept natural language:
+
+| Input | Resolves to |
+|-------|-------------|
+| `today`, `tomorrow`, `yesterday` | Relative dates |
+| `next monday`, `next friday` | Next occurrence of weekday |
+| `next week`, `next month` | Next week Monday / 1st of next month |
+| `in 3 hours`, `in 30 minutes` | Relative time |
+| `in 5 days`, `in 2 weeks` | Relative days |
+| `3pm`, `15:00`, `3:30pm` | Time today |
+| `friday 2pm` | Next Friday at 2pm |
+| `mar 15`, `march 15` | Month + day this year |
+| `2026-03-15 14:00` | ISO 8601 datetime |
+| `eod` | Today 5:00 PM |
+| `eow` | Friday 5:00 PM |
+| `2 hours ago`, `5 days ago` | Past relative |
+
+## Event Listing
+
+```bash
+# Filter by calendar
+cal list -c Work -f today -t "in 7 days"
+
+# Exclude calendars
+cal upcoming --exclude-calendar Birthdays --exclude-calendar "Holidays in India"
+
+# Search with date range
+cal search "meeting" -f "1 month ago" -t "in 1 month"
+
+# Sort by title
+cal list -f today -t "next friday" --sort title
+
+# Limit results
+cal upcoming -d 30 -n 10
+
+# JSON output for scripting
+cal today -o json | jq '.[].title'
+
+# Plain output for grep
+cal today -o plain | grep "standup"
+```
+
+## Creating Events
+
+```bash
+# Quick event
+cal add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
+
+# All-day event
+cal add "Company Holiday" -s 2026-03-15 --all-day -c Work
+
+# With location and alerts
+cal add "Dinner" -s "friday 7pm" -e "friday 9pm" \
+  -l "The Restaurant, 123 Main St" --alert 1h --alert 15m
+
+# Recurring event
+cal add "Weekly Sync" -s "next monday 10am" -e "next monday 11am" \
+  --repeat weekly --repeat-days mon -c Work
+
+# Recurring with end date
+cal add "Daily Standup" -s "tomorrow 9am" -e "tomorrow 9:15am" \
+  --repeat daily --repeat-until "2026-12-31" -c Work
+
+# With timezone
+cal add "NYC Meeting" -s "tomorrow 2pm" -e "tomorrow 3pm" \
+  --timezone "America/New_York" -c Work
+```
+
+## Updating Events
+
+```bash
+# Update title
+cal update a1b2c3d4 --title "New Title"
+
+# Reschedule
+cal update a1b2c3d4 -s "tomorrow 2pm" -e "tomorrow 3pm"
+
+# Clear location
+cal update a1b2c3d4 --location ""
+
+# Update future occurrences of recurring event
+cal update a1b2c3d4 --span future --title "New Series Name"
+```
+
+## Deleting Events
+
+```bash
+# With confirmation prompt
+cal delete a1b2c3d4
+
+# Skip confirmation
+cal delete a1b2c3d4 -f
+
+# Delete future occurrences
+cal delete a1b2c3d4 --span future
+```
+
+## Export & Import
+
+```bash
+# Export to JSON
+cal export -f 2026-01-01 -t 2026-12-31 --format json > events.json
+
+# Export to CSV
+cal export -c Work --format csv --output-file work-events.csv
+
+# Export to ICS (RFC 5545)
+cal export --format ics --output-file calendar.ics
+
+# Import from JSON
+cal import events.json
+
+# Import to specific calendar
+cal import events.csv -c Personal
+
+# Dry run (preview without creating)
+cal import events.json --dry-run
+```
+
+## ID Handling
+
+- **Display**: First 8 characters of the full event identifier
+- **Input**: Prefix matching — any unique prefix resolves to the full event
+- **Ambiguity**: If multiple events match, lists all matches with "did you mean?"
+- **JSON output**: Always includes the full ID
+
+## Shell Completions
+
+```bash
+# Bash
+cal completion bash > /usr/local/etc/bash_completion.d/cal
+
+# Zsh
+cal completion zsh > "${fpath[1]}/_cal"
+
+# Fish
+cal completion fish > ~/.config/fish/completions/cal.fish
+```
+
+## Architecture
+
+Built on [go-eventkit](https://github.com/BRO3886/go-eventkit) — native EventKit bindings via cgo. No AppleScript, no subprocesses. Single binary.
+
+```
+cal/
+├── cmd/cal/
+│   ├── main.go              # Entry point
+│   └── commands/             # Cobra commands (one per file)
+├── internal/
+│   ├── parser/               # Natural language date parsing
+│   ├── ui/                   # Output formatting (table/json/plain)
+│   └── export/               # JSON/CSV/ICS import/export
+├── Makefile
+└── go.mod
+```
+
+## License
+
+[MIT](LICENSE)
