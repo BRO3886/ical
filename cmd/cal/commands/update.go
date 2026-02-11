@@ -34,20 +34,35 @@ var (
 )
 
 var updateCmd = &cobra.Command{
-	Use:     "update [id]",
+	Use:     "update [number or id]",
 	Aliases: []string{"edit"},
 	Short:   "Update an event",
-	Long:    "Updates an existing event. Only specified fields are changed.\nUse -i for interactive mode with guided prompts.",
-	Args:    cobra.ExactArgs(1),
+	Long: `Updates an existing event. Only specified fields are changed.
+
+With no arguments, shows an interactive picker to select the event.
+With an argument, accepts a row number from the last listing or a full/partial event ID.
+Use -i for interactive mode with guided prompts.`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := calendar.New()
 		if err != nil {
 			return handleClientError(err)
 		}
 
-		event, err := findEventByPrefix(client, args[0])
-		if err != nil {
-			return err
+		var event *calendar.Event
+		if len(args) == 1 {
+			event, err = findEventByPrefix(client, args[0])
+			if err != nil {
+				return err
+			}
+		} else {
+			event, err = pickEvent(client, "", "", 7)
+			if err != nil {
+				return err
+			}
+			if event == nil {
+				return nil
+			}
 		}
 
 		if updateInteractive {
