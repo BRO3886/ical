@@ -1,0 +1,75 @@
+baseURL: "/"
+languageCode: "en-us"
+title: "cal — CLI for macOS Calendar"
+theme: "cal-docs"
+
+params:
+  description: "A native macOS Calendar CLI built with Go and EventKit. 3000x faster than AppleScript. Full CRUD, natural language dates, recurrence, import/export, and multiple output formats."
+  author: "Siddharth Verma"
+  github: "https://github.com/BRO3886/cal"
+  ogImage: "/images/og-image.png"
+  keywords:
+    - macOS Calendar CLI
+    - cal CLI
+    - command line calendar
+    - Go CLI tool
+    - EventKit
+    - macOS productivity
+    - calendar management
+    - Apple Calendar terminal
+    - iCal CLI
+
+markup:
+  highlight:
+    style: github-dark
+    lineNos: false
+    guessSyntax: true
+  goldmark:
+    renderer:
+      unsafe: true
+
+menu:
+  main:
+    - name: "Getting Started"
+      url: "/docs/getting-started/"
+      weight: 1
+    - name: "Commands"
+      url: "/docs/commands/"
+      weight: 2
+    - name: "Date Parsing"
+      url: "/docs/date-parsing/"
+      weight: 3
+    - name: "Architecture"
+      url: "/docs/architecture/"
+      weight: 4
+    - name: "GitHub"
+      url: "https://github.com/BRO3886/cal"
+      weight: 5
+
+mediaTypes:
+  text/markdown:
+    suffixes:
+      - md
+
+outputFormats:
+  MD:
+    mediaType: text/markdown
+    baseName: index
+    isPlainText: true
+
+outputs:
+  home:
+    - HTML
+    - RSS
+  page:
+    - HTML
+    - MD
+  section:
+    - HTML
+    - MD
+
+sitemap:
+  changefreq: weekly
+  priority: 0.5
+
+enableRobotsTXT: true

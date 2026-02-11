@@ -91,5 +91,16 @@ make completions                 # bash/zsh/fish
 - Color coding: calendar colors shown, all-day events highlighted
 - Interactive mode (`-i`): add and update support guided huh forms
 
+## Documentation Website
+- **Location**: `website/` — Hugo static site with `cal-docs` custom theme
+- **Theme**: Apple Calendar-inspired red accent (`#E03E3E` light, `#ff6b6b` dark)
+- **Deploy**: Cloudflare Pages via `.github/workflows/deploy.yml`
+- **Project**: `cal` on Cloudflare Pages (URL: cal-3gu.pages.dev, will be mapped to cal.sidv.dev)
+- **Secrets**: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in GitHub repo secrets
+- **MD support**: Pages accessible as raw markdown at `/docs/page/index.md`
+- **Content**: `website/content/docs/` — getting-started, commands, date-parsing, architecture
+- **Copy buttons**: Auto-injected on code blocks in docs pages + manual on install section
+- **Hugo config**: `website/config.yaml` with markdown output format enabled
+
 ## Journal
 Engineering journals live in `journals/` dir. See `.claude/commands/journal.md` for the journaling command.

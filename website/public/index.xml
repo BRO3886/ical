@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>cal — CLI for macOS Calendar</title>
+    <link>/</link>
+    <description>Recent content on cal — CLI for macOS Calendar</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Getting Started</title>
+      <link>/docs/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/getting-started/</guid>
+      <description>Requirements  macOS (any recent version) Go 1.24+ (for go install) Calendar access permission (macOS will prompt on first run)  cal uses cgo to compile native EventKit bindings directly into the binary. It does not work on Linux or Windows.
+Installation Via go install go install github.com/BRO3886/cal/cmd/cal@latest From source git clone https://github.com/BRO3886/cal.git cd cal make build # Binary at ./bin/cal First Run On the first invocation, macOS will display a permission dialog asking for Calendar access.</description>
+    </item>
+    
+    <item>
+      <title>Commands</title>
+      <link>/docs/commands/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/commands/</guid>
+      <description>Overview cal provides 13 commands for managing macOS Calendar events. Every command that displays data supports --output (-o) with table, json, or plain formats.
+   Command Description     cal calendars List all calendars   cal list List events in a date range   cal today Today&amp;rsquo;s events   cal upcoming Events in next N days   cal show [# or id] Show event details   cal add [title] Create an event   cal update [# or id] Update an event   cal delete [# or id] Delete an event   cal search [query] Search events   cal export Export events (JSON/CSV/ICS)   cal import [file] Import events (JSON/CSV)   cal version Show version info   cal completion Generate shell completions    Global Flags These flags are available on all commands:</description>
+    </item>
+    
+    <item>
+      <title>Date Parsing</title>
+      <link>/docs/date-parsing/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/date-parsing/</guid>
+      <description>Overview Every flag that accepts a date (--from, --to, --start, --end, --repeat-until) supports natural language input. The built-in parser handles 20+ patterns without any external dependencies.
+All relative expressions are evaluated at the moment the command runs.
+Supported Patterns Relative Days    Input Resolves to     today Start of today   tomorrow Start of tomorrow   yesterday Start of yesterday    Weekdays    Input Resolves to     next monday Next occurrence of that weekday   next friday Next occurrence of that weekday   friday Next Friday (same as next friday)    Relative Periods    Input Resolves to     next week Monday of next week   next month 1st of next month   this week End of this week (Sunday 11:59 PM)    Relative Time    Input Resolves to     in 3 hours 3 hours from now   in 30 minutes 30 minutes from now   in 5 days 5 days from now   in 2 weeks 14 days from now   in 1 month 1 month from now    Past Relative    Input Resolves to     2 hours ago 2 hours before now   5 days ago 5 days before now   1 month ago 1 month before now    Time of Day    Input Resolves to     3pm Today at 3:00 PM   15:00 Today at 3:00 PM   3:30pm Today at 3:30 PM   9am Today at 9:00 AM    Weekday + Time    Input Resolves to     friday 2pm Next Friday at 2:00 PM   monday 9am Next Monday at 9:00 AM    Month + Day    Input Resolves to     mar 15 March 15 of this year   march 15 March 15 of this year   dec 25 December 25 of this year    ISO 8601    Input Resolves to     2026-03-15 March 15, 2026   2026-03-15 14:00 March 15, 2026 at 2 PM    Shorthand Keywords    Input Resolves to     eod Today at 5:00 PM   eow Friday at 5:00 PM    End-of-Day Behavior When a date is used with the --to flag and resolves to midnight (00:00:00), cal automatically bumps it to 23:59:59 of that day.</description>
+    </item>
+    
+    <item>
+      <title>Architecture</title>
+      <link>/docs/architecture/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/docs/architecture/</guid>
+      <description>Overview cal is a native macOS CLI that manages Calendar events through go-eventkit, a Go library providing direct EventKit bindings via cgo. This gives cal near-native performance — roughly 3000x faster than AppleScript-based alternatives.
+The entire application compiles to a single binary with no runtime dependencies beyond macOS itself.
+How It Works User → cal CLI (Cobra) → go-eventkit → EventKit (Objective-C via cgo) → Calendar.app store  The user invokes a command via the Cobra CLI framework Commands call functions in the go-eventkit/calendar package go-eventkit uses cgo to call EventKit&amp;rsquo;s Objective-C APIs directly EventKit reads from and writes to the same store that Calendar.</description>
+    </item>
+    
+  </channel>
+</rss>

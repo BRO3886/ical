@@ -57,48 +57,48 @@ cal delete
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `cal calendars` | List all calendars |
-| `cal list` | List events in a date range |
-| `cal today` | Today's events |
-| `cal upcoming` | Events in next N days |
-| `cal show [# or id]` | Show event details (interactive picker if no arg) |
-| `cal add [title]` | Create an event (`-i` for interactive) |
-| `cal update [# or id]` | Update an event (`-i` for interactive) |
-| `cal delete [# or id]` | Delete an event (interactive picker if no arg) |
-| `cal search [query]` | Search events |
-| `cal export` | Export events (JSON/CSV/ICS) |
-| `cal import [file]` | Import events (JSON/CSV) |
-| `cal version` | Show version info |
-| `cal completion` | Generate shell completions |
+| Command                | Description                                       |
+| ---------------------- | ------------------------------------------------- |
+| `cal calendars`        | List all calendars                                |
+| `cal list`             | List events in a date range                       |
+| `cal today`            | Today's events                                    |
+| `cal upcoming`         | Events in next N days                             |
+| `cal show [# or id]`   | Show event details (interactive picker if no arg) |
+| `cal add [title]`      | Create an event (`-i` for interactive)            |
+| `cal update [# or id]` | Update an event (`-i` for interactive)            |
+| `cal delete [# or id]` | Delete an event (interactive picker if no arg)    |
+| `cal search [query]`   | Search events                                     |
+| `cal export`           | Export events (JSON/CSV/ICS)                      |
+| `cal import [file]`    | Import events (JSON/CSV)                          |
+| `cal version`          | Show version info                                 |
+| `cal completion`       | Generate shell completions                        |
 
 ## Global Flags
 
-| Flag | Short | Default | Description |
-|------|-------|---------|-------------|
-| `--output` | `-o` | `table` | Output format: `table`, `json`, `plain` |
-| `--no-color` | | `false` | Disable color output (also respects `NO_COLOR`) |
+| Flag         | Short | Default | Description                                     |
+| ------------ | ----- | ------- | ----------------------------------------------- |
+| `--output`   | `-o`  | `table` | Output format: `table`, `json`, `plain`         |
+| `--no-color` |       | `false` | Disable color output (also respects `NO_COLOR`) |
 
 ## Natural Language Dates
 
 All date flags accept natural language:
 
-| Input | Resolves to |
-|-------|-------------|
-| `today`, `tomorrow`, `yesterday` | Relative dates |
-| `next monday`, `next friday` | Next occurrence of weekday |
-| `next week`, `next month` | Next week Monday / 1st of next month |
-| `in 3 hours`, `in 30 minutes` | Relative time |
-| `in 5 days`, `in 2 weeks` | Relative days |
-| `3pm`, `15:00`, `3:30pm` | Time today |
-| `friday 2pm` | Next Friday at 2pm |
-| `mar 15`, `march 15` | Month + day this year |
-| `2026-03-15 14:00` | ISO 8601 datetime |
-| `eod` | Today 5:00 PM |
-| `eow` | Friday 5:00 PM |
-| `this week` | Sunday 11:59 PM |
-| `2 hours ago`, `5 days ago` | Past relative |
+| Input                            | Resolves to                          |
+| -------------------------------- | ------------------------------------ |
+| `today`, `tomorrow`, `yesterday` | Relative dates                       |
+| `next monday`, `next friday`     | Next occurrence of weekday           |
+| `next week`, `next month`        | Next week Monday / 1st of next month |
+| `in 3 hours`, `in 30 minutes`    | Relative time                        |
+| `in 5 days`, `in 2 weeks`        | Relative days                        |
+| `3pm`, `15:00`, `3:30pm`         | Time today                           |
+| `friday 2pm`                     | Next Friday at 2pm                   |
+| `mar 15`, `march 15`             | Month + day this year                |
+| `2026-03-15 14:00`               | ISO 8601 datetime                    |
+| `eod`                            | Today 5:00 PM                        |
+| `eow`                            | Friday 5:00 PM                       |
+| `this week`                      | Sunday 11:59 PM                      |
+| `2 hours ago`, `5 days ago`      | Past relative                        |
 
 ## Event Listing
 
@@ -257,6 +257,10 @@ cal/
 ├── Makefile
 └── go.mod
 ```
+
+## Documentation
+
+Full documentation is available at [cal.sidv.dev](https://cal.sidv.dev) (or [cal-3gu.pages.dev](https://cal-3gu.pages.dev)).
 
 ## License
 
