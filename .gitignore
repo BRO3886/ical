@@ -24,3 +24,9 @@ Thumbs.db
 
 # Build
 dist/
+
+# Hugo
+website/public/
+website/.hugo_build.lock
+website/resources/
+website/.wrangler/
