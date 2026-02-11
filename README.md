@@ -57,21 +57,24 @@ cal delete
 
 ## Commands
 
-| Command                | Description                                       |
-| ---------------------- | ------------------------------------------------- |
-| `cal calendars`        | List all calendars                                |
-| `cal list`             | List events in a date range                       |
-| `cal today`            | Today's events                                    |
-| `cal upcoming`         | Events in next N days                             |
-| `cal show [# or id]`   | Show event details (interactive picker if no arg) |
-| `cal add [title]`      | Create an event (`-i` for interactive)            |
-| `cal update [# or id]` | Update an event (`-i` for interactive)            |
-| `cal delete [# or id]` | Delete an event (interactive picker if no arg)    |
-| `cal search [query]`   | Search events                                     |
-| `cal export`           | Export events (JSON/CSV/ICS)                      |
-| `cal import [file]`    | Import events (JSON/CSV)                          |
-| `cal version`          | Show version info                                 |
-| `cal completion`       | Generate shell completions                        |
+| Command                          | Description                                       |
+| -------------------------------- | ------------------------------------------------- |
+| `cal calendars`                  | List all calendars                                |
+| `cal calendars create [title]`   | Create a new calendar                             |
+| `cal calendars update [name]`    | Update a calendar (rename, recolor)               |
+| `cal calendars delete [name]`    | Delete a calendar and all its events              |
+| `cal list`                       | List events in a date range                       |
+| `cal today`                      | Today's events                                    |
+| `cal upcoming`                   | Events in next N days                             |
+| `cal show [# or id]`            | Show event details (interactive picker if no arg) |
+| `cal add [title]`               | Create an event (`-i` for interactive)            |
+| `cal update [# or id]`          | Update an event (`-i` for interactive)            |
+| `cal delete [# or id]`          | Delete an event (interactive picker if no arg)    |
+| `cal search [query]`            | Search events                                     |
+| `cal export`                     | Export events (JSON/CSV/ICS)                      |
+| `cal import [file]`             | Import events (JSON/CSV)                          |
+| `cal version`                    | Show version info                                 |
+| `cal completion`                 | Generate shell completions                        |
 
 ## Global Flags
 
@@ -99,6 +102,34 @@ All date flags accept natural language:
 | `eow`                            | Friday 5:00 PM                       |
 | `this week`                      | Sunday 11:59 PM                      |
 | `2 hours ago`, `5 days ago`      | Past relative                        |
+
+## Managing Calendars
+
+```bash
+# List all calendars (see sources, types, colors)
+cal calendars
+
+# Create a new calendar
+cal calendars create "Projects" --source iCloud --color "#FF6961"
+
+# Create interactively (pick source from dropdown)
+cal calendars create -i
+
+# Rename a calendar
+cal calendars update "Projects" --title "Archived"
+
+# Change calendar color
+cal calendars update "Projects" --color "#42D692"
+
+# Update interactively
+cal calendars update -i
+
+# Delete a calendar (with confirmation)
+cal calendars delete "Projects"
+
+# Delete without confirmation
+cal calendars delete "Projects" -f
+```
 
 ## Event Listing
 

@@ -538,6 +538,30 @@ func PrintCreatedEvent(e *calendar.Event) {
 	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
 }
 
+// PrintCreatedCalendar prints summary info for a newly created calendar.
+func PrintCreatedCalendar(c *calendar.Calendar) {
+	green := color.New(color.FgGreen, color.Bold)
+	green.Print("Created: ")
+	fmt.Printf("%s\n", c.Title)
+	fmt.Printf("  Source: %s\n", c.Source)
+	if c.Color != "" {
+		fmt.Printf("  Color:  %s\n", c.Color)
+	}
+	fmt.Printf("  ID:     %s\n", c.ID)
+}
+
+// PrintUpdatedCalendar prints summary info for an updated calendar.
+func PrintUpdatedCalendar(c *calendar.Calendar) {
+	green := color.New(color.FgGreen, color.Bold)
+	green.Print("Updated: ")
+	fmt.Printf("%s\n", c.Title)
+	fmt.Printf("  Source: %s\n", c.Source)
+	if c.Color != "" {
+		fmt.Printf("  Color:  %s\n", c.Color)
+	}
+	fmt.Printf("  ID:     %s\n", c.ID)
+}
+
 // PrintUpdatedEvent prints summary info for an updated event.
 func PrintUpdatedEvent(e *calendar.Event) {
 	start := localizeTime(e.StartDate, e.TimeZone)

@@ -15,13 +15,12 @@ cal/
 │   ├── main.go                  # Entry point (macOS check, version)
 │   └── commands/                # Cobra CLI commands (one file per command)
 │       ├── root.go              # Root cmd + global flags (--output, --no-color)
-│       ├── calendars.go         # List calendars
+│       ├── calendars.go         # Calendar CRUD (list/create/update/delete subcommands)
 │       ├── list.go              # List events (date range, filters)
 │       ├── show.go              # Show single event detail
 │       ├── add.go               # Create event (flags + interactive -i)
 │       ├── update.go            # Update event (flags + interactive -i)
 │       ├── delete.go            # Delete event (confirmation + pickEvent helper)
-│       ├── helpers.go           # Shared helpers (buildCalendarOptions, alert formatting)
 │       ├── today.go             # Shortcut: today's events
 │       ├── upcoming.go          # Shortcut: next N days
 │       ├── search.go            # Search events

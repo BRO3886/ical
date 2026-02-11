@@ -2,7 +2,7 @@
 
 ## cal calendars
 
-List all calendars on the system.
+Manage calendars. Running without a subcommand lists all calendars.
 
 ```bash
 cal calendars
@@ -10,9 +10,59 @@ cal cals
 cal calendars -o json
 ```
 
-No command-specific flags. Inherits global flags.
-
 Aliases: `cals`
+
+### cal calendars create
+
+Create a new calendar. Title can be passed as a positional argument or via `--title`.
+
+```bash
+cal calendars create "Projects" --source iCloud --color "#FF6961"
+cal calendars create -i
+```
+
+| Flag              | Short | Description                                | Default |
+| ----------------- | ----- | ------------------------------------------ | ------- |
+| `--title`         | `-T`  | Calendar title                             | —       |
+| `--source`        | `-s`  | Account source (required, e.g., "iCloud")  | —       |
+| `--color`         | —     | Calendar color (hex, e.g., "#FF6961")      | —       |
+| `--interactive`   | `-i`  | Interactive mode with guided prompts       | false   |
+
+Aliases: `add`, `new`
+
+### cal calendars update
+
+Update an existing calendar (rename, recolor). With no arguments, shows an interactive picker.
+
+```bash
+cal calendars update "Projects" --title "Archived" --color "#8295AF"
+cal calendars update "Projects" -i
+cal calendars update -i
+```
+
+| Flag              | Short | Description                              | Default |
+| ----------------- | ----- | ---------------------------------------- | ------- |
+| `--title`         | `-T`  | New calendar title                       | —       |
+| `--color`         | —     | New calendar color (hex)                 | —       |
+| `--interactive`   | `-i`  | Interactive mode with guided prompts     | false   |
+
+Aliases: `edit`, `rename`
+
+### cal calendars delete
+
+Permanently delete a calendar and all its events. With no arguments, shows an interactive picker.
+
+```bash
+cal calendars delete "Projects"
+cal calendars delete "Projects" --force
+cal calendars delete
+```
+
+| Flag      | Short | Description              | Default |
+| --------- | ----- | ------------------------ | ------- |
+| `--force` | `-f`  | Skip confirmation prompt | false   |
+
+Aliases: `rm`, `remove`
 
 ---
 

@@ -6,23 +6,26 @@ weight: 2
 
 ## Overview
 
-cal provides 13 commands for managing macOS Calendar events. Every command that displays data supports `--output` (`-o`) with `table`, `json`, or `plain` formats.
+cal provides commands for managing macOS Calendar events and calendars. Every command that displays data supports `--output` (`-o`) with `table`, `json`, or `plain` formats.
 
-| Command                | Description                                       |
-|------------------------|---------------------------------------------------|
-| `cal calendars`        | List all calendars                                |
-| `cal list`             | List events in a date range                       |
-| `cal today`            | Today's events                                    |
-| `cal upcoming`         | Events in next N days                             |
-| `cal show [# or id]`   | Show event details                               |
-| `cal add [title]`      | Create an event                                  |
-| `cal update [# or id]` | Update an event                                  |
-| `cal delete [# or id]` | Delete an event                                  |
-| `cal search [query]`   | Search events                                    |
-| `cal export`           | Export events (JSON/CSV/ICS)                     |
-| `cal import [file]`    | Import events (JSON/CSV)                         |
-| `cal version`          | Show version info                                |
-| `cal completion`       | Generate shell completions                       |
+| Command                          | Description                                       |
+|----------------------------------|---------------------------------------------------|
+| `cal calendars`                  | List all calendars                                |
+| `cal calendars create [title]`   | Create a new calendar                             |
+| `cal calendars update [name]`    | Update a calendar (rename, recolor)               |
+| `cal calendars delete [name]`    | Delete a calendar and all its events              |
+| `cal list`                       | List events in a date range                       |
+| `cal today`                      | Today's events                                    |
+| `cal upcoming`                   | Events in next N days                             |
+| `cal show [# or id]`            | Show event details                                |
+| `cal add [title]`               | Create an event                                   |
+| `cal update [# or id]`          | Update an event                                   |
+| `cal delete [# or id]`          | Delete an event                                   |
+| `cal search [query]`            | Search events                                     |
+| `cal export`                     | Export events (JSON/CSV/ICS)                      |
+| `cal import [file]`             | Import events (JSON/CSV)                          |
+| `cal version`                    | Show version info                                 |
+| `cal completion`                 | Generate shell completions                        |
 
 ## Global Flags
 
@@ -37,13 +40,92 @@ These flags are available on all commands:
 
 ## cal calendars
 
-List all available calendars on this Mac.
+Manage calendars. Running without a subcommand lists all calendars.
 
 ```bash
 cal calendars
+cal cals
+cal calendars -o json
 ```
 
-Displays the calendar name, source (iCloud, Google, etc.), and type. Useful for finding the exact calendar name to pass to `-c`.
+Displays the calendar name, source (iCloud, Google, etc.), type, color, and read-only status. Useful for finding the exact calendar name to pass to `-c` and discovering available sources for creating new calendars.
+
+---
+
+### cal calendars create
+
+Create a new calendar. Requires `--source` to specify the account.
+
+```bash
+# Create with flags
+cal calendars create "Projects" --source iCloud --color "#FF6961"
+
+# Interactive mode
+cal calendars create -i
+```
+
+#### Flags
+
+| Flag              | Short | Description                                      |
+|-------------------|-------|--------------------------------------------------|
+| `--title`         | `-T`  | Calendar title                                   |
+| `--source`        | `-s`  | Account source — required (e.g., "iCloud")       |
+| `--color`         |       | Calendar color (hex, e.g., "#FF6961")            |
+| `--interactive`   | `-i`  | Interactive mode with guided prompts             |
+
+Run `cal calendars` to see available sources from existing calendars.
+
+---
+
+### cal calendars update
+
+Update an existing calendar (rename or recolor).
+
+```bash
+# Update by name
+cal calendars update "Projects" --title "Archived" --color "#8295AF"
+
+# Interactive mode (guided form)
+cal calendars update "Projects" -i
+
+# Interactive picker (no argument)
+cal calendars update -i
+```
+
+#### Flags
+
+| Flag              | Short | Description                                  |
+|-------------------|-------|----------------------------------------------|
+| `--title`         | `-T`  | New calendar title                           |
+| `--color`         |       | New calendar color (hex, e.g., "#42D692")    |
+| `--interactive`   | `-i`  | Interactive mode with guided prompts         |
+
+Subscribed and birthday calendars cannot be updated (immutable).
+
+---
+
+### cal calendars delete
+
+Permanently delete a calendar and all its events.
+
+```bash
+# Delete by name (with confirmation)
+cal calendars delete "Projects"
+
+# Skip confirmation
+cal calendars delete "Projects" --force
+
+# Interactive picker (no argument)
+cal calendars delete
+```
+
+#### Flags
+
+| Flag      | Short | Description                |
+|-----------|-------|----------------------------|
+| `--force` | `-f`  | Skip confirmation prompt   |
+
+Subscribed and birthday calendars cannot be deleted (immutable).
 
 ---
 

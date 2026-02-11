@@ -1,6 +1,6 @@
 ---
 name: cal-cli
-description: Manages macOS Calendar events from the terminal using the cal CLI. Creates, lists, updates, deletes, searches, and exports calendar events. Supports natural language dates, recurrence rules, alerts, interactive mode, import/export (JSON/CSV/ICS), and multiple output formats. Use when the user wants to interact with Apple Calendar via command line, automate calendar workflows, or build scripts around macOS Calendar.
+description: Manages macOS Calendar events and calendars from the terminal using the cal CLI. Full CRUD for both events and calendars. Supports natural language dates, recurrence rules, alerts, interactive mode, import/export (JSON/CSV/ICS), and multiple output formats. Use when the user wants to interact with Apple Calendar via command line, automate calendar workflows, or build scripts around macOS Calendar.
 metadata:
   author: sidv
   version: "1.0"
@@ -27,8 +27,11 @@ make build    # produces bin/cal
 ## Quick Start
 
 ```bash
-# List all calendars
+# List all calendars (shows sources, colors, types)
 cal calendars
+
+# Create a new calendar
+cal calendars create "Projects" --source iCloud --color "#FF6961"
 
 # Show today's agenda
 cal today
@@ -76,11 +79,19 @@ cal export --format ics --from today --to "in 30 days" --output-file events.ics
 | `cal export` | —       | Export events to JSON, CSV, or ICS      |
 | `cal import` | —       | Import events from JSON or CSV file     |
 
+### Calendar Management
+
+| Command                   | Aliases           | Description                          |
+| ------------------------- | ----------------- | ------------------------------------ |
+| `cal calendars`           | `cals`            | List all calendars                   |
+| `cal calendars create`    | `add`, `new`      | Create a new calendar                |
+| `cal calendars update`    | `edit`, `rename`  | Update a calendar (rename, recolor)  |
+| `cal calendars delete`    | `rm`, `remove`    | Delete a calendar and all its events |
+
 ### Other
 
 | Command          | Aliases | Description                                |
 | ---------------- | ------- | ------------------------------------------ |
-| `cal calendars`  | `cals`  | List all calendars                         |
 | `cal version`    | —       | Print version and build info               |
 | `cal completion` | —       | Generate shell completions (bash/zsh/fish) |
 
