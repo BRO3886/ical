@@ -95,7 +95,7 @@ make completions                 # bash/zsh/fish
 - **Location**: `website/` — Hugo static site with `cal-docs` custom theme
 - **Theme**: Apple Calendar-inspired red accent (`#E03E3E` light, `#ff6b6b` dark)
 - **Deploy**: Cloudflare Pages via `.github/workflows/deploy.yml`
-- **Project**: `cal` on Cloudflare Pages (URL: cal-3gu.pages.dev, will be mapped to cal.sidv.dev)
+- **Project**: `cal` on Cloudflare Pages (URL: cal.sidv.dev)
 - **Secrets**: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in GitHub repo secrets
 - **MD support**: Pages accessible as raw markdown at `/docs/page/index.md`
 - **Content**: `website/content/docs/` — getting-started, commands, date-parsing, architecture

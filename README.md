@@ -278,7 +278,7 @@ cal/
 
 ## Documentation
 
-Full documentation is available at [cal.sidv.dev](https://cal.sidv.dev) (or [cal-3gu.pages.dev](https://cal-3gu.pages.dev)).
+Full documentation is available at [cal.sidv.dev](https://cal.sidv.dev).
 
 ## License
 
