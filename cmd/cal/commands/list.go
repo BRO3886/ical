@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/BRO3886/cal/internal/parser"
@@ -12,14 +13,15 @@ import (
 )
 
 var (
-	listFrom       string
-	listTo         string
-	listCalendar   string
-	listCalendarID string
-	listSearch     string
-	listAllDay     bool
-	listSort       string
-	listLimit      int
+	listFrom            string
+	listTo              string
+	listCalendar        string
+	listCalendarID      string
+	listSearch          string
+	listAllDay          bool
+	listSort            string
+	listLimit           int
+	listExcludeCalendar []string
 )
 
 var listCmd = &cobra.Command{
@@ -61,6 +63,7 @@ func init() {
 	listCmd.Flags().BoolVar(&listAllDay, "all-day", false, "Show only all-day events")
 	listCmd.Flags().StringVar(&listSort, "sort", "start", "Sort by: start, end, title, calendar")
 	listCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
+	listCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -81,6 +84,20 @@ func listEvents(from, to time.Time) error {
 		filtered := make([]calendar.Event, 0)
 		for _, e := range events {
 			if e.AllDay {
+				filtered = append(filtered, e)
+			}
+		}
+		events = filtered
+	}
+
+	if len(listExcludeCalendar) > 0 {
+		excluded := make(map[string]bool, len(listExcludeCalendar))
+		for _, c := range listExcludeCalendar {
+			excluded[strings.ToLower(c)] = true
+		}
+		filtered := make([]calendar.Event, 0, len(events))
+		for _, e := range events {
+			if !excluded[strings.ToLower(e.Calendar)] {
 				filtered = append(filtered, e)
 			}
 		}

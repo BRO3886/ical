@@ -25,6 +25,7 @@ func init() {
 	todayCmd.Flags().BoolVar(&listAllDay, "all-day", false, "Show only all-day events")
 	todayCmd.Flags().StringVar(&listSort, "sort", "start", "Sort by: start, end, title, calendar")
 	todayCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
+	todayCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
 
 	rootCmd.AddCommand(todayCmd)
 }
