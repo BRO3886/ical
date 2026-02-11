@@ -228,6 +228,24 @@ cal delete 1
 
 - **JSON output** (`-o json`): Always includes the full event ID for scripting
 
+## Interactive Mode
+
+The `-i` flag on `add` and `update` launches a guided form for step-by-step event creation or editing:
+
+```bash
+# Create event interactively (guided form)
+cal add -i
+
+# Update event interactively (pick event, then edit fields)
+cal update -i
+
+# Pick an event interactively (no argument triggers a searchable picker)
+cal show
+cal delete
+```
+
+Interactive mode uses [charmbracelet/huh](https://github.com/charmbracelet/huh) forms with the Catppuccin theme. The event picker provides a searchable list of upcoming events for quick selection.
+
 ## Shell Completions
 
 ```bash

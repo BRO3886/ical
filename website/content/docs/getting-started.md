@@ -85,6 +85,44 @@ cal today -o json | jq '.[].title'
 cal today -o plain | grep "standup"
 ```
 
+## Interactive Mode
+
+cal supports two kinds of interactive workflows, both powered by [charmbracelet/huh](https://github.com/charmbracelet/huh) with the Catppuccin theme.
+
+### Guided Forms
+
+The `-i` flag on `add` and `update` launches a step-by-step form where you fill in each field — title, calendar, start/end time, location, alerts, and recurrence — with validation and dropdowns.
+
+```bash
+# Create an event interactively
+cal add -i
+
+# Update an event interactively (pick event, then edit fields)
+cal update -i
+```
+
+### Event Picker
+
+Running `show`, `update`, or `delete` with no argument opens a searchable picker that lists your upcoming events. Type to filter, then press Enter to select.
+
+```bash
+# Pick an event to view
+cal show
+
+# Pick an event to delete (with confirmation)
+cal delete
+
+# Pick an event to update
+cal update
+```
+
+You can also combine the picker with the guided form:
+
+```bash
+# Pick an event, then edit it in a form
+cal update -i
+```
+
 ## Color Support
 
 cal respects the `NO_COLOR` environment variable. You can also pass `--no-color` to disable colored output.
