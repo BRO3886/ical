@@ -70,10 +70,12 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 	t.Header("Time", "Title", "Calendar", "Location", "Duration")
 
 	for _, e := range events {
-		timeStr := parser.FormatTimeRange(e.StartDate, e.EndDate, e.AllDay)
+		start := localizeTime(e.StartDate, e.TimeZone)
+		end := localizeTime(e.EndDate, e.TimeZone)
+		timeStr := parser.FormatTimeRange(start, end, e.AllDay)
 		title := truncate(e.Title, 40)
 		loc := truncate(e.Location, 25)
-		dur := parser.FormatDuration(e.StartDate, e.EndDate, e.AllDay)
+		dur := parser.FormatDuration(start, end, e.AllDay)
 		calName := e.Calendar
 
 		if e.AllDay {
@@ -154,6 +156,8 @@ func printEventsJSON(events []calendar.Event, w io.Writer) {
 
 func printEventsPlain(events []calendar.Event, w io.Writer) {
 	for _, e := range events {
+		start := localizeTime(e.StartDate, e.TimeZone)
+		end := localizeTime(e.EndDate, e.TimeZone)
 		if e.AllDay {
 			loc := ""
 			if e.Location != "" {
@@ -166,8 +170,8 @@ func printEventsPlain(events []calendar.Event, w io.Writer) {
 				loc = " @ " + e.Location
 			}
 			fmt.Fprintf(w, "[%s-%s] %s (%s)%s\n",
-				e.StartDate.Format("15:04"),
-				e.EndDate.Format("15:04"),
+				start.Format("15:04"),
+				end.Format("15:04"),
 				e.Title,
 				e.Calendar,
 				loc,
@@ -227,6 +231,9 @@ func printCalendarsPlain(calendars []calendar.Calendar, w io.Writer) {
 func printEventDetailTable(e *calendar.Event, w io.Writer) {
 	bold := color.New(color.Bold)
 
+	start := localizeTime(e.StartDate, e.TimeZone)
+	end := localizeTime(e.EndDate, e.TimeZone)
+
 	bold.Fprintf(w, "Title:        ")
 	fmt.Fprintln(w, e.Title)
 
@@ -237,13 +244,13 @@ func printEventDetailTable(e *calendar.Event, w io.Writer) {
 	fmt.Fprintln(w, e.Status.String())
 
 	bold.Fprintf(w, "Start:        ")
-	fmt.Fprintln(w, e.StartDate.Format("Mon, 02 Jan 2006 15:04 MST"))
+	fmt.Fprintln(w, start.Format("Mon, 02 Jan 2006 15:04 MST"))
 
 	bold.Fprintf(w, "End:          ")
-	fmt.Fprintln(w, e.EndDate.Format("Mon, 02 Jan 2006 15:04 MST"))
+	fmt.Fprintln(w, end.Format("Mon, 02 Jan 2006 15:04 MST"))
 
 	bold.Fprintf(w, "Duration:     ")
-	fmt.Fprintln(w, parser.FormatDuration(e.StartDate, e.EndDate, e.AllDay))
+	fmt.Fprintln(w, parser.FormatDuration(start, end, e.AllDay))
 
 	if e.AllDay {
 		bold.Fprintf(w, "All Day:      ")
@@ -318,17 +325,19 @@ func printEventDetailTable(e *calendar.Event, w io.Writer) {
 	fmt.Fprintln(w, e.ID)
 
 	bold.Fprintf(w, "Created:      ")
-	fmt.Fprintln(w, e.CreatedAt.Format("Mon, 02 Jan 2006 15:04 MST"))
+	fmt.Fprintln(w, e.CreatedAt.In(time.Local).Format("Mon, 02 Jan 2006 15:04 MST"))
 
 	bold.Fprintf(w, "Modified:     ")
-	fmt.Fprintln(w, e.ModifiedAt.Format("Mon, 02 Jan 2006 15:04 MST"))
+	fmt.Fprintln(w, e.ModifiedAt.In(time.Local).Format("Mon, 02 Jan 2006 15:04 MST"))
 }
 
 func printEventDetailPlain(e *calendar.Event, w io.Writer) {
+	start := localizeTime(e.StartDate, e.TimeZone)
+	end := localizeTime(e.EndDate, e.TimeZone)
 	fmt.Fprintf(w, "Title: %s\n", e.Title)
 	fmt.Fprintf(w, "Calendar: %s\n", e.Calendar)
-	fmt.Fprintf(w, "Start: %s\n", e.StartDate.Format(time.RFC3339))
-	fmt.Fprintf(w, "End: %s\n", e.EndDate.Format(time.RFC3339))
+	fmt.Fprintf(w, "Start: %s\n", start.Format(time.RFC3339))
+	fmt.Fprintf(w, "End: %s\n", end.Format(time.RFC3339))
 	if e.AllDay {
 		fmt.Fprintln(w, "All Day: Yes")
 	}
@@ -457,6 +466,16 @@ func formatAlertDuration(d time.Duration) string {
 	return fmt.Sprintf("%d minutes", mins)
 }
 
+// localizeTime converts a time to the event's timezone, falling back to local time.
+func localizeTime(t time.Time, tz string) time.Time {
+	if tz != "" {
+		if loc, err := time.LoadLocation(tz); err == nil {
+			return t.In(loc)
+		}
+	}
+	return t.In(time.Local)
+}
+
 func truncate(s string, max int) string {
 	if len(s) <= max {
 		return s
@@ -474,20 +493,24 @@ func ShortID(id string) string {
 
 // PrintCreatedEvent prints summary info for a newly created event.
 func PrintCreatedEvent(e *calendar.Event) {
+	start := localizeTime(e.StartDate, e.TimeZone)
+	end := localizeTime(e.EndDate, e.TimeZone)
 	green := color.New(color.FgGreen, color.Bold)
 	green.Print("Created: ")
 	fmt.Printf("%s\n", e.Title)
 	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(e.StartDate, e.EndDate, e.AllDay))
+	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(start, end, e.AllDay))
 	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
 }
 
 // PrintUpdatedEvent prints summary info for an updated event.
 func PrintUpdatedEvent(e *calendar.Event) {
+	start := localizeTime(e.StartDate, e.TimeZone)
+	end := localizeTime(e.EndDate, e.TimeZone)
 	green := color.New(color.FgGreen, color.Bold)
 	green.Print("Updated: ")
 	fmt.Printf("%s\n", e.Title)
 	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(e.StartDate, e.EndDate, e.AllDay))
+	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(start, end, e.AllDay))
 	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
 }
