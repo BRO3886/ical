@@ -22,7 +22,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Show version and build info",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("cal %s (commit %s, built %s)\n", versionStr, commitStr, dateStr)
+		fmt.Printf("ical %s (commit %s, built %s)\n", versionStr, commitStr, dateStr)
 	},
 }
 

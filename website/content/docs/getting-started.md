@@ -1,6 +1,6 @@
 ---
 title: "Getting Started"
-description: "Install cal and start managing your macOS Calendar from the terminal."
+description: "Install ical and start managing your macOS Calendar from the terminal."
 weight: 1
 ---
 
@@ -10,31 +10,31 @@ weight: 1
 - **Go 1.24+** (for `go install`)
 - Calendar access permission (macOS will prompt on first run)
 
-cal uses cgo to compile native EventKit bindings directly into the binary. It does not work on Linux or Windows.
+iical uses cgo to compile native EventKit bindings directly into the binary. It does not work on Linux or Windows.
 
 ## Installation
 
 ### Via go install
 
 ```bash
-go install github.com/BRO3886/cal/cmd/cal@latest
+go install github.com/BRO3886/ical/cmd/ical@latest
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/BRO3886/cal.git
-cd cal
+git clone https://github.com/BRO3886/ical.git
+cd ical
 make build
-# Binary at ./bin/cal
+# Binary at ./bin/ical
 ```
 
 ## First Run
 
-On the first invocation, macOS will display a permission dialog asking for Calendar access. Grant it — cal needs this to read and write events.
+On the first invocation, macOS will display a permission dialog asking for Calendar access. Grant it — ical needs this to read and write events.
 
 ```bash
-cal today
+iical today
 ```
 
 This shows all events for today in a table format with row numbers, times, titles, and calendar names.
@@ -43,28 +43,28 @@ This shows all events for today in a table format with row numbers, times, title
 
 ```bash
 # Today's agenda
-cal today
+iical today
 
 # Next 7 days
-cal upcoming
+iical upcoming
 
 # List events in a date range
-cal list -f "next monday" -t "next friday"
+iical list -f "next monday" -t "next friday"
 
 # Search events by title
-cal search "standup" -c Work
+iical search "standup" -c Work
 
 # Show event details (interactive picker)
-cal show
+iical show
 
 # Create an event
-cal add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
+iical add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
 
 # Create interactively with a guided form
-cal add -i
+iical add -i
 
 # Delete an event (interactive picker with confirmation)
-cal delete
+iical delete
 ```
 
 ## Output Formats
@@ -79,15 +79,15 @@ All list and show commands support three output formats via the `--output` (or `
 
 ```bash
 # JSON output for scripting
-cal today -o json | jq '.[].title'
+iical today -o json | jq '.[].title'
 
 # Plain output for grep
-cal today -o plain | grep "standup"
+iical today -o plain | grep "standup"
 ```
 
 ## Interactive Mode
 
-cal supports two kinds of interactive workflows, both powered by [charmbracelet/huh](https://github.com/charmbracelet/huh) with the Catppuccin theme.
+iical supports two kinds of interactive workflows, both powered by [charmbracelet/huh](https://github.com/charmbracelet/huh) with the Catppuccin theme.
 
 ### Guided Forms
 
@@ -95,10 +95,10 @@ The `-i` flag on `add` and `update` launches a step-by-step form where you fill 
 
 ```bash
 # Create an event interactively
-cal add -i
+iical add -i
 
 # Update an event interactively (pick event, then edit fields)
-cal update -i
+iical update -i
 ```
 
 ### Event Picker
@@ -107,25 +107,25 @@ Running `show`, `update`, or `delete` with no argument opens a searchable picker
 
 ```bash
 # Pick an event to view
-cal show
+iical show
 
 # Pick an event to delete (with confirmation)
-cal delete
+iical delete
 
 # Pick an event to update
-cal update
+iical update
 ```
 
 You can also combine the picker with the guided form:
 
 ```bash
 # Pick an event, then edit it in a form
-cal update -i
+iical update -i
 ```
 
 ## Color Support
 
-cal respects the `NO_COLOR` environment variable. You can also pass `--no-color` to disable colored output.
+iical respects the `NO_COLOR` environment variable. You can also pass `--no-color` to disable colored output.
 
 ## Shell Completions
 
@@ -133,11 +133,11 @@ Generate completions for your shell:
 
 ```bash
 # Bash
-cal completion bash > /usr/local/etc/bash_completion.d/cal
+iical completion bash > /usr/local/etc/bash_completion.d/ical
 
 # Zsh
-cal completion zsh > "${fpath[1]}/_cal"
+iical completion zsh > "${fpath[1]}/_ical"
 
 # Fish
-cal completion fish > ~/.config/fish/completions/cal.fish
+iical completion fish > ~/.config/fish/completions/ical.fish
 ```

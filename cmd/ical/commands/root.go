@@ -13,9 +13,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cal",
+	Use:   "ical",
 	Short: "A fast, native macOS Calendar CLI",
-	Long:  "cal — a fast, native macOS Calendar CLI built on EventKit.\nProvides full CRUD for calendar events, natural language dates,\nrecurrence support, import/export, and multiple output formats.",
+	Long:  "ical — a fast, native macOS Calendar CLI built on EventKit.\nProvides full CRUD for calendar events, natural language dates,\nrecurrence support, import/export, and multiple output formats.",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if noColor || os.Getenv("NO_COLOR") != "" {
 			color.NoColor = true

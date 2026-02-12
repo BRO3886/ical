@@ -1,16 +1,16 @@
 baseURL: "/"
 languageCode: "en-us"
-title: "cal — CLI for macOS Calendar"
+title: "ical — CLI for macOS Calendar"
 theme: "cal-docs"
 
 params:
   description: "A native macOS Calendar CLI built with Go and EventKit. 3000x faster than AppleScript. Full CRUD, natural language dates, recurrence, import/export, and multiple output formats."
   author: "Siddharth Verma"
-  github: "https://github.com/BRO3886/cal"
+  github: "https://github.com/BRO3886/ical"
   ogImage: "/images/og-image.png"
   keywords:
     - macOS Calendar CLI
-    - cal CLI
+    - ical CLI
     - command line calendar
     - Go CLI tool
     - EventKit
@@ -43,7 +43,7 @@ menu:
       url: "/docs/architecture/"
       weight: 4
     - name: "GitHub"
-      url: "https://github.com/BRO3886/cal"
+      url: "https://github.com/BRO3886/ical"
       weight: 5
 
 mediaTypes:

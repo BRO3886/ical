@@ -5,7 +5,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/BRO3886/cal/cmd/cal/commands"
+	"github.com/BRO3886/ical/cmd/ical/commands"
 )
 
 // Set by ldflags at build time.
@@ -17,7 +17,7 @@ var (
 
 func main() {
 	if runtime.GOOS != "darwin" {
-		fmt.Fprintln(os.Stderr, "cal requires macOS")
+		fmt.Fprintln(os.Stderr, "ical requires macOS")
 		os.Exit(1)
 	}
 

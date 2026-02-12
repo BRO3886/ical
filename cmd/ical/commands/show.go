@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/cal/internal/ui"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )

@@ -1,4 +1,4 @@
-module github.com/BRO3886/cal
+module github.com/BRO3886/ical
 
 go 1.24.5
 

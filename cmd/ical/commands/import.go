@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/BRO3886/cal/internal/export"
+	"github.com/BRO3886/ical/internal/export"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -22,7 +22,7 @@ var (
 var importCmd = &cobra.Command{
 	Use:   "import [file]",
 	Short: "Import events from file",
-	Long:  "Imports events from JSON or CSV files.",
+	Long:  "Imports events from JSON, CSV, or ICS files.",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filename := args[0]
@@ -41,8 +41,10 @@ var importCmd = &cobra.Command{
 			inputs, err = export.ParseJSON(f)
 		case ".csv":
 			inputs, err = export.ParseCSV(f)
+		case ".ics":
+			inputs, err = export.ParseICS(f)
 		default:
-			return fmt.Errorf("unsupported file format %q (use .json or .csv)", ext)
+			return fmt.Errorf("unsupported file format %q (use .json, .csv, or .ics)", ext)
 		}
 		if err != nil {
 			return fmt.Errorf("failed to parse file: %w", err)

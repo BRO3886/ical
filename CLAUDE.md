@@ -1,4 +1,4 @@
-# cal — CLI for macOS Calendar
+# ical — CLI for macOS Calendar
 
 ## Non-Negotiables
 - **Conventional Commits**: ALL commits MUST follow [Conventional Commits](https://www.conventionalcommits.org/). Format: `type(scope): description`. Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`. No exceptions.
@@ -10,8 +10,8 @@ Go CLI wrapping macOS Calendar via `go-eventkit`. Native EventKit bindings for 3
 
 ## Architecture
 ```
-cal/
-├── cmd/cal/
+ical/
+├── cmd/ical/
 │   ├── main.go                  # Entry point (macOS check, version)
 │   └── commands/                # Cobra CLI commands (one file per command)
 │       ├── root.go              # Root cmd + global flags (--output, --no-color)
@@ -71,14 +71,14 @@ cal/
 
 ## Build & Test
 ```bash
-go build -o bin/cal ./cmd/cal    # Build (compiles EventKit via cgo)
+go build -o bin/ical ./cmd/ical    # Build (compiles EventKit via cgo)
 go test ./...                    # Unit tests
 make build                       # Via Makefile
 make completions                 # bash/zsh/fish
 ```
 
 ## Conventions
-- Row numbers (`#1`, `#2`...) in event tables; cached to `~/.cal-last-list` for `show 2`/`update 3`/`delete 1`
+- Row numbers (`#1`, `#2`...) in event tables; cached to `~/.ical-last-list` for `show 2`/`update 3`/`delete 1`
 - Event IDs: entire UUID prefix before `:` is shared per calendar — short IDs don't disambiguate. Use row numbers or interactive picker instead
 - show/update/delete accept 0 args (interactive huh picker), row number, or full/partial event ID
 - `--to` dates: `endOfDayIfMidnight()` bumps midnight to 23:59:59 (in list, search, export, pickEvent)

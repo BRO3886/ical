@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/cal/internal/parser"
+	"github.com/BRO3886/ical/internal/parser"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/fatih/color"
@@ -20,7 +20,7 @@ import (
 // lastListPath returns the path to the cached event ID list.
 func lastListPath() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".cal-last-list")
+	return filepath.Join(home, ".ical-last-list")
 }
 
 // SaveLastList writes event IDs to cache so row numbers can be used later.

@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/BRO3886/cal/internal/export"
-	"github.com/BRO3886/cal/internal/parser"
+	"github.com/BRO3886/ical/internal/export"
+	"github.com/BRO3886/ical/internal/parser"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )

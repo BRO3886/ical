@@ -1,10 +1,10 @@
-# cal — macOS Calendar CLI
+# ical — macOS Calendar CLI
 
 ## Overview
 
-`cal` is a fast, native macOS Calendar CLI built on [go-eventkit](https://github.com/BRO3886/go-eventkit). It provides full CRUD for calendar events, natural language date parsing, recurrence support, import/export, and multiple output formats — all via EventKit (3000x faster than AppleScript).
+`ical` is a fast, native macOS Calendar CLI built on [go-eventkit](https://github.com/BRO3886/go-eventkit). It provides full CRUD for calendar events, natural language date parsing, recurrence support, import/export, and multiple output formats — all via EventKit (3000x faster than AppleScript).
 
-**Module**: `github.com/BRO3886/cal`
+**Module**: `github.com/BRO3886/ical`
 **Primary dependency**: `github.com/BRO3886/go-eventkit/calendar`
 
 ## Design Principles
@@ -26,7 +26,7 @@
 
 ---
 
-### `cal calendars` — List all calendars
+### `ical calendars` — List all calendars
 
 Lists all calendars across all accounts (iCloud, Google, Exchange, subscriptions, birthdays).
 
@@ -37,14 +37,14 @@ Lists all calendars across all accounts (iCloud, Google, Exchange, subscriptions
 
 **Examples**:
 ```bash
-cal calendars                     # Table of all calendars
-cal calendars -o json             # JSON array
-cal calendars -o json | jq '.[].title'
+ical calendars                     # Table of all calendars
+ical calendars -o json             # JSON array
+ical calendars -o json | jq '.[].title'
 ```
 
 ---
 
-### `cal list` — List events in a date range
+### `ical list` — List events in a date range
 
 Queries events within a date range. Defaults to today if no range specified.
 
@@ -70,36 +70,36 @@ Queries events within a date range. Defaults to today if no range specified.
 
 **Examples**:
 ```bash
-cal list                          # Today's events
-cal list -f tomorrow              # Tomorrow's events
-cal list -f "next monday" -t "next friday"  # Work week
-cal list -f 2026-03-01 -t 2026-03-31       # March 2026
-cal list -c Work                  # Only "Work" calendar
-cal list -s standup               # Search for "standup"
-cal list -f today -t "in 7 days" --sort title
-cal list -o json | jq '.[] | {title, start: .start_date}'
+ical list                          # Today's events
+ical list -f tomorrow              # Tomorrow's events
+ical list -f "next monday" -t "next friday"  # Work week
+ical list -f 2026-03-01 -t 2026-03-31       # March 2026
+ical list -c Work                  # Only "Work" calendar
+ical list -s standup               # Search for "standup"
+ical list -f today -t "in 7 days" --sort title
+ical list -o json | jq '.[] | {title, start: .start_date}'
 ```
 
 ---
 
-### `cal today` — Today's events
+### `ical today` — Today's events
 
-Shortcut for `cal list --from today --to tomorrow`. Shows the day's agenda.
+Shortcut for `ical list --from today --to tomorrow`. Shows the day's agenda.
 
-**Flags**: Same as `cal list` (except `--from`/`--to`)
+**Flags**: Same as `ical list` (except `--from`/`--to`)
 
 **Examples**:
 ```bash
-cal today                         # Today's full agenda
-cal today -c Personal             # Today's personal events
-cal today -o plain                # Plain text for scripting
+ical today                         # Today's full agenda
+ical today -c Personal             # Today's personal events
+ical today -o plain                # Plain text for scripting
 ```
 
 ---
 
-### `cal upcoming` — Events in next N days
+### `ical upcoming` — Events in next N days
 
-Shortcut for `cal list` with `--from today --to "in N days"`.
+Shortcut for `ical list` with `--from today --to "in N days"`.
 
 **Aliases**: `next`, `soon`
 
@@ -112,14 +112,14 @@ Shortcut for `cal list` with `--from today --to "in N days"`.
 
 **Examples**:
 ```bash
-cal upcoming                      # Next 7 days
-cal upcoming -d 30                # Next 30 days
-cal upcoming -c Work -d 14        # Work events, 2 weeks
+ical upcoming                      # Next 7 days
+ical upcoming -d 30                # Next 30 days
+ical upcoming -c Work -d 14        # Work events, 2 weeks
 ```
 
 ---
 
-### `cal show [id]` — Show event details
+### `ical show [id]` — Show event details
 
 Displays full details for a single event. Supports ID prefix matching.
 
@@ -140,14 +140,14 @@ Displays full details for a single event. Supports ID prefix matching.
 
 **Examples**:
 ```bash
-cal show a1b2c3d4                 # By short ID prefix
-cal show a1b2c3d4-e5f6-...       # By full ID
-cal show a1b2c3d4 -o json        # JSON output
+ical show a1b2c3d4                 # By short ID prefix
+ical show a1b2c3d4-e5f6-...       # By full ID
+ical show a1b2c3d4 -o json        # JSON output
 ```
 
 ---
 
-### `cal add [title]` — Create an event
+### `ical add [title]` — Create an event
 
 Creates a new calendar event. Title can be passed as argument or via `--title` flag.
 
@@ -189,26 +189,26 @@ Creates a new calendar event. Title can be passed as argument or via `--title` f
 **Examples**:
 ```bash
 # Quick event
-cal add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
+ical add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
 
 # All-day event
-cal add "Company Holiday" -s 2026-03-15 --all-day -c Work
+ical add "Company Holiday" -s 2026-03-15 --all-day -c Work
 
 # Recurring event
-cal add "Weekly Sync" -s "next monday 10am" -e "next monday 11am" \
+ical add "Weekly Sync" -s "next monday 10am" -e "next monday 11am" \
   --repeat weekly --repeat-days mon -c Work
 
 # With location and alerts
-cal add "Dinner" -s "friday 7pm" -e "friday 9pm" \
+ical add "Dinner" -s "friday 7pm" -e "friday 9pm" \
   -l "The Restaurant, 123 Main St" --alert 1h --alert 15m
 
 # Interactive
-cal add -i
+ical add -i
 ```
 
 ---
 
-### `cal update [id]` — Update an event
+### `ical update [id]` — Update an event
 
 Updates an existing event. Only specified fields are changed.
 
@@ -240,16 +240,16 @@ Updates an existing event. Only specified fields are changed.
 
 **Examples**:
 ```bash
-cal update a1b2c3d4 --title "Updated Title"
-cal update a1b2c3d4 -s "tomorrow 2pm" -e "tomorrow 3pm"
-cal update a1b2c3d4 --location ""     # Clear location
-cal update a1b2c3d4 --span future --title "New Series Name"
-cal update a1b2c3d4 -i                # Interactive
+ical update a1b2c3d4 --title "Updated Title"
+ical update a1b2c3d4 -s "tomorrow 2pm" -e "tomorrow 3pm"
+ical update a1b2c3d4 --location ""     # Clear location
+ical update a1b2c3d4 --span future --title "New Series Name"
+ical update a1b2c3d4 -i                # Interactive
 ```
 
 ---
 
-### `cal delete [id]` — Delete an event
+### `ical delete [id]` — Delete an event
 
 Deletes an event. Asks for confirmation by default.
 
@@ -264,14 +264,14 @@ Deletes an event. Asks for confirmation by default.
 
 **Examples**:
 ```bash
-cal delete a1b2c3d4               # With confirmation
-cal delete a1b2c3d4 -f            # Force delete
-cal delete a1b2c3d4 --span future # Delete this + all future occurrences
+ical delete a1b2c3d4               # With confirmation
+ical delete a1b2c3d4 -f            # Force delete
+ical delete a1b2c3d4 --span future # Delete this + all future occurrences
 ```
 
 ---
 
-### `cal search [query]` — Search events
+### `ical search [query]` — Search events
 
 Searches events within a date range by title, location, and notes.
 
@@ -288,14 +288,14 @@ Searches events within a date range by title, location, and notes.
 
 **Examples**:
 ```bash
-cal search standup                # Search +-30 days
-cal search "team meeting" -c Work
-cal search dentist -f "6 months ago" -t "in 6 months"
+ical search standup                # Search +-30 days
+ical search "team meeting" -c Work
+ical search dentist -f "6 months ago" -t "in 6 months"
 ```
 
 ---
 
-### `cal export` — Export events
+### `ical export` — Export events
 
 Exports events to JSON, CSV, or ICS format.
 
@@ -317,15 +317,15 @@ Exports events to JSON, CSV, or ICS format.
 
 **Examples**:
 ```bash
-cal export                                    # JSON to stdout
-cal export --format csv --output-file events.csv
-cal export -c Work -f 2026-01-01 -t 2026-12-31 --format ics --output-file work-2026.ics
-cal export -o json | jq '.[] | select(.recurring)'
+ical export                                    # JSON to stdout
+ical export --format csv --output-file events.csv
+ical export -c Work -f 2026-01-01 -t 2026-12-31 --format ics --output-file work-2026.ics
+ical export -o json | jq '.[] | select(.recurring)'
 ```
 
 ---
 
-### `cal import [file]` — Import events
+### `ical import [file]` — Import events
 
 Imports events from JSON or CSV files.
 
@@ -345,32 +345,32 @@ Imports events from JSON or CSV files.
 
 **Examples**:
 ```bash
-cal import events.json                        # Import from JSON
-cal import events.csv -c Personal             # Override calendar
-cal import events.json --dry-run              # Preview
+ical import events.json                        # Import from JSON
+ical import events.csv -c Personal             # Override calendar
+ical import events.json --dry-run              # Preview
 ```
 
 ---
 
-### `cal version` — Show version
+### `ical version` — Show version
 
 Displays version and build info.
 
 ```bash
-cal version
-# cal v0.1.0 (built 2026-02-11)
+ical version
+# ical v0.1.0 (built 2026-02-11)
 ```
 
 ---
 
-### `cal completion` — Shell completions
+### `ical completion` — Shell completions
 
 Generates shell completion scripts.
 
 ```bash
-cal completion bash > /usr/local/etc/bash_completion.d/cal
-cal completion zsh > "${fpath[1]}/_cal"
-cal completion fish > ~/.config/fish/completions/cal.fish
+ical completion bash > /usr/local/etc/bash_completion.d/ical
+ical completion zsh > "${fpath[1]}/_ical"
+ical completion fish > ~/.config/fish/completions/ical.fish
 ```
 
 ---
@@ -456,7 +456,7 @@ Human-readable recurrence descriptions in show/detail views:
 
 | Scenario | Behavior |
 |----------|----------|
-| Not macOS | Exit with "cal requires macOS" |
+| Not macOS | Exit with "ical requires macOS" |
 | TCC denied | Exit with "Calendar access denied. Grant access in System Settings > Privacy & Security > Calendars" |
 | Event not found | "No event found with ID 'abc123'" |
 | Ambiguous ID prefix | "Multiple events match 'a1b2'. Did you mean: ..." (list matches) |
@@ -472,20 +472,20 @@ Human-readable recurrence descriptions in show/detail views:
 Priority: Ship a usable CLI fast.
 
 1. **Project scaffolding**: `go.mod`, `main.go`, `root.go`, Makefile
-2. **`cal calendars`**: List calendars (table/json/plain)
-3. **`cal list`** + **`cal today`** + **`cal upcoming`**: Event listing with filters
-4. **`cal show`**: Event detail view
-5. **`cal add`**: Create events (flag-based first, then interactive)
-6. **`cal update`**: Update events
-7. **`cal delete`**: Delete events with confirmation
-8. **`cal search`**: Search events
+2. **`ical calendars`**: List calendars (table/json/plain)
+3. **`ical list`** + **`ical today`** + **`ical upcoming`**: Event listing with filters
+4. **`ical show`**: Event detail view
+5. **`ical add`**: Create events (flag-based first, then interactive)
+6. **`ical update`**: Update events
+7. **`ical delete`**: Delete events with confirmation
+8. **`ical search`**: Search events
 9. **Output formatting** (`internal/ui/`): table, JSON, plain
 10. **Date parsing** (`internal/parser/`): NL date parser
-11. **`cal version`** + **`cal completion`**
+11. **`ical version`** + **`ical completion`**
 
 ### Phase 2: Import/Export
-1. **`cal export`**: JSON + CSV export
-2. **`cal import`**: JSON + CSV import with dry-run
+1. **`ical export`**: JSON + CSV export
+2. **`ical import`**: JSON + CSV import with dry-run
 3. **ICS export**: RFC 5545 iCalendar format
 
 ### Phase 3: Polish
@@ -510,17 +510,17 @@ client, err := calendar.New()  // Requests TCC access
 
 | Command | API Call | Notes |
 |---------|----------|-------|
-| `cal calendars` | `client.Calendars()` | Returns `[]Calendar` |
-| `cal list` | `client.Events(start, end, opts...)` | Requires date range |
-| `cal today` | `client.Events(todayStart, tomorrowStart)` | |
-| `cal upcoming` | `client.Events(now, now.Add(N*24h))` | |
-| `cal show [id]` | `client.Event(id)` | Returns `*Event` |
-| `cal add` | `client.CreateEvent(input)` | Returns `*Event` with ID |
-| `cal update [id]` | `client.UpdateEvent(id, input, span)` | Span: this/future |
-| `cal delete [id]` | `client.DeleteEvent(id, span)` | Span: this/future |
-| `cal search [q]` | `client.Events(start, end, WithSearch(q))` | |
-| `cal export` | `client.Events(start, end, opts...)` | + marshal |
-| `cal import` | `client.CreateEvent(input)` per event | Loop with error collection |
+| `ical calendars` | `client.Calendars()` | Returns `[]Calendar` |
+| `ical list` | `client.Events(start, end, opts...)` | Requires date range |
+| `ical today` | `client.Events(todayStart, tomorrowStart)` | |
+| `ical upcoming` | `client.Events(now, now.Add(N*24h))` | |
+| `ical show [id]` | `client.Event(id)` | Returns `*Event` |
+| `ical add` | `client.CreateEvent(input)` | Returns `*Event` with ID |
+| `ical update [id]` | `client.UpdateEvent(id, input, span)` | Span: this/future |
+| `ical delete [id]` | `client.DeleteEvent(id, span)` | Span: this/future |
+| `ical search [q]` | `client.Events(start, end, WithSearch(q))` | |
+| `ical export` | `client.Events(start, end, opts...)` | + marshal |
+| `ical import` | `client.CreateEvent(input)` per event | Loop with error collection |
 
 ### Functional Options for `Events()`
 ```go
@@ -593,7 +593,7 @@ rule.Count(10)                                       // End after N occurrences
 
 ## Comparison with rem
 
-| Aspect | cal | rem |
+| Aspect | ical | rem |
 |--------|-----|-----|
 | **Data source** | go-eventkit (EventKit for all ops) | Own bridge (EventKit reads, AppleScript writes) |
 | **Write speed** | <10ms (EventKit native) | 200-500ms (AppleScript) |

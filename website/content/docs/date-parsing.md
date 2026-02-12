@@ -1,6 +1,6 @@
 ---
 title: "Date Parsing"
-description: "Natural language date input reference for all cal commands."
+description: "Natural language date input reference for all ical commands."
 weight: 3
 ---
 
@@ -94,7 +94,7 @@ All relative expressions are evaluated at the moment the command runs.
 
 ## End-of-Day Behavior
 
-When a date is used with the `--to` flag and resolves to midnight (00:00:00), cal automatically bumps it to 23:59:59 of that day. This ensures that `--to "feb 12"` includes all events on February 12, not just those before midnight.
+When a date is used with the `--to` flag and resolves to midnight (00:00:00), ical automatically bumps it to 23:59:59 of that day. This ensures that `--to "feb 12"` includes all events on February 12, not just those before midnight.
 
 This applies to `list`, `search`, `export`, and the interactive event picker.
 
@@ -102,17 +102,17 @@ This applies to `list`, `search`, `export`, and the interactive event picker.
 
 ```bash
 # Events from today through end of next Friday
-cal list -f today -t "next friday"
+ical list -f today -t "next friday"
 
 # Events in the past month
-cal list -f "1 month ago" -t today
+ical list -f "1 month ago" -t today
 
 # Create event starting in 2 hours
-cal add "Quick call" -s "in 2 hours" -e "in 3 hours"
+ical add "Quick call" -s "in 2 hours" -e "in 3 hours"
 
 # Search events around a specific date
-cal search "review" -f "mar 1" -t "mar 31"
+ical search "review" -f "mar 1" -t "mar 31"
 
 # Export this week's events
-cal export -f today -t "this week" --format json
+ical export -f today -t "this week" --format json
 ```

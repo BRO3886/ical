@@ -1,10 +1,11 @@
 # Binaries
 bin/
-/cal
+/ical
 *.exe
 *.dll
 *.so
 *.dylib
+/cal
 
 # Test
 *.test

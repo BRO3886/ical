@@ -1,31 +1,31 @@
 ---
 title: "Commands"
-description: "Complete reference for every cal command, flag, and option."
+description: "Complete reference for every ical command, flag, and option."
 weight: 2
 ---
 
 ## Overview
 
-cal provides commands for managing macOS Calendar events and calendars. Every command that displays data supports `--output` (`-o`) with `table`, `json`, or `plain` formats.
+iical provides commands for managing macOS Calendar events and calendars. Every command that displays data supports `--output` (`-o`) with `table`, `json`, or `plain` formats.
 
 | Command                          | Description                                       |
 |----------------------------------|---------------------------------------------------|
-| `cal calendars`                  | List all calendars                                |
-| `cal calendars create [title]`   | Create a new calendar                             |
-| `cal calendars update [name]`    | Update a calendar (rename, recolor)               |
-| `cal calendars delete [name]`    | Delete a calendar and all its events              |
-| `cal list`                       | List events in a date range                       |
-| `cal today`                      | Today's events                                    |
-| `cal upcoming`                   | Events in next N days                             |
-| `cal show [# or id]`            | Show event details                                |
-| `cal add [title]`               | Create an event                                   |
-| `cal update [# or id]`          | Update an event                                   |
-| `cal delete [# or id]`          | Delete an event                                   |
-| `cal search [query]`            | Search events                                     |
-| `cal export`                     | Export events (JSON/CSV/ICS)                      |
-| `cal import [file]`             | Import events (JSON/CSV)                          |
-| `cal version`                    | Show version info                                 |
-| `cal completion`                 | Generate shell completions                        |
+| `ical calendars`                  | List all calendars                                |
+| `ical calendars create [title]`   | Create a new calendar                             |
+| `ical calendars update [name]`    | Update a calendar (rename, recolor)               |
+| `ical calendars delete [name]`    | Delete a calendar and all its events              |
+| `ical list`                       | List events in a date range                       |
+| `ical today`                      | Today's events                                    |
+| `ical upcoming`                   | Events in next N days                             |
+| `ical show [# or id]`            | Show event details                                |
+| `ical add [title]`               | Create an event                                   |
+| `ical update [# or id]`          | Update an event                                   |
+| `ical delete [# or id]`          | Delete an event                                   |
+| `ical search [query]`            | Search events                                     |
+| `ical export`                     | Export events (JSON/CSV/ICS)                      |
+| `ical import [file]`             | Import events (JSON/CSV)                          |
+| `ical version`                    | Show version info                                 |
+| `ical completion`                 | Generate shell completions                        |
 
 ## Global Flags
 
@@ -38,30 +38,30 @@ These flags are available on all commands:
 
 ---
 
-## cal calendars
+## ical calendars
 
 Manage calendars. Running without a subcommand lists all calendars.
 
 ```bash
-cal calendars
-cal cals
-cal calendars -o json
+ical calendars
+ical cals
+ical calendars -o json
 ```
 
 Displays the calendar name, source (iCloud, Google, etc.), type, color, and read-only status. Useful for finding the exact calendar name to pass to `-c` and discovering available sources for creating new calendars.
 
 ---
 
-### cal calendars create
+### ical calendars create
 
 Create a new calendar. Requires `--source` to specify the account.
 
 ```bash
 # Create with flags
-cal calendars create "Projects" --source iCloud --color "#FF6961"
+ical calendars create "Projects" --source iCloud --color "#FF6961"
 
 # Interactive mode
-cal calendars create -i
+ical calendars create -i
 ```
 
 #### Flags
@@ -73,23 +73,23 @@ cal calendars create -i
 | `--color`         |       | Calendar color (hex, e.g., "#FF6961")            |
 | `--interactive`   | `-i`  | Interactive mode with guided prompts             |
 
-Run `cal calendars` to see available sources from existing calendars.
+Run `ical calendars` to see available sources from existing calendars.
 
 ---
 
-### cal calendars update
+### ical calendars update
 
 Update an existing calendar (rename or recolor).
 
 ```bash
 # Update by name
-cal calendars update "Projects" --title "Archived" --color "#8295AF"
+ical calendars update "Projects" --title "Archived" --color "#8295AF"
 
 # Interactive mode (guided form)
-cal calendars update "Projects" -i
+ical calendars update "Projects" -i
 
 # Interactive picker (no argument)
-cal calendars update -i
+ical calendars update -i
 ```
 
 #### Flags
@@ -104,19 +104,19 @@ Subscribed and birthday calendars cannot be updated (immutable).
 
 ---
 
-### cal calendars delete
+### ical calendars delete
 
 Permanently delete a calendar and all its events.
 
 ```bash
 # Delete by name (with confirmation)
-cal calendars delete "Projects"
+ical calendars delete "Projects"
 
 # Skip confirmation
-cal calendars delete "Projects" --force
+ical calendars delete "Projects" --force
 
 # Interactive picker (no argument)
-cal calendars delete
+ical calendars delete
 ```
 
 #### Flags
@@ -129,13 +129,13 @@ Subscribed and birthday calendars cannot be deleted (immutable).
 
 ---
 
-## cal list
+## ical list
 
 List events within a date range.
 
 ```bash
-cal list -f "next monday" -t "next friday"
-cal list -f today -t "in 7 days" -c Work
+ical list -f "next monday" -t "next friday"
+ical list -f today -t "in 7 days" -c Work
 ```
 
 ### Flags
@@ -149,24 +149,24 @@ cal list -f today -t "in 7 days" -c Work
 | `--limit`             | `-n`  | Maximum number of results          |
 | `--sort`              |       | Sort by: `title`, `time`, `calendar` |
 
-Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached to `~/.cal-last-list` so subsequent commands can reference events by number.
+Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached to `~/.ical-last-list` so subsequent commands can reference events by number.
 
 ```bash
 # List, then act on event #2
-cal list -f today -t "next friday"
-cal show 2
+ical list -f today -t "next friday"
+ical show 2
 ```
 
 ---
 
-## cal today
+## ical today
 
-Show today's events. A convenience shortcut for `cal list -f today -t today`.
+Show today's events. A convenience shortcut for `ical list -f today -t today`.
 
 ```bash
-cal today
-cal today -c Work
-cal today -o json
+ical today
+ical today -c Work
+ical today -o json
 ```
 
 ### Flags
@@ -178,14 +178,14 @@ cal today -o json
 
 ---
 
-## cal upcoming
+## ical upcoming
 
 Show events for the next N days (default: 7).
 
 ```bash
-cal upcoming
-cal upcoming -d 30
-cal upcoming -d 14 -c Work --exclude-calendar Birthdays
+ical upcoming
+ical upcoming -d 30
+ical upcoming -d 14 -c Work --exclude-calendar Birthdays
 ```
 
 ### Flags
@@ -200,19 +200,19 @@ cal upcoming -d 14 -c Work --exclude-calendar Birthdays
 
 ---
 
-## cal show
+## ical show
 
 Display detailed information about a single event.
 
 ```bash
 # Interactive picker (no argument)
-cal show
+ical show
 
 # By row number from last listing
-cal show 2
+ical show 2
 
 # By event ID
-cal show 577B8983-DF44-4665-B0F9-ABCD1234
+ical show 577B8983-DF44-4665-B0F9-ABCD1234
 ```
 
 ### Event Selection
@@ -227,16 +227,16 @@ The show command displays title, calendar, start/end times, location, notes, ale
 
 ---
 
-## cal add
+## ical add
 
 Create a new calendar event.
 
 ```bash
 # With flags
-cal add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
+ical add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
 
 # Interactive guided form
-cal add -i
+ical add -i
 ```
 
 ### Flags
@@ -259,22 +259,22 @@ cal add -i
 
 ```bash
 # All-day event
-cal add "Company Holiday" -s 2026-03-15 --all-day -c Work
+ical add "Company Holiday" -s 2026-03-15 --all-day -c Work
 
 # With location and multiple alerts
-cal add "Dinner" -s "friday 7pm" -e "friday 9pm" \
+ical add "Dinner" -s "friday 7pm" -e "friday 9pm" \
   -l "The Restaurant, 123 Main St" --alert 1h --alert 15m
 
 # Weekly recurring event
-cal add "Weekly Sync" -s "next monday 10am" -e "next monday 11am" \
+ical add "Weekly Sync" -s "next monday 10am" -e "next monday 11am" \
   --repeat weekly --repeat-days mon -c Work
 
 # Recurring with end date
-cal add "Daily Standup" -s "tomorrow 9am" -e "tomorrow 9:15am" \
+ical add "Daily Standup" -s "tomorrow 9am" -e "tomorrow 9:15am" \
   --repeat daily --repeat-until "2026-12-31" -c Work
 
 # With timezone
-cal add "NYC Meeting" -s "tomorrow 2pm" -e "tomorrow 3pm" \
+ical add "NYC Meeting" -s "tomorrow 2pm" -e "tomorrow 3pm" \
   --timezone "America/New_York" -c Work
 ```
 
@@ -284,22 +284,22 @@ The `-i` flag launches a guided form where you fill in each field step by step. 
 
 ---
 
-## cal update
+## ical update
 
 Update an existing event.
 
 ```bash
 # Interactive picker + guided form
-cal update -i
+ical update -i
 
 # Update by row number
-cal update 2 --title "New Title"
+ical update 2 --title "New Title"
 
 # Reschedule
-cal update 3 -s "tomorrow 2pm" -e "tomorrow 3pm"
+ical update 3 -s "tomorrow 2pm" -e "tomorrow 3pm"
 
 # Update future occurrences of recurring event
-cal update 1 --span future --title "New Series Name"
+ical update 1 --span future --title "New Series Name"
 ```
 
 ### Flags
@@ -322,22 +322,22 @@ cal update 1 --span future --title "New Series Name"
 
 ---
 
-## cal delete
+## ical delete
 
 Delete an event with a confirmation prompt.
 
 ```bash
 # Interactive picker with confirmation
-cal delete
+ical delete
 
 # Delete by row number
-cal delete 3
+ical delete 3
 
 # Skip confirmation
-cal delete 3 -f
+ical delete 3 -f
 
 # Delete future occurrences of recurring event
-cal delete 2 --span future
+ical delete 2 --span future
 ```
 
 ### Flags
@@ -349,13 +349,13 @@ cal delete 2 --span future
 
 ---
 
-## cal search
+## ical search
 
 Search events by title and description.
 
 ```bash
-cal search "standup"
-cal search "meeting" -c Work -f "1 month ago" -t "in 1 month"
+ical search "standup"
+ical search "meeting" -c Work -f "1 month ago" -t "in 1 month"
 ```
 
 ### Flags
@@ -371,19 +371,19 @@ cal search "meeting" -c Work -f "1 month ago" -t "in 1 month"
 
 ---
 
-## cal export
+## ical export
 
 Export events to a file or stdout.
 
 ```bash
 # Export to JSON
-cal export -f 2026-01-01 -t 2026-12-31 --format json > events.json
+ical export -f 2026-01-01 -t 2026-12-31 --format json > events.json
 
 # Export to CSV
-cal export -c Work --format csv --output-file work-events.csv
+ical export -c Work --format csv --output-file work-events.csv
 
 # Export to ICS (RFC 5545)
-cal export --format ics --output-file calendar.ics
+ical export --format ics --output-file calendar.ics
 ```
 
 ### Flags
@@ -404,14 +404,14 @@ cal export --format ics --output-file calendar.ics
 
 ---
 
-## cal import
+## ical import
 
 Import events from a JSON or CSV file.
 
 ```bash
-cal import events.json
-cal import events.csv -c Personal
-cal import events.json --dry-run
+ical import events.json
+ical import events.csv -c Personal
+ical import events.json --dry-run
 ```
 
 ### Flags
@@ -425,29 +425,29 @@ The format is auto-detected from the file extension (`.json` or `.csv`).
 
 ---
 
-## cal version
+## ical version
 
-Display the installed version of cal.
+Display the installed version of ical.
 
 ```bash
-cal version
+ical version
 ```
 
 ---
 
-## cal completion
+## ical completion
 
 Generate shell completion scripts.
 
 ```bash
 # Bash
-cal completion bash > /usr/local/etc/bash_completion.d/cal
+ical completion bash > /usr/local/etc/bash_completion.d/ical
 
 # Zsh
-cal completion zsh > "${fpath[1]}/_cal"
+ical completion zsh > "${fpath[1]}/_ical"
 
 # Fish
-cal completion fish > ~/.config/fish/completions/cal.fish
+ical completion fish > ~/.config/fish/completions/ical.fish
 ```
 
 After generating, restart your shell or source the completion file to activate.

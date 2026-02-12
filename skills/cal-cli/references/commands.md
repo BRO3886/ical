@@ -1,24 +1,24 @@
 # Complete Command Reference
 
-## cal calendars
+## ical calendars
 
 Manage calendars. Running without a subcommand lists all calendars.
 
 ```bash
-cal calendars
-cal cals
-cal calendars -o json
+ical calendars
+ical cals
+ical calendars -o json
 ```
 
 Aliases: `cals`
 
-### cal calendars create
+### ical calendars create
 
 Create a new calendar. Title can be passed as a positional argument or via `--title`.
 
 ```bash
-cal calendars create "Projects" --source iCloud --color "#FF6961"
-cal calendars create -i
+ical calendars create "Projects" --source iCloud --color "#FF6961"
+ical calendars create -i
 ```
 
 | Flag              | Short | Description                                | Default |
@@ -30,14 +30,14 @@ cal calendars create -i
 
 Aliases: `add`, `new`
 
-### cal calendars update
+### ical calendars update
 
 Update an existing calendar (rename, recolor). With no arguments, shows an interactive picker.
 
 ```bash
-cal calendars update "Projects" --title "Archived" --color "#8295AF"
-cal calendars update "Projects" -i
-cal calendars update -i
+ical calendars update "Projects" --title "Archived" --color "#8295AF"
+ical calendars update "Projects" -i
+ical calendars update -i
 ```
 
 | Flag              | Short | Description                              | Default |
@@ -48,14 +48,14 @@ cal calendars update -i
 
 Aliases: `edit`, `rename`
 
-### cal calendars delete
+### ical calendars delete
 
 Permanently delete a calendar and all its events. With no arguments, shows an interactive picker.
 
 ```bash
-cal calendars delete "Projects"
-cal calendars delete "Projects" --force
-cal calendars delete
+ical calendars delete "Projects"
+ical calendars delete "Projects" --force
+ical calendars delete
 ```
 
 | Flag      | Short | Description              | Default |
@@ -66,16 +66,16 @@ Aliases: `rm`, `remove`
 
 ---
 
-## cal list
+## ical list
 
 List events within a date range. Defaults to today if no range specified.
 
 ```bash
-cal list
-cal list --from today --to "next friday"
-cal list --calendar Work --sort title
-cal ls --from "mar 1" --to "mar 31" --all-day
-cal list --from today --to "in 30 days" --exclude-calendar Birthdays -o json
+ical list
+ical list --from today --to "next friday"
+ical list --calendar Work --sort title
+ical ls --from "mar 1" --to "mar 31" --all-day
+ical list --from today --to "in 30 days" --exclude-calendar Birthdays -o json
 ```
 
 | Flag                 | Short | Description                               | Default         |
@@ -94,15 +94,15 @@ Aliases: `ls`, `events`
 
 ---
 
-## cal today
+## ical today
 
-Show today's events. Shortcut for `cal list --from today --to tomorrow`.
+Show today's events. Shortcut for `ical list --from today --to tomorrow`.
 
 ```bash
-cal today
-cal today --calendar Work
-cal today -o json
-cal today --exclude-calendar Birthdays
+ical today
+ical today --calendar Work
+ical today -o json
+ical today --exclude-calendar Birthdays
 ```
 
 | Flag                 | Short | Description                            | Default       |
@@ -117,15 +117,15 @@ cal today --exclude-calendar Birthdays
 
 ---
 
-## cal upcoming
+## ical upcoming
 
-Show events in the next N days. Shortcut for `cal list --from today --to "in N days"`.
+Show events in the next N days. Shortcut for `ical list --from today --to "in N days"`.
 
 ```bash
-cal upcoming
-cal upcoming --days 14
-cal upcoming --calendar Work -o json
-cal next --days 3
+ical upcoming
+ical upcoming --days 14
+ical upcoming --calendar Work -o json
+ical next --days 3
 ```
 
 | Flag                 | Short | Description                            | Default       |
@@ -143,14 +143,14 @@ Aliases: `next`, `soon`
 
 ---
 
-## cal show
+## ical show
 
 Display full details for a single event. With no arguments, shows an interactive picker.
 
 ```bash
-cal show 2                    # Row number from last listing
-cal show                      # Interactive event picker
-cal show ABC12345 -o json     # Full or partial event ID
+ical show 2                    # Row number from last listing
+ical show                      # Interactive event picker
+ical show ABC12345 -o json     # Full or partial event ID
 ```
 
 | Flag     | Short | Description                      | Default |
@@ -169,16 +169,16 @@ Aliases: `get`, `info`
 
 ---
 
-## cal add
+## ical add
 
 Create a new calendar event. Title can be passed as a positional argument or via `--title`.
 
 ```bash
-cal add "Team standup" --start "tomorrow at 9am" --end "tomorrow at 9:30am" --calendar Work
-cal add --title "Lunch" --start "today at noon" --end "today at 1pm" --location "Cafe"
-cal add "Flight" --start "mar 15 at 8am" --end "mar 15 at 11am" --alert 1h --alert 1d
-cal add "Weekly sync" --start "next monday at 10am" --repeat weekly --repeat-days mon
-cal add -i   # Interactive mode
+ical add "Team standup" --start "tomorrow at 9am" --end "tomorrow at 9:30am" --calendar Work
+ical add --title "Lunch" --start "today at noon" --end "today at 1pm" --location "Cafe"
+ical add "Flight" --start "mar 15 at 8am" --end "mar 15 at 11am" --alert 1h --alert 1d
+ical add "Weekly sync" --start "next monday at 10am" --repeat weekly --repeat-days mon
+ical add -i   # Interactive mode
 ```
 
 | Flag                | Short | Description                                         | Default        |
@@ -204,18 +204,18 @@ Aliases: `create`, `new`
 
 ---
 
-## cal update
+## ical update
 
 Update an existing event. Only specified fields are changed.
 
 ```bash
-cal update 2 --title "New title"
-cal update 3 --start "tomorrow at 10am" --end "tomorrow at 11am"
-cal update 1 --location ""              # Clear location
-cal update 1 --alert none               # Clear alerts
-cal update 1 --repeat none              # Remove recurrence
-cal update 2 --span future --start "next monday at 9am"  # Update future occurrences
-cal update -i                           # Interactive mode with picker
+ical update 2 --title "New title"
+ical update 3 --start "tomorrow at 10am" --end "tomorrow at 11am"
+ical update 1 --location ""              # Clear location
+ical update 1 --alert none               # Clear alerts
+ical update 1 --repeat none              # Remove recurrence
+ical update 2 --span future --start "next monday at 9am"  # Update future occurrences
+ical update -i                           # Interactive mode with picker
 ```
 
 | Flag                | Short | Description                                  | Default |
@@ -244,15 +244,15 @@ Aliases: `edit`
 
 ---
 
-## cal delete
+## ical delete
 
 Delete an event. Asks for confirmation by default.
 
 ```bash
-cal delete 1
-cal rm 2 --force
-cal delete                    # Interactive picker
-cal delete 3 --span future    # Delete this and future occurrences
+ical delete 1
+ical rm 2 --force
+ical delete                    # Interactive picker
+ical delete 3 --span future    # Delete this and future occurrences
 ```
 
 | Flag      | Short | Description                       | Default |
@@ -269,15 +269,15 @@ Aliases: `rm`, `remove`
 
 ---
 
-## cal search
+## ical search
 
 Search events by title, location, and notes within a date range.
 
 ```bash
-cal search "meeting"
-cal search "standup" --calendar Work
-cal search "dentist" --from "jan 1" --to "dec 31" --limit 5
-cal find "lunch" -o json
+ical search "meeting"
+ical search "standup" --calendar Work
+ical search "dentist" --from "jan 1" --to "dec 31" --limit 5
+ical find "lunch" -o json
 ```
 
 | Flag         | Short | Description                 | Default       |
@@ -291,14 +291,14 @@ Aliases: `find`
 
 ---
 
-## cal export
+## ical export
 
 Export events to JSON, CSV, or ICS format.
 
 ```bash
-cal export > events.json
-cal export --format ics --output-file events.ics
-cal export --calendar Work --from today --to "in 6 months" --format csv
+ical export > events.json
+ical export --format ics --output-file events.ics
+ical export --calendar Work --from today --to "in 6 months" --format csv
 ```
 
 | Flag            | Short | Description                     | Default       |
@@ -311,15 +311,15 @@ cal export --calendar Work --from today --to "in 6 months" --format csv
 
 ---
 
-## cal import
+## ical import
 
 Import events from a JSON or CSV file. Format is auto-detected from file extension.
 
 ```bash
-cal import events.json
-cal import events.csv --calendar "Imported"
-cal import backup.json --dry-run
-cal import data.json --force
+ical import events.json
+ical import events.csv --calendar "Imported"
+ical import backup.json --dry-run
+ical import data.json --force
 ```
 
 | Flag         | Short | Description                             | Default           |
@@ -330,26 +330,26 @@ cal import data.json --force
 
 ---
 
-## cal version
+## ical version
 
 Print version and build information.
 
 ```bash
-cal version
+ical version
 ```
 
-Output format: `cal <version> (commit <hash>, built <date>)`
+Output format: `ical <version> (commit <hash>, built <date>)`
 
 ---
 
-## cal completion
+## ical completion
 
 Generate shell completion scripts.
 
 ```bash
-cal completion bash > /usr/local/etc/bash_completion.d/cal
-cal completion zsh > "${fpath[1]}/_cal"
-cal completion fish > ~/.config/fish/completions/cal.fish
+ical completion bash > /usr/local/etc/bash_completion.d/ical
+ical completion zsh > "${fpath[1]}/_ical"
+ical completion fish > ~/.config/fish/completions/ical.fish
 ```
 
 ---

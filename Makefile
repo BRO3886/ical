@@ -7,7 +7,7 @@ LDFLAGS = -ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.
 .PHONY: build clean test install completions
 
 build:
-	go build $(LDFLAGS) -o bin/cal ./cmd/cal
+	go build $(LDFLAGS) -o bin/ical ./cmd/ical
 
 clean:
 	rm -rf bin/
@@ -16,10 +16,10 @@ test:
 	go test ./... -v
 
 install:
-	go install $(LDFLAGS) ./cmd/cal
+	go install $(LDFLAGS) ./cmd/ical
 
 completions: build
 	mkdir -p completions
-	./bin/cal completion bash > completions/cal.bash
-	./bin/cal completion zsh > completions/_cal
-	./bin/cal completion fish > completions/cal.fish
+	./bin/ical completion bash > completions/ical.bash
+	./bin/ical completion zsh > completions/_ical
+	./bin/ical completion fish > completions/ical.fish
