@@ -461,9 +461,7 @@ func parseTrigger(val string) (time.Duration, error) {
 	}
 
 	// Handle time portion after "T"
-	if strings.HasPrefix(s, "T") {
-		s = s[1:]
-	}
+	s = strings.TrimPrefix(s, "T")
 
 	// Parse hours
 	if idx := strings.Index(s, "H"); idx >= 0 {

@@ -71,6 +71,28 @@
   });
 })();
 
+// Install tabs
+(function () {
+  var tabs = document.querySelectorAll('.install-tab');
+  var panels = document.querySelectorAll('.install-panel');
+  if (!tabs.length) return;
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var target = this.getAttribute('data-tab');
+      tabs.forEach(function (t) {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      panels.forEach(function (p) { p.classList.remove('active'); });
+      this.classList.add('active');
+      this.setAttribute('aria-selected', 'true');
+      var panel = document.querySelector('[data-panel="' + target + '"]');
+      if (panel) panel.classList.add('active');
+    });
+  });
+})();
+
 // Code block copy buttons (documentation pages)
 (function () {
   var copyIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
@@ -109,21 +131,21 @@
 
   var demos = [
     {
-      cmd: 'cal today',
+      cmd: 'ical today',
       output:
         '#  Title              Calendar   Start        End\n1  Team standup        Work       9:00 AM      9:30 AM\n2  Design review       Work       2:00 PM      3:00 PM\n3  Gym                 Personal   6:00 PM      7:00 PM',
     },
     {
-      cmd: 'cal add "Launch party" -s friday 5pm -e friday 8pm',
+      cmd: 'ical add "Launch party" -s friday 5pm -e friday 8pm',
       output: 'Created event: Launch party (Work)',
     },
     {
-      cmd: 'cal upcoming -d 3',
+      cmd: 'ical upcoming -d 3',
       output:
         '#  Title              Calendar   Date         Time\n1  Team standup        Work       Today        9:00 AM\n2  Design review       Work       Today        2:00 PM\n3  1:1 with Alex       Work       Tomorrow     10:00 AM\n4  Launch party        Work       Fri          5:00 PM',
     },
     {
-      cmd: 'cal search "launch"',
+      cmd: 'ical search "launch"',
       output:
         '#  Title              Calendar   Date         Time\n1  Launch party        Work       Fri Feb 14   5:00 PM',
     },

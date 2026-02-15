@@ -6,11 +6,35 @@ Full CRUD for calendar events, natural language dates, recurrence support, impor
 
 ## Install
 
+**Quick install (recommended):**
+
+```bash
+curl -fsSL https://ical.sidv.dev/install | bash
+```
+
+**Via Go:**
+
 ```bash
 go install github.com/BRO3886/ical/cmd/ical@latest
 ```
 
-Or build from source:
+> Requires Go 1.21+ and Xcode Command Line Tools (`xcode-select --install`).
+
+**Manual download:**
+
+Apple Silicon:
+```bash
+curl -sSL https://github.com/BRO3886/ical/releases/latest/download/ical-darwin-arm64.tar.gz | tar xzf -
+sudo mv ical /usr/local/bin/
+```
+
+Intel:
+```bash
+curl -sSL https://github.com/BRO3886/ical/releases/latest/download/ical-darwin-amd64.tar.gz | tar xzf -
+sudo mv ical /usr/local/bin/
+```
+
+**Build from source:**
 
 ```bash
 git clone https://github.com/BRO3886/ical.git
@@ -309,7 +333,7 @@ ical/
 
 ## Documentation
 
-Full documentation is available at [cal.sidv.dev](https://cal.sidv.dev).
+Full documentation is available at [ical.sidv.dev](https://ical.sidv.dev).
 
 ## License
 
