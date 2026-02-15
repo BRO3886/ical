@@ -534,6 +534,7 @@ code {
 /* --- Install Section --- */
 .install-section {
   padding: 4rem 2rem 6rem;
+  position: relative;
 }
 
 .install-inner {
@@ -545,62 +546,25 @@ code {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.75rem;
   box-shadow: var(--card-shadow);
+  transition: box-shadow 0.3s ease;
+}
+
+.install-card:hover {
+  box-shadow: var(--card-shadow-hover);
 }
 
 .install-step {
   margin-bottom: 0;
 }
 
-.install-label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-tertiary);
-  margin-bottom: 0.625rem;
-}
-
-.code-block {
-  display: flex;
-  align-items: center;
-  background: var(--code-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.75rem 1rem;
-  gap: 0.75rem;
-}
-
-.code-block code {
-  flex: 1;
-  font-size: 0.8125rem;
-  color: var(--text-primary);
-  word-break: break-all;
-}
-
-.copy-btn {
-  background: none;
-  border: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: color 0.2s ease, background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.copy-btn:hover {
-  color: var(--accent);
-  background: var(--accent-bg);
-}
-
+/* --- Install Tabs --- */
 .install-tabs {
   display: flex;
   gap: 0.25rem;
   margin-bottom: 1.5rem;
-  padding: 0.25rem;
+  padding: 3px;
   background: var(--bg-secondary);
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -611,17 +575,18 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: 0.4rem;
   padding: 0.5rem 0.75rem;
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   font-family: inherit;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
 }
 
 .install-tab:hover {
@@ -629,30 +594,137 @@ code {
 }
 
 .install-tab.active {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(224, 62, 62, 0.25);
 }
 
 [data-theme="dark"] .install-tab.active {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
 }
 
+.install-tab.active svg {
+  stroke: #ffffff;
+}
+
+/* --- Install Panels --- */
 .install-panel {
   display: none;
 }
 
 .install-panel.active {
   display: block;
-  animation: fadeIn 0.25s ease forwards;
+  animation: fadeInScale 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* --- Terminal-style Command Block --- */
+.install-cmd-block {
+  background: #1c1c1e;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .install-cmd-block {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.install-cmd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.875rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.install-cmd-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: rgba(224, 62, 62, 0.12);
+  padding: 0.175rem 0.5rem;
+  border-radius: 4px;
+}
+
+[data-theme="dark"] .install-cmd-badge {
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.install-cmd-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.install-copy-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 4px 6px;
+  font-size: 0;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.install-copy-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.install-copy-btn.copied {
+  color: #27c93f;
+  border-color: rgba(39, 201, 63, 0.3);
+}
+
+.install-cmd-body {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.install-cmd-body-multi {
+  align-items: flex-start;
+}
+
+.install-prompt {
+  color: #27c93f;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.install-cmd-body code {
+  font-size: 0.8125rem;
+  color: #e5e5e7;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+.install-cmd-body-multi code {
+  white-space: pre;
+  word-break: normal;
 }
 
 .install-note {
   display: block;
   font-size: 0.75rem;
   color: var(--text-tertiary);
-  margin-top: 0.625rem;
+  margin-top: 0.75rem;
   line-height: 1.5;
+  padding-left: 0.125rem;
 }
 
 .install-note code {
@@ -660,35 +732,6 @@ code {
   padding: 0.1em 0.35em;
   border-radius: 4px;
   font-size: 0.85em;
-}
-
-.code-block-multi {
-  overflow-x: auto;
-}
-
-.code-block-multi code {
-  white-space: pre;
-  line-height: 1.65;
-}
-
-.install-divider {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin: 1.25rem 0;
-  color: var(--text-tertiary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.install-divider::before,
-.install-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
 }
 
 /* --- Docs Layout --- */
@@ -1113,16 +1156,26 @@ code {
   }
 
   .install-card {
-    padding: 1.25rem;
+    padding: 1rem;
   }
 
-  .code-block {
-    flex-direction: column;
-    align-items: stretch;
+  .install-cmd-body code {
+    font-size: 0.7rem;
   }
 
-  .code-block code {
+  .install-cmd-body-multi code {
+    font-size: 0.7rem;
+  }
+
+  .install-tab {
     font-size: 0.75rem;
+    padding: 0.4rem 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .install-tab svg {
+    width: 12px;
+    height: 12px;
   }
 
   .docs-content {

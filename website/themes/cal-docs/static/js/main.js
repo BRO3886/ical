@@ -56,15 +56,18 @@
 
 // Copy buttons (install section)
 (function () {
-  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+  var copyIcon14 = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+  var checkIcon14 = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+
+  document.querySelectorAll('.install-copy-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var text = this.getAttribute('data-copy');
       navigator.clipboard.writeText(text).then(function () {
-        btn.innerHTML =
-          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>';
+        btn.innerHTML = checkIcon14;
+        btn.classList.add('copied');
         setTimeout(function () {
-          btn.innerHTML =
-            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+          btn.innerHTML = copyIcon14;
+          btn.classList.remove('copied');
         }, 1500);
       });
     });

@@ -92,6 +92,7 @@
 <section class="install-section">
   <div class="install-inner">
     <h2 class="section-title scroll-reveal">Install in seconds</h2>
+    <p class="section-subtitle scroll-reveal">One command. No dependencies.</p>
     <div class="install-card scroll-reveal">
       <div class="install-tabs" role="tablist">
         <button class="install-tab active" role="tab" aria-selected="true" data-tab="script">
@@ -110,25 +111,35 @@
 
       <div class="install-panel active" data-panel="script">
         <div class="install-step">
-          <span class="install-label">recommended</span>
-          <div class="code-block">
-            <code>curl -fsSL https://ical.sidv.dev/install | bash</code>
-            <button class="copy-btn" data-copy="curl -fsSL https://ical.sidv.dev/install | bash" aria-label="Copy">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            </button>
+          <div class="install-cmd-block">
+            <div class="install-cmd-header">
+              <span class="install-cmd-badge">Recommended</span>
+              <button class="install-copy-btn" data-copy="curl -fsSL https://ical.sidv.dev/install | bash" aria-label="Copy">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              </button>
+            </div>
+            <div class="install-cmd-body">
+              <span class="install-prompt">$</span>
+              <code>curl -fsSL https://ical.sidv.dev/install | bash</code>
+            </div>
           </div>
-          <span class="install-note">Downloads the latest release binary and installs to /usr/local/bin.</span>
+          <span class="install-note">Downloads the latest release binary and installs to <code>/usr/local/bin</code>.</span>
         </div>
       </div>
 
       <div class="install-panel" data-panel="go">
         <div class="install-step">
-          <span class="install-label">requires go &amp; xcode command line tools</span>
-          <div class="code-block">
-            <code>go install github.com/BRO3886/ical/cmd/ical@latest</code>
-            <button class="copy-btn" data-copy="go install github.com/BRO3886/ical/cmd/ical@latest" aria-label="Copy">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            </button>
+          <div class="install-cmd-block">
+            <div class="install-cmd-header">
+              <span class="install-cmd-label">Requires Go 1.21+ &amp; Xcode CLT</span>
+              <button class="install-copy-btn" data-copy="go install github.com/BRO3886/ical/cmd/ical@latest" aria-label="Copy">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              </button>
+            </div>
+            <div class="install-cmd-body">
+              <span class="install-prompt">$</span>
+              <code>go install github.com/BRO3886/ical/cmd/ical@latest</code>
+            </div>
           </div>
           <span class="install-note">Compiles from source via cgo. Needs Xcode CLT for EventKit framework headers.</span>
         </div>
@@ -136,14 +147,19 @@
 
       <div class="install-panel" data-panel="manual">
         <div class="install-step">
-          <span class="install-label">from github releases</span>
-          <div class="code-block code-block-multi">
-            <code>curl -LO https://github.com/BRO3886/ical/releases/latest/download/ical-darwin-arm64.tar.gz
+          <div class="install-cmd-block">
+            <div class="install-cmd-header">
+              <span class="install-cmd-label">Apple Silicon</span>
+              <button class="install-copy-btn" data-copy="curl -LO https://github.com/BRO3886/ical/releases/latest/download/ical-darwin-arm64.tar.gz && tar xzf ical-darwin-arm64.tar.gz && sudo mv ical /usr/local/bin/ical" aria-label="Copy">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              </button>
+            </div>
+            <div class="install-cmd-body install-cmd-body-multi">
+              <span class="install-prompt">$</span>
+              <code>curl -LO https://github.com/BRO3886/ical/releases/latest/download/ical-darwin-arm64.tar.gz
 tar xzf ical-darwin-arm64.tar.gz
 sudo mv ical /usr/local/bin/ical</code>
-            <button class="copy-btn" data-copy="curl -LO https://github.com/BRO3886/ical/releases/latest/download/ical-darwin-arm64.tar.gz && tar xzf ical-darwin-arm64.tar.gz && sudo mv ical /usr/local/bin/ical" aria-label="Copy">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            </button>
+            </div>
           </div>
           <span class="install-note">Replace <code>arm64</code> with <code>amd64</code> for Intel Macs.</span>
         </div>
