@@ -69,14 +69,6 @@ ical/
 - `olekukonko/tablewriter/tw` — alignment constants (`tw.AlignLeft`)
 - `charmbracelet/huh` — interactive forms and select menus (ThemeCatppuccin)
 
-## Build & Test
-```bash
-go build -o bin/ical ./cmd/ical    # Build (compiles EventKit via cgo)
-go test ./...                    # Unit tests
-make build                       # Via Makefile
-make completions                 # bash/zsh/fish
-```
-
 ## Conventions
 - Row numbers (`#1`, `#2`...) in event tables; cached to `~/.ical-last-list` for `show 2`/`update 3`/`delete 1`
 - Event IDs: entire UUID prefix before `:` is shared per calendar — short IDs don't disambiguate. Use row numbers or interactive picker instead
@@ -94,12 +86,31 @@ make completions                 # bash/zsh/fish
 - **Location**: `website/` — Hugo static site with `cal-docs` custom theme
 - **Theme**: Apple Calendar-inspired red accent (`#E03E3E` light, `#ff6b6b` dark)
 - **Deploy**: Cloudflare Pages via `.github/workflows/deploy.yml`
-- **Project**: `cal` on Cloudflare Pages (URL: cal.sidv.dev)
+- **Project**: `cal` on Cloudflare Pages (URL: ical.sidv.dev)
 - **Secrets**: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in GitHub repo secrets
 - **MD support**: Pages accessible as raw markdown at `/docs/page/index.md`
 - **Content**: `website/content/docs/` — getting-started, commands, date-parsing, architecture
 - **Copy buttons**: Auto-injected on code blocks in docs pages + manual on install section
+- **Install section**: Tabbed UI (Script/Go Install/Download) with copy buttons
 - **Hugo config**: `website/config.yaml` with markdown output format enabled
+
+## Build & Release
+```bash
+go build -o bin/ical ./cmd/ical    # Build (compiles EventKit via cgo)
+go test ./...                    # Unit tests
+make build                       # Via Makefile
+make release                     # Build arm64+amd64 tarballs for GitHub upload
+make completions                 # bash/zsh/fish
+```
+
+### Release Process (manual, no CI)
+1. `make release` — produces `bin/ical-darwin-{arm64,amd64}.tar.gz`
+2. `gh release create vX.Y.Z bin/ical-darwin-arm64.tar.gz bin/ical-darwin-amd64.tar.gz`
+
+### Install Script
+- `scripts/install.sh` — curl-pipe-bash installer
+- `website/static/install` — served at `ical.sidv.dev/install`
+- Usage: `curl -fsSL https://ical.sidv.dev/install | bash`
 
 ## Journal
 Engineering journals live in `journals/` dir. See `.claude/commands/journal.md` for the journaling command.
