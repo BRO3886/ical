@@ -149,6 +149,24 @@ You can also combine the picker with the guided form:
 ical update -i
 ```
 
+## AI Agent Skills
+
+ical includes an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it. After installing the binary, install the skill:
+
+```bash
+ical skills install
+```
+
+This opens an interactive picker to select which agents to install for. You can also target specific agents:
+
+```bash
+ical skills install --agent claude   # Claude Code, Copilot, Cursor, OpenCode, Augment
+ical skills install --agent codex    # Codex CLI, Copilot, Windsurf, OpenCode, Augment
+ical skills install --agent all      # Both
+```
+
+After updating ical to a new version, run `ical skills install` again to update the skill files. ical will notify you if installed skills are outdated.
+
 ## Color Support
 
 ical respects the `NO_COLOR` environment variable. You can also pass `--no-color` to disable colored output.

@@ -6,7 +6,7 @@ weight: 2
 
 ## Overview
 
-iical provides commands for managing macOS Calendar events and calendars. Every command that displays data supports `--output` (`-o`) with `table`, `json`, or `plain` formats.
+ical provides commands for managing macOS Calendar events and calendars. Every command that displays data supports `--output` (`-o`) with `table`, `json`, or `plain` formats.
 
 | Command                          | Description                                       |
 |----------------------------------|---------------------------------------------------|
@@ -24,6 +24,9 @@ iical provides commands for managing macOS Calendar events and calendars. Every 
 | `ical search [query]`            | Search events                                     |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
+| `ical skills install`             | Install AI agent skill (Claude Code / Codex)      |
+| `ical skills uninstall`           | Remove AI agent skill                             |
+| `ical skills status`              | Show skill installation status                    |
 | `ical version`                    | Show version info                                 |
 | `ical completion`                 | Generate shell completions                        |
 
@@ -422,6 +425,65 @@ ical import events.json --dry-run
 | `--dry-run`   |       | Preview import without creating events |
 
 The format is auto-detected from the file extension (`.json` or `.csv`).
+
+---
+
+## ical skills
+
+Manage the embedded AI agent skill. ical ships with an [agent skill](https://agentskills.io) baked into the binary that teaches AI coding agents how to use it.
+
+### ical skills install
+
+Install the skill to the selected agent's skill directory. Without `--agent`, shows an interactive picker.
+
+```bash
+# Interactive — pick which agents
+ical skills install
+
+# Direct
+ical skills install --agent claude   # → ~/.claude/skills/ical-cli/
+ical skills install --agent codex    # → ~/.agents/skills/ical-cli/
+ical skills install --agent all      # Both
+```
+
+#### Flags
+
+| Flag      | Description                          |
+|-----------|--------------------------------------|
+| `--agent` | Target agent: `claude`, `codex`, or `all` |
+
+Supported targets:
+- **claude** → `~/.claude/skills/ical-cli/` — works with Claude Code, GitHub Copilot, Cursor, OpenCode, Augment
+- **codex** → `~/.agents/skills/ical-cli/` — works with Codex CLI, GitHub Copilot, Windsurf, OpenCode, Augment
+
+---
+
+### ical skills uninstall
+
+Remove the skill from the selected agent's skill directory.
+
+```bash
+ical skills uninstall
+ical skills uninstall --agent claude
+```
+
+#### Flags
+
+| Flag      | Description                          |
+|-----------|--------------------------------------|
+| `--agent` | Target agent: `claude`, `codex`, or `all` |
+
+---
+
+### ical skills status
+
+Show where skills are installed and whether they match the current binary version.
+
+```bash
+ical skills status
+```
+
+If installed skills are outdated (from a previous version), ical will show a warning and prompt you to run `ical skills install` to update them.
 
 ---
 

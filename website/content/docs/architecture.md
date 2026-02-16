@@ -42,17 +42,26 @@ ical/
 │       ├── upcoming.go          # Next N days
 │       ├── search.go            # Search events
 │       ├── export.go            # Export events (JSON/CSV/ICS)
-│       └── import.go            # Import events (JSON/CSV)
+│       ├── import.go            # Import events (JSON/CSV)
+│       └── skills.go            # AI agent skill management
 ├── internal/
 │   ├── parser/                  # Natural language date parsing
 │   │   ├── date.go
 │   │   └── date_test.go
 │   ├── ui/                      # Output formatting (table/json/plain)
 │   │   └── output.go
-│   └── export/                  # Import/export logic
-│       ├── json.go
-│       ├── csv.go
-│       └── ics.go
+│   ├── export/                  # Import/export logic
+│   │   ├── json.go
+│   │   ├── csv.go
+│   │   └── ics.go
+│   ├── skills/                  # Agent skill install/uninstall logic
+│   │   └── skills.go
+│   └── update/                  # Background update check
+│       └── check.go
+├── skills/cal-cli/              # Embedded agent skill (baked into binary)
+│   ├── SKILL.md
+│   └── references/
+├── skills.go                    # go:embed for skills directory
 ├── Makefile
 └── go.mod
 ```
@@ -84,6 +93,16 @@ Instead, ical uses sequential row numbers (`#1`, `#2`, ...) displayed in table o
 ### End-of-Day Bumping
 
 When `--to` resolves to midnight (00:00:00), ical bumps it to 23:59:59 so that `--to "feb 12"` includes all events on February 12. Without this, midnight would exclude the entire day.
+
+### Embedded Agent Skills
+
+ical embeds its own [agent skill](https://agentskills.io) files into the binary via `go:embed`. When a user runs `ical skills install`, the embedded files are written to the appropriate agent's skill directory (`~/.claude/skills/` or `~/.agents/skills/`). This ensures the skill documentation always matches the binary version — no separate download or version mismatch possible.
+
+A `.ical-version` file is written alongside the skill files to track which binary version installed them. When the binary is updated, `ical skills status` detects the mismatch and the background update check prints a staleness notice.
+
+### Background Update Check
+
+ical checks for new releases in a background goroutine on each command invocation. The check is non-blocking with a 2-second timeout, caches results to `~/.cache/ical/update-check` with a 24-hour TTL, and prints to stderr so it doesn't interfere with piped output. The check is skipped for JSON output, piped commands, dev builds, and when `ICAL_NO_UPDATE_CHECK=1` is set.
 
 ### UTC to Local Conversion
 
