@@ -106,43 +106,136 @@ func TestFormatRecurrenceRule(t *testing.T) {
 	}
 }
 
+func mustLoadLocation(name string) *time.Location {
+	loc, err := time.LoadLocation(name)
+	if err != nil {
+		panic(err)
+	}
+	return loc
+}
+
 func TestLocalizeTime(t *testing.T) {
-	utcTime := time.Date(2026, 2, 11, 4, 30, 0, 0, time.UTC)
+	// UTC 18:00 on 2026-02-11
+	utcTime := time.Date(2026, 2, 11, 18, 0, 0, 0, time.UTC)
 
-	t.Run("with valid timezone", func(t *testing.T) {
-		got := localizeTime(utcTime, "Asia/Kolkata")
-		if got.Hour() != 10 || got.Minute() != 0 {
-			t.Errorf("expected 10:00 IST, got %02d:%02d", got.Hour(), got.Minute())
+	// localizeTime always returns time.Local regardless of the tz argument.
+	t.Run("always returns local regardless of tz", func(t *testing.T) {
+		for _, tz := range []string{"Asia/Kolkata", "America/New_York", "UTC", "", "Invalid/Timezone"} {
+			got := localizeTime(utcTime, tz)
+			if got.Location() != time.Local {
+				t.Errorf("tz=%q: expected local timezone, got %v", tz, got.Location())
+			}
+			want := utcTime.In(time.Local)
+			if got.Hour() != want.Hour() || got.Minute() != want.Minute() {
+				t.Errorf("tz=%q: expected %02d:%02d local, got %02d:%02d", tz, want.Hour(), want.Minute(), got.Hour(), got.Minute())
+			}
+		}
+	})
+}
+
+func TestLocalizeTimeInZone(t *testing.T) {
+	// All tests use fixed reference locations — no time.Local dependency.
+	// UTC 18:00 on 2026-02-11 (chosen so wall-clock math is clean across all zones).
+	utcTime := time.Date(2026, 2, 11, 18, 0, 0, 0, time.UTC)
+
+	ist := mustLoadLocation("Asia/Kolkata")   // UTC+5:30
+	est := mustLoadLocation("America/New_York") // UTC-5 in February
+	cst := mustLoadLocation("America/Chicago")  // UTC-6 in February
+	gmt := mustLoadLocation("GMT")             // UTC+0
+
+	t.Run("returns nil for empty tz", func(t *testing.T) {
+		// Reference location doesn't matter when tz is empty.
+		if got := localizeTimeInZone(utcTime, "", ist); got != nil {
+			t.Errorf("expected nil for empty tz, got %v", got)
 		}
 	})
 
-	t.Run("with empty timezone falls back to local", func(t *testing.T) {
-		got := localizeTime(utcTime, "")
-		// Should be in local time
-		if got.Location() != time.Local {
-			t.Errorf("expected local timezone, got %v", got.Location())
+	t.Run("returns nil for invalid tz", func(t *testing.T) {
+		if got := localizeTimeInZone(utcTime, "Invalid/Timezone", ist); got != nil {
+			t.Errorf("expected nil for invalid tz, got %v", got)
 		}
 	})
 
-	t.Run("with invalid timezone falls back to local", func(t *testing.T) {
-		got := localizeTime(utcTime, "Invalid/Timezone")
-		if got.Location() != time.Local {
-			t.Errorf("expected local timezone, got %v", got.Location())
+	t.Run("returns nil when event tz matches reference offset (same zone)", func(t *testing.T) {
+		// Reference=IST, event tz=Asia/Kolkata → same offset → nil.
+		if got := localizeTimeInZone(utcTime, "Asia/Kolkata", ist); got != nil {
+			t.Errorf("expected nil (same offset), got %v", got)
+		}
+		// Reference=EST, event tz=America/New_York → same offset → nil.
+		if got := localizeTimeInZone(utcTime, "America/New_York", est); got != nil {
+			t.Errorf("expected nil (same offset), got %v", got)
 		}
 	})
 
-	t.Run("with UTC timezone", func(t *testing.T) {
-		got := localizeTime(utcTime, "UTC")
-		if got.Hour() != 4 || got.Minute() != 30 {
-			t.Errorf("expected 04:30 UTC, got %02d:%02d", got.Hour(), got.Minute())
+	t.Run("IST reference, event in EST: shows EST wall clock", func(t *testing.T) {
+		// UTC 18:00 in EST (UTC-5) = 13:00 EST.
+		got := localizeTimeInZone(utcTime, "America/New_York", ist)
+		if got == nil {
+			t.Fatal("expected non-nil result for EST event vs IST reference")
+		}
+		if got.Hour() != 13 || got.Minute() != 0 {
+			t.Errorf("expected 13:00 EST, got %02d:%02d", got.Hour(), got.Minute())
 		}
 	})
 
-	t.Run("with negative offset timezone", func(t *testing.T) {
-		got := localizeTime(utcTime, "America/New_York")
-		// UTC 04:30 = EST 23:30 (previous day) in February (EST, no DST)
-		if got.Hour() != 23 {
-			t.Errorf("expected 23:xx EST, got %02d:%02d", got.Hour(), got.Minute())
+	t.Run("IST reference, event in CST: shows CST wall clock", func(t *testing.T) {
+		// UTC 18:00 in CST (UTC-6) = 12:00 CST.
+		got := localizeTimeInZone(utcTime, "America/Chicago", ist)
+		if got == nil {
+			t.Fatal("expected non-nil result for CST event vs IST reference")
+		}
+		if got.Hour() != 12 || got.Minute() != 0 {
+			t.Errorf("expected 12:00 CST, got %02d:%02d", got.Hour(), got.Minute())
+		}
+	})
+
+	t.Run("EST reference, event in IST: shows IST wall clock", func(t *testing.T) {
+		// UTC 18:00 in IST (UTC+5:30) = 23:30 IST.
+		got := localizeTimeInZone(utcTime, "Asia/Kolkata", est)
+		if got == nil {
+			t.Fatal("expected non-nil result for IST event vs EST reference")
+		}
+		if got.Hour() != 23 || got.Minute() != 30 {
+			t.Errorf("expected 23:30 IST, got %02d:%02d", got.Hour(), got.Minute())
+		}
+	})
+
+	t.Run("EST reference, event in CST: shows CST wall clock", func(t *testing.T) {
+		// UTC 18:00 in CST (UTC-6) = 12:00; EST is UTC-5 = 13:00. Different offsets → non-nil.
+		got := localizeTimeInZone(utcTime, "America/Chicago", est)
+		if got == nil {
+			t.Fatal("expected non-nil result for CST event vs EST reference")
+		}
+		if got.Hour() != 12 || got.Minute() != 0 {
+			t.Errorf("expected 12:00 CST, got %02d:%02d", got.Hour(), got.Minute())
+		}
+	})
+
+	t.Run("GMT reference, event in IST: shows IST wall clock", func(t *testing.T) {
+		// UTC 18:00 in IST (UTC+5:30) = 23:30 IST.
+		got := localizeTimeInZone(utcTime, "Asia/Kolkata", gmt)
+		if got == nil {
+			t.Fatal("expected non-nil result for IST event vs GMT reference")
+		}
+		if got.Hour() != 23 || got.Minute() != 30 {
+			t.Errorf("expected 23:30 IST, got %02d:%02d", got.Hour(), got.Minute())
+		}
+	})
+
+	t.Run("GMT reference, event in GMT: returns nil (same offset)", func(t *testing.T) {
+		if got := localizeTimeInZone(utcTime, "GMT", gmt); got != nil {
+			t.Errorf("expected nil (same GMT offset), got %v", got)
+		}
+	})
+
+	t.Run("CST reference, event in EST: shows EST wall clock", func(t *testing.T) {
+		// UTC 18:00 in EST (UTC-5) = 13:00. CST is UTC-6 → different → non-nil.
+		got := localizeTimeInZone(utcTime, "America/New_York", cst)
+		if got == nil {
+			t.Fatal("expected non-nil result for EST event vs CST reference")
+		}
+		if got.Hour() != 13 || got.Minute() != 0 {
+			t.Errorf("expected 13:00 EST, got %02d:%02d", got.Hour(), got.Minute())
 		}
 	})
 }

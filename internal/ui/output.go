@@ -277,10 +277,18 @@ func printEventDetailTable(e *calendar.Event, w io.Writer) {
 	fmt.Fprintln(w, e.Status.String())
 
 	bold.Fprintf(w, "Start:        ")
-	fmt.Fprintln(w, start.Format("Mon, 02 Jan 2006 15:04 MST"))
+	if origStart := localizeTimeInZone(e.StartDate, e.TimeZone, time.Local); origStart != nil {
+		fmt.Fprintf(w, "%s  (%s)\n", start.Format("Mon, 02 Jan 2006 15:04 MST"), origStart.Format("15:04 MST"))
+	} else {
+		fmt.Fprintln(w, start.Format("Mon, 02 Jan 2006 15:04 MST"))
+	}
 
 	bold.Fprintf(w, "End:          ")
-	fmt.Fprintln(w, end.Format("Mon, 02 Jan 2006 15:04 MST"))
+	if origEnd := localizeTimeInZone(e.EndDate, e.TimeZone, time.Local); origEnd != nil {
+		fmt.Fprintf(w, "%s  (%s)\n", end.Format("Mon, 02 Jan 2006 15:04 MST"), origEnd.Format("15:04 MST"))
+	} else {
+		fmt.Fprintln(w, end.Format("Mon, 02 Jan 2006 15:04 MST"))
+	}
 
 	bold.Fprintf(w, "Duration:     ")
 	fmt.Fprintln(w, parser.FormatDuration(start, end, e.AllDay))
@@ -369,8 +377,16 @@ func printEventDetailPlain(e *calendar.Event, w io.Writer) {
 	end := localizeTime(e.EndDate, e.TimeZone)
 	fmt.Fprintf(w, "Title: %s\n", e.Title)
 	fmt.Fprintf(w, "Calendar: %s\n", e.Calendar)
-	fmt.Fprintf(w, "Start: %s\n", start.Format(time.RFC3339))
-	fmt.Fprintf(w, "End: %s\n", end.Format(time.RFC3339))
+	if origStart := localizeTimeInZone(e.StartDate, e.TimeZone, time.Local); origStart != nil {
+		fmt.Fprintf(w, "Start: %s  (%s)\n", start.Format(time.RFC3339), origStart.Format(time.RFC3339))
+	} else {
+		fmt.Fprintf(w, "Start: %s\n", start.Format(time.RFC3339))
+	}
+	if origEnd := localizeTimeInZone(e.EndDate, e.TimeZone, time.Local); origEnd != nil {
+		fmt.Fprintf(w, "End: %s  (%s)\n", end.Format(time.RFC3339), origEnd.Format(time.RFC3339))
+	} else {
+		fmt.Fprintf(w, "End: %s\n", end.Format(time.RFC3339))
+	}
 	if e.AllDay {
 		fmt.Fprintln(w, "All Day: Yes")
 	}
@@ -499,14 +515,30 @@ func formatAlertDuration(d time.Duration) string {
 	return fmt.Sprintf("%d minutes", mins)
 }
 
-// localizeTime converts a time to the event's timezone, falling back to local time.
-func localizeTime(t time.Time, tz string) time.Time {
-	if tz != "" {
-		if loc, err := time.LoadLocation(tz); err == nil {
-			return t.In(loc)
-		}
-	}
+// localizeTime converts a time to the system's local timezone.
+func localizeTime(t time.Time, _ string) time.Time {
 	return t.In(time.Local)
+}
+
+// localizeTimeInZone converts a time to the event's own timezone.
+// Returns nil if tz is empty, invalid, or the same UTC offset as referenceLoc.
+// Pass time.Local as referenceLoc for normal use.
+func localizeTimeInZone(t time.Time, tz string, referenceLoc *time.Location) *time.Time {
+	if tz == "" {
+		return nil
+	}
+	loc, err := time.LoadLocation(tz)
+	if err != nil {
+		return nil
+	}
+	// Skip if the event timezone has the same UTC offset as the reference at this instant.
+	_, refOffset := t.In(referenceLoc).Zone()
+	_, tzOffset := t.In(loc).Zone()
+	if refOffset == tzOffset {
+		return nil
+	}
+	result := t.In(loc)
+	return &result
 }
 
 func truncate(s string, max int) string {
