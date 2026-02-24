@@ -64,9 +64,7 @@ if [ -w "$INSTALL_DIR" ]; then
     mv "${TMPDIR_PATH}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 else
     info "Requires sudo to install to ${INSTALL_DIR}"
-    # sudo needs a terminal for the password prompt; redirect from /dev/tty
-    # so this works when piped through curl | bash.
-    sudo mv "${TMPDIR_PATH}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}" < /dev/tty
+    sudo mv "${TMPDIR_PATH}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 fi
 
 info "Installed ical ${LATEST} to ${INSTALL_DIR}/${BINARY_NAME}"
