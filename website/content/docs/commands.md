@@ -214,17 +214,32 @@ ical show
 # By row number from last listing
 ical show 2
 
-# By event ID
+# By full or partial event ID
 ical show 577B8983-DF44-4665-B0F9-ABCD1234
+
+# By exact event ID (for scripts and agents)
+ical show --id "577B8983-DF44-4665-B0F9-ABCD1234:abc"
 ```
+
+### Flags
+
+| Flag     | Short | Description                                   |
+|----------|-------|-----------------------------------------------|
+| `--id`   |       | Full event ID — exact match, no prefix search |
+| `--from` | `-f`  | Start date for event picker                   |
+| `--to`   | `-t`  | End date for event picker                     |
+| `--days` | `-d`  | Days to show in picker (default: 7)           |
 
 ### Event Selection
 
-Events can be selected three ways:
+Events can be selected four ways:
 
 1. **Interactive picker** — Run with no argument to get a searchable list
 2. **Row number** — Use `#N` from the last `list`, `today`, or `upcoming` output
-3. **Event ID** — Pass a full or partial `eventIdentifier` (for scripting)
+3. **Event ID** — Pass a full or partial `eventIdentifier` as a positional arg
+4. **`--id` flag** — Full event ID, exact match only (preferred for scripts/agents)
+
+> `--id` and a positional argument are mutually exclusive.
 
 The show command displays title, calendar, start/end times, location, notes, alerts, recurrence rules, URL, and attendees.
 
@@ -303,12 +318,16 @@ ical update 3 -s "tomorrow 2pm" -e "tomorrow 3pm"
 
 # Update future occurrences of recurring event
 ical update 1 --span future --title "New Series Name"
+
+# By exact event ID (for scripts and agents)
+ical update --id "577B8983-DF44:abc" --title "New Title"
 ```
 
 ### Flags
 
 | Flag              | Short | Description                                |
 |-------------------|-------|--------------------------------------------|
+| `--id`            |       | Full event ID — exact match, no prefix search |
 | `--title`         |       | New title                                  |
 | `--start`         | `-s`  | New start time (natural language)          |
 | `--end`           | `-e`  | New end time (natural language)            |
@@ -322,6 +341,9 @@ ical update 1 --span future --title "New Series Name"
 | `--repeat-until`  |       | New recurrence end date                    |
 | `--span`          |       | Apply to: `this` or `future` occurrences   |
 | `--interactive`   | `-i`  | Use guided interactive form                |
+
+> `update` applies changes immediately — there is no confirmation prompt and no `--force` flag.
+> `--id` and a positional argument are mutually exclusive.
 
 ---
 
@@ -341,14 +363,21 @@ ical delete 3 -f
 
 # Delete future occurrences of recurring event
 ical delete 2 --span future
+
+# By exact event ID (for scripts and agents)
+ical delete --id "577B8983-DF44:abc" --force
 ```
 
 ### Flags
 
-| Flag       | Short | Description                              |
-|------------|-------|------------------------------------------|
-| `--force`  | `-f`  | Skip confirmation prompt                 |
-| `--span`   |       | Apply to: `this` or `future` occurrences |
+| Flag       | Short | Description                                   |
+|------------|-------|-----------------------------------------------|
+| `--id`     |       | Full event ID — exact match, no prefix search |
+| `--force`  | `-f`  | Skip confirmation prompt                      |
+| `--span`   |       | Apply to: `this` or `future` occurrences      |
+
+> Always pass `--force` when running non-interactively (scripts, agents). There is no `--confirm` flag.
+> `--id` and a positional argument are mutually exclusive.
 
 ---
 

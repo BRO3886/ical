@@ -45,6 +45,9 @@ ical add "Team standup" --start "tomorrow at 9am" --end "tomorrow at 9:30am" --c
 # Show event details (row number from last listing)
 ical show 2
 
+# Delete an event (--force skips confirmation prompt, required in scripts/agents)
+ical delete 2 --force
+
 # Search for events
 ical search "meeting" --from "30 days ago" --to "next month"
 
@@ -110,10 +113,30 @@ Event listings display row numbers (`#1`, `#2`, `#3`...) alongside events. These
 ical list --from today --to "next week"   # Shows #1, #2, #3...
 ical show 2                                # Show details for row #2
 ical update 3 --title "New title"          # Update row #3
-ical delete 1                              # Delete row #1
+ical delete 1 --force                      # Delete row #1 (skip confirmation)
+ical delete 1                              # Delete row #1 (prompts for confirmation)
 ```
 
 Row numbers reset each time you run a list/today/upcoming command. With no arguments, `show`, `update`, and `delete` launch an interactive picker instead.
+
+### Event ID flag (for scripts and agents)
+
+When you have a full event ID (from `-o json` output), use `--id` for exact lookup with no prefix matching:
+
+```bash
+# Get event ID from JSON output
+EVENT_ID=$(ical today -o json | jq -r '.[0].id')
+
+# Use --id for reliable exact lookup
+ical show --id "$EVENT_ID"
+ical update --id "$EVENT_ID" --title "New title"
+ical delete --id "$EVENT_ID" --force
+```
+
+> **Important for scripting**:
+> - `ical delete` prompts for interactive confirmation by default. Always pass `--force` (or `-f`) when running non-interactively. There is no `--confirm` flag.
+> - `ical update` does **not** require confirmation and has **no `--force` flag** — just run it directly with the flags you want to change.
+> - `--id` and a positional argument are mutually exclusive — passing both returns an error.
 
 ### Natural Language Dates
 
@@ -213,7 +236,16 @@ ical upcoming -o json | jq -r '.[].title'
 
 # Find events on a specific calendar
 ical list --from today --to "in 30 days" --calendar Work -o json | jq '.[].title'
+
+# List calendar names (field is "title", not "name")
+ical calendars -o json | jq -r '.[].title'
+
+# Get calendar IDs and names
+ical calendars -o json | jq -r '.[] | "\(.id) \(.title)"'
 ```
+
+**Calendar JSON fields**: `id`, `title`, `type`, `color`, `source`, `readOnly`
+**Event JSON fields**: `id`, `title`, `start_date`, `end_date`, `calendar`, `calendar_id`, `location`, `notes`, `url`, `all_day`, `recurrence`, `alerts`
 
 ### Backup and restore
 

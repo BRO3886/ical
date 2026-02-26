@@ -16,6 +16,7 @@ var (
 	showFrom string
 	showTo   string
 	showDays int
+	showID   string
 )
 
 var showCmd = &cobra.Command{
@@ -27,8 +28,8 @@ var showCmd = &cobra.Command{
 With no arguments, shows an interactive picker of upcoming events.
 Use --from/--to or --days to control the picker's date range.
 
-With an argument, accepts a row number from the last listing (e.g. 'cal show 2')
-or a full/partial event ID.`,
+With an argument, accepts a row number from the last listing (e.g. 'ical show 2')
+or a full/partial event ID. Use --id for exact event ID lookup (no prefix matching).`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := calendar.New()
@@ -36,8 +37,18 @@ or a full/partial event ID.`,
 			return handleClientError(err)
 		}
 
+		idFlagSet := cmd.Flags().Changed("id")
+		if idFlagSet && len(args) > 0 {
+			return fmt.Errorf("cannot use both --id and a positional argument")
+		}
+
 		var event *calendar.Event
-		if len(args) == 1 {
+		if idFlagSet {
+			event, err = client.Event(showID)
+			if err != nil {
+				return fmt.Errorf("event not found: %w", err)
+			}
+		} else if len(args) == 1 {
 			event, err = findEventByPrefix(client, args[0])
 			if err != nil {
 				return err
@@ -61,6 +72,7 @@ func init() {
 	showCmd.Flags().StringVarP(&showFrom, "from", "f", "", "Start date for event picker (natural language or ISO 8601)")
 	showCmd.Flags().StringVarP(&showTo, "to", "t", "", "End date for event picker")
 	showCmd.Flags().IntVarP(&showDays, "days", "d", 7, "Number of days to show in picker")
+	showCmd.Flags().StringVar(&showID, "id", "", "Full event ID (exact match, no prefix search)")
 
 	rootCmd.AddCommand(showCmd)
 }

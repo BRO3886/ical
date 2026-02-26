@@ -148,22 +148,27 @@ Aliases: `next`, `soon`
 Display full details for a single event. With no arguments, shows an interactive picker.
 
 ```bash
-ical show 2                    # Row number from last listing
-ical show                      # Interactive event picker
-ical show ABC12345 -o json     # Full or partial event ID
+ical show 2                                      # Row number from last listing
+ical show                                        # Interactive event picker
+ical show ABC12345 -o json                       # Full or partial event ID
+ical show --id "577B8983-DF44:ABC123" -o json   # Exact event ID (agents: use this)
 ```
 
-| Flag     | Short | Description                      | Default |
-| -------- | ----- | -------------------------------- | ------- |
-| `--from` | `-f`  | Start date for event picker      | Today   |
-| `--to`   | `-t`  | End date for event picker        | —       |
-| `--days` | `-d`  | Number of days to show in picker | 7       |
+| Flag     | Short | Description                                  | Default |
+| -------- | ----- | -------------------------------------------- | ------- |
+| `--id`   | —     | Full event ID (exact match, no prefix search) | —       |
+| `--from` | `-f`  | Start date for event picker                  | Today   |
+| `--to`   | `-t`  | End date for event picker                    | —       |
+| `--days` | `-d`  | Number of days to show in picker             | 7       |
 
 Event selection methods:
 
 1. **No argument** — interactive huh picker of upcoming events
 2. **Number** (e.g., `2`) — row number from the last `list`/`today`/`upcoming` output
-3. **String** — full or partial event ID
+3. **String** — full or partial event ID (positional arg)
+4. **`--id`** — full event ID, exact match only (preferred for scripts/agents)
+
+> `--id` and a positional argument are mutually exclusive — passing both is an error.
 
 Aliases: `get`, `info`
 
@@ -216,10 +221,12 @@ ical update 1 --alert none               # Clear alerts
 ical update 1 --repeat none              # Remove recurrence
 ical update 2 --span future --start "next monday at 9am"  # Update future occurrences
 ical update -i                           # Interactive mode with picker
+ical update --id "577B8983-DF44:ABC123" --title "New title"  # Exact ID (agents: use this)
 ```
 
 | Flag                | Short | Description                                  | Default |
 | ------------------- | ----- | -------------------------------------------- | ------- |
+| `--id`              | —     | Full event ID (exact match, no prefix search) | —       |
 | `--title`           | `-T`  | New title                                    | —       |
 | `--start`           | `-s`  | New start date/time                          | —       |
 | `--end`             | `-e`  | New end date/time                            | —       |
@@ -238,7 +245,10 @@ ical update -i                           # Interactive mode with picker
 | `--repeat-days`     | —     | Change recurrence days                       | —       |
 | `--interactive`     | `-i`  | Interactive mode with guided prompts         | false   |
 
-Event selection: same as `show` (no args = picker, number = row, string = event ID).
+Event selection: same as `show` (no args = picker, number = row, string = event ID, `--id` = exact).
+
+> `--id` and a positional argument are mutually exclusive — passing both is an error.
+> `update` has **no** `--force` flag and requires no confirmation — changes apply immediately.
 
 Aliases: `edit`
 
@@ -249,21 +259,26 @@ Aliases: `edit`
 Delete an event. Asks for confirmation by default.
 
 ```bash
-ical delete 1
-ical rm 2 --force
-ical delete                    # Interactive picker
-ical delete 3 --span future    # Delete this and future occurrences
+ical delete 1 --force                              # Row number, skip confirmation
+ical rm 2 --force                                  # Alias
+ical delete                                        # Interactive picker
+ical delete 3 --span future                        # Delete this and future occurrences
+ical delete --id "577B8983-DF44:ABC123" --force   # Exact event ID (agents: use this)
 ```
 
-| Flag      | Short | Description                       | Default |
-| --------- | ----- | --------------------------------- | ------- |
-| `--force` | `-f`  | Skip confirmation prompt          | false   |
-| `--span`  | —     | For recurring: "this" or "future" | this    |
-| `--from`  | —     | Start date for event picker       | Today   |
-| `--to`    | —     | End date for event picker         | —       |
-| `--days`  | `-d`  | Number of days to show in picker  | 7       |
+| Flag      | Short | Description                                  | Default |
+| --------- | ----- | -------------------------------------------- | ------- |
+| `--id`    | —     | Full event ID (exact match, no prefix search) | —       |
+| `--force` | `-f`  | Skip confirmation prompt                     | false   |
+| `--span`  | —     | For recurring: "this" or "future"            | this    |
+| `--from`  | —     | Start date for event picker                  | Today   |
+| `--to`    | —     | End date for event picker                    | —       |
+| `--days`  | `-d`  | Number of days to show in picker             | 7       |
 
-Event selection: same as `show` (no args = picker, number = row, string = event ID).
+Event selection: same as `show` (no args = picker, number = row, string = event ID, `--id` = exact).
+
+> `--id` and a positional argument are mutually exclusive — passing both is an error.
+> `update` does **not** have a `--force` flag — it applies changes immediately without confirmation.
 
 Aliases: `rm`, `remove`
 

@@ -31,6 +31,7 @@ var (
 	updateRepeatCount    int
 	updateRepeatDays     string
 	updateInteractive    bool
+	updateID             string
 )
 
 var updateCmd = &cobra.Command{
@@ -41,6 +42,7 @@ var updateCmd = &cobra.Command{
 
 With no arguments, shows an interactive picker to select the event.
 With an argument, accepts a row number from the last listing or a full/partial event ID.
+Use --id for exact event ID lookup (no prefix matching).
 Use -i for interactive mode with guided prompts.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,8 +51,18 @@ Use -i for interactive mode with guided prompts.`,
 			return handleClientError(err)
 		}
 
+		idFlagSet := cmd.Flags().Changed("id")
+		if idFlagSet && len(args) > 0 {
+			return fmt.Errorf("cannot use both --id and a positional argument")
+		}
+
 		var event *calendar.Event
-		if len(args) == 1 {
+		if idFlagSet {
+			event, err = client.Event(updateID)
+			if err != nil {
+				return fmt.Errorf("event not found: %w", err)
+			}
+		} else if len(args) == 1 {
 			event, err = findEventByPrefix(client, args[0])
 			if err != nil {
 				return err
@@ -181,6 +193,7 @@ func init() {
 	updateCmd.Flags().IntVar(&updateRepeatCount, "repeat-count", 0, "Change recurrence count")
 	updateCmd.Flags().StringVar(&updateRepeatDays, "repeat-days", "", "Change recurrence days")
 	updateCmd.Flags().BoolVarP(&updateInteractive, "interactive", "i", false, "Interactive mode with guided prompts")
+	updateCmd.Flags().StringVar(&updateID, "id", "", "Full event ID (exact match, no prefix search)")
 
 	rootCmd.AddCommand(updateCmd)
 }

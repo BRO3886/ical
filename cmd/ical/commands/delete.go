@@ -20,6 +20,7 @@ var (
 	deleteFrom  string
 	deleteTo    string
 	deleteDays  int
+	deleteID    string
 )
 
 var deleteCmd = &cobra.Command{
@@ -31,7 +32,8 @@ var deleteCmd = &cobra.Command{
 With no arguments, shows an interactive picker to select the event.
 Use --from/--to or --days to control the picker's date range.
 
-With an argument, accepts a row number from the last listing or a full/partial event ID.`,
+With an argument, accepts a row number from the last listing or a full/partial event ID.
+Use --id for exact event ID lookup (no prefix matching).`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := calendar.New()
@@ -39,8 +41,18 @@ With an argument, accepts a row number from the last listing or a full/partial e
 			return handleClientError(err)
 		}
 
+		idFlagSet := cmd.Flags().Changed("id")
+		if idFlagSet && len(args) > 0 {
+			return fmt.Errorf("cannot use both --id and a positional argument")
+		}
+
 		var event *calendar.Event
-		if len(args) == 1 {
+		if idFlagSet {
+			event, err = client.Event(deleteID)
+			if err != nil {
+				return fmt.Errorf("event not found: %w", err)
+			}
+		} else if len(args) == 1 {
 			event, err = findEventByPrefix(client, args[0])
 			if err != nil {
 				return err
@@ -92,6 +104,7 @@ func init() {
 	deleteCmd.Flags().StringVar(&deleteFrom, "from", "", "Start date for event picker")
 	deleteCmd.Flags().StringVar(&deleteTo, "to", "", "End date for event picker")
 	deleteCmd.Flags().IntVarP(&deleteDays, "days", "d", 7, "Number of days to show in picker")
+	deleteCmd.Flags().StringVar(&deleteID, "id", "", "Full event ID (exact match, no prefix search)")
 
 	rootCmd.AddCommand(deleteCmd)
 }
