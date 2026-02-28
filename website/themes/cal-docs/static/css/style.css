@@ -307,9 +307,9 @@ code {
 
 .hero-subtitle {
   font-size: 1.15rem;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--text-secondary);
-  max-width: 540px;
+  max-width: 620px;
   margin: 0 auto 2rem;
 }
 
