@@ -1,6 +1,7 @@
 ---
 title: "Commands"
-description: "Complete reference for every ical command, flag, and option."
+description: "Complete reference for every ical command, flag, and option. Covers list, add, update, delete, search, export, import, and calendar management."
+keywords: ["ical commands", "macOS Calendar CLI commands", "ical list events", "ical add event", "calendar CLI reference", "ical flags options"]
 weight: 2
 ---
 

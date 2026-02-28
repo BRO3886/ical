@@ -1,6 +1,7 @@
 ---
 title: "Architecture"
-description: "How ical works under the hood — EventKit bindings, project structure, and design decisions."
+description: "How ical works under the hood — native EventKit bindings via cgo, Go project structure, and key design decisions."
+keywords: ["ical architecture", "EventKit Go bindings", "go-eventkit cgo", "macOS Calendar Go library", "EventKit CLI internals"]
 weight: 4
 ---
 

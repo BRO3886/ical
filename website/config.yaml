@@ -1,4 +1,4 @@
-baseURL: "/"
+baseURL: "https://ical.sidv.dev/"
 languageCode: "en-us"
 title: "ical — CLI for macOS Calendar"
 theme: "cal-docs"
@@ -8,16 +8,18 @@ params:
   author: "Siddharth Verma"
   github: "https://github.com/BRO3886/ical"
   ogImage: "/images/og-image.png"
+  twitterHandle: "@bro3886"
   keywords:
     - macOS Calendar CLI
     - ical CLI
-    - command line calendar
-    - Go CLI tool
-    - EventKit
-    - macOS productivity
-    - calendar management
+    - command line calendar macOS
+    - Go CLI tool EventKit
     - Apple Calendar terminal
-    - iCal CLI
+    - macOS Calendar automation
+    - calendar management CLI
+    - ical command line tool
+    - macOS productivity terminal
+    - EventKit Go library
 
 markup:
   highlight:

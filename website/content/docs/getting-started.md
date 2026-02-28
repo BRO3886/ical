@@ -1,6 +1,7 @@
 ---
 title: "Getting Started"
-description: "Install ical and start managing your macOS Calendar from the terminal."
+description: "Install ical and start managing your macOS Calendar from the terminal. Supports curl install, go install, and manual download on macOS."
+keywords: ["install ical macOS", "macOS Calendar CLI install", "go install ical", "ical getting started", "EventKit CLI setup"]
 weight: 1
 ---
 

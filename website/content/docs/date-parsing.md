@@ -1,6 +1,7 @@
 ---
 title: "Date Parsing"
-description: "Natural language date input reference for all ical commands."
+description: "Natural language date parsing reference for ical. Supports today, tomorrow, next friday, in 3 hours, this week, and 20+ other patterns."
+keywords: ["natural language date CLI", "ical date parsing", "macOS calendar date input", "today tomorrow next friday terminal", "relative date CLI macOS"]
 weight: 3
 ---
 

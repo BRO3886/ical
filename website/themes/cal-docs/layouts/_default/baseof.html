@@ -6,7 +6,7 @@
   <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}</title>
   <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
   <meta name="author" content="{{ .Site.Params.author }}">
-  <meta name="keywords" content="{{ delimit .Site.Params.keywords ", " }}">
+  <meta name="keywords" content="{{ with .Params.keywords }}{{ delimit . ", " }}{{ else }}{{ delimit .Site.Params.keywords ", " }}{{ end }}">
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
@@ -20,31 +20,76 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
   <meta name="twitter:description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+  {{ with .Site.Params.ogImage }}<meta name="twitter:image" content="{{ . | absURL }}">{{ end }}
+  {{ with .Site.Params.twitterHandle }}<meta name="twitter:site" content="{{ . }}">{{ end }}
 
   <!-- Canonical -->
   <link rel="canonical" href="{{ .Permalink }}">
 
   <!-- Structured Data -->
+  {{ if .IsHome }}
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "{{ if .IsHome }}WebSite{{ else }}TechArticle{{ end }}",
-    "name": "{{ .Site.Title }}",
+    "@type": "SoftwareApplication",
+    "name": "ical",
     "url": "{{ .Site.BaseURL }}",
     "description": "{{ .Site.Params.description }}",
-    {{ if not .IsHome }}
-    "headline": "{{ .Title }}",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "macOS",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
     "author": {
       "@type": "Person",
-      "name": "{{ .Site.Params.author }}"
+      "name": "{{ .Site.Params.author }}",
+      "url": "{{ .Site.Params.github }}"
     },
-    {{ end }}
+    "codeRepository": "{{ .Site.Params.github }}",
+    "license": "https://opensource.org/licenses/MIT",
+    "image": "{{ .Site.Params.ogImage | absURL }}"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "{{ .Site.Title }}",
+    "url": "{{ .Site.BaseURL }}",
+    "description": "{{ .Site.Params.description }}"
+  }
+  </script>
+  {{ else }}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "{{ .Title }}",
+    "description": "{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}",
+    "url": "{{ .Permalink }}",
+    "image": "{{ .Site.Params.ogImage | absURL }}",
+    {{ if not .Date.IsZero }}"datePublished": "{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}",{{ end }}
+    {{ if not .Lastmod.IsZero }}"dateModified": "{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}",{{ end }}
+    "author": {
+      "@type": "Person",
+      "name": "{{ .Site.Params.author }}",
+      "url": "{{ .Site.Params.github }}"
+    },
     "publisher": {
       "@type": "Organization",
-      "name": "cal"
+      "name": "ical",
+      "url": "{{ .Site.BaseURL }}"
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "{{ .Site.Title }}",
+      "url": "{{ .Site.BaseURL }}"
     }
   }
   </script>
+  {{ end }}
 
   <!-- Favicon -->
   <link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
