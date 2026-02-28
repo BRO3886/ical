@@ -116,8 +116,13 @@ make completions                 # bash/zsh/fish
 ```
 
 ### Release Process (manual, no CI)
-1. `make release` — produces `bin/ical-darwin-{arm64,amd64}.tar.gz`
-2. `gh release create vX.Y.Z bin/ical-darwin-arm64.tar.gz bin/ical-darwin-amd64.tar.gz`
+1. `git push` — push all commits to main **before** tagging. Never tag unpushed commits.
+2. `git tag vX.Y.Z` — tag after push so the tag points to a commit already on remote main
+3. `git push origin vX.Y.Z` — push the tag explicitly
+4. `make release` — produces `bin/ical-darwin-{arm64,amd64}.tar.gz`
+5. `gh release create vX.Y.Z bin/ical-darwin-arm64.tar.gz bin/ical-darwin-amd64.tar.gz`
+
+> **Why**: tagging an unpushed commit and running `gh release create` pushes the tag + that commit to GitHub, but leaves `main` behind. The release binary is built from code not on `main` — a silent inconsistency that's hard to notice and painful to explain.
 
 ### Install Script
 - `scripts/install.sh` — curl-pipe-bash installer
