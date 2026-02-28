@@ -6,7 +6,8 @@
       <span class="hero-accent">From the terminal.</span>
     </h1>
     <p class="hero-subtitle fade-in delay-1">
-      A blazing fast CLI for macOS Calendar.<br>Powered by <a href="https://github.com/BRO3886/go-eventkit" target="_blank" rel="noopener">go-eventkit</a>.
+      Native macOS Calendar from the terminal — and from your AI agent.<br>
+      Powered by <a href="https://github.com/BRO3886/go-eventkit" target="_blank" rel="noopener">go-eventkit</a>. 3000x faster than AppleScript.
     </p>
     <div class="hero-actions fade-in delay-2">
       <a href="{{ "docs/getting-started/" | relURL }}" class="btn btn-primary">Get Started</a>
@@ -48,14 +49,14 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         </div>
         <h3>3000x Faster Reads</h3>
-        <p>Direct EventKit bindings via cgo. No AppleScript, no IPC overhead. Native memory access to the Calendar store.</p>
+        <p>Same API Calendar.app uses internally — not AppleScript, not IPC. Sub-millisecond reads across thousands of events.</p>
       </div>
       <div class="feature-card scroll-reveal">
         <div class="feature-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         </div>
         <h3>Single Binary</h3>
-        <p>EventKit compiled directly into the Go binary via cgo. No external dependencies. Just <code>go install</code> and go.</p>
+        <p>EventKit compiled in via cgo. No runtime dependencies. Ship it, script it, call it from an agent — it just works.</p>
       </div>
       <div class="feature-card scroll-reveal">
         <div class="feature-icon">
@@ -85,6 +86,47 @@
         <h3>Full CRUD + Recurrence</h3>
         <p>Create, read, update, and delete events. Daily, weekly, monthly, yearly recurrence with flexible day selection.</p>
       </div>
+      <div class="feature-card scroll-reveal">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12c0-2.76 1.12-5.26 2.93-7.07"/><path d="M12 6v6l4 2"/><circle cx="18" cy="5" r="3" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <h3>Agent-Ready</h3>
+        <p><code>ical skills install</code> writes an embedded skill to Claude Code, Codex, or OpenClaw. JSON output on every command. Stable <code>--id</code> flag for scripting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="agent-section">
+  <div class="agent-inner">
+    <div class="agent-text scroll-reveal">
+      <div class="agent-eyebrow">Agent-ready</div>
+      <h2 class="agent-title">Built for agents,<br>not just humans.</h2>
+      <p class="agent-body">Most CLI tools weren't designed to be called by an AI. ical was. Every command outputs structured JSON. Event IDs are stable across calls. Natural language dates work exactly like they would if you typed them yourself.</p>
+      <div class="agent-platforms">
+        <span class="agent-badge">Claude Code</span>
+        <span class="agent-badge">Codex CLI</span>
+        <span class="agent-badge">OpenClaw</span>
+      </div>
+    </div>
+    <div class="agent-code scroll-reveal">
+      <div class="agent-code-header">
+        <div class="agent-code-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <span class="agent-code-label">one-time setup</span>
+      </div>
+      <pre class="agent-pre"><code><span class="ac-comment"># Install the embedded skill once</span>
+<span class="ac-prompt">$</span> <span class="ac-cmd">ical skills install</span>
+
+<span class="ac-comment"># Your agent can now do things like:</span>
+<span class="ac-prompt">$</span> <span class="ac-cmd">ical today -o json</span>
+<span class="ac-prompt">$</span> <span class="ac-cmd">ical add "Standup" --start "tomorrow 9am" \
+    --end "tomorrow 9:30am" --calendar Work</span>
+<span class="ac-prompt">$</span> <span class="ac-cmd">ical list --from "next monday" \
+    --to "next friday" -o json \
+    | jq '.[].title'</span>
+<span class="ac-prompt">$</span> <span class="ac-cmd">ical delete --id "$EVENT_ID" --force</span></code></pre>
     </div>
   </div>
 </section>
