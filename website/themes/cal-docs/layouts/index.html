@@ -89,6 +89,66 @@
   </div>
 </section>
 
+<section class="faq-section">
+  <div class="faq-inner">
+    <h2 class="section-title scroll-reveal">Common questions</h2>
+    <div class="faq-list">
+
+      <details class="faq-item scroll-reveal" open>
+        <summary class="faq-question">What is ical?</summary>
+        <div class="faq-answer">
+          <p><strong>ical</strong> is an open-source command-line interface for macOS Calendar. It lets you create, list, update, delete, search, and export events directly from your terminal — with near-native performance via Apple's EventKit framework.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">How do I install ical?</summary>
+        <div class="faq-answer">
+          <p>The fastest way is the install script:</p>
+          <pre><code>curl -fsSL https://ical.sidv.dev/install | bash</code></pre>
+          <p>Alternatively, if you have Go and Xcode CLT installed: <code>go install github.com/BRO3886/ical/cmd/ical@latest</code></p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">Why is ical faster than AppleScript?</summary>
+        <div class="faq-answer">
+          <p>ical uses <a href="https://github.com/BRO3886/go-eventkit">go-eventkit</a>, which bridges directly to Apple's EventKit framework via cgo and Objective-C — the same API Calendar.app uses internally. This gives direct in-process memory access to the calendar store with no IPC overhead. AppleScript sends Apple Events across a process boundary per property per event, making it roughly 3000× slower for large calendars.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">Does ical work with iCloud calendars?</summary>
+        <div class="faq-answer">
+          <p>Yes. ical accesses everything synced to your local macOS Calendar store — iCloud calendars, local calendars, Exchange, Google, and any other accounts configured in Calendar.app. All commands work across all calendar sources.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">What macOS versions are supported?</summary>
+        <div class="faq-answer">
+          <p>ical requires macOS 10.12 (Sierra) or later. On first run, macOS will prompt you to grant Calendar access in System Settings → Privacy &amp; Security → Calendars. It does not work on Linux or Windows.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">Can I use ical in scripts and automation?</summary>
+        <div class="faq-answer">
+          <p>Yes. Every command supports <code>-o json</code> for machine-readable output, making ical easy to pipe into tools like <code>jq</code>. The <code>ical export</code> command produces JSON, CSV, or ICS dumps. The <code>--id</code> flag on show, update, and delete enables safe scripting with stable event IDs.</p>
+        </div>
+      </details>
+
+      <details class="faq-item scroll-reveal">
+        <summary class="faq-question">How do I add ical to an AI coding agent?</summary>
+        <div class="faq-answer">
+          <p>Run <code>ical skills install</code> to copy the embedded agent skill to your agent's skill directory. Supports Claude Code (<code>~/.claude/skills/</code>), Codex CLI (<code>~/.agents/skills/</code>), and OpenClaw (<code>~/.openclaw/skills/</code>). The skill teaches the agent all commands, date formats, and output options.</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
 <section class="install-section">
   <div class="install-inner">
     <h2 class="section-title scroll-reveal">Install in seconds</h2>
