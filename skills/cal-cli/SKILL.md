@@ -1,9 +1,9 @@
 ---
-name: cal-cli
+name: ical
 description: Manages macOS Calendar events and calendars from the terminal using the ical CLI. Full CRUD for both events and calendars. Supports natural language dates, recurrence rules, alerts, interactive mode, import/export (JSON/CSV/ICS), and multiple output formats. Use when the user wants to interact with Apple Calendar via command line, automate calendar workflows, or build scripts around macOS Calendar.
 metadata:
-  author: sidv
-  version: "1.0"
+  author: BRO3886
+  version: "0.7.0"
 compatibility: Requires macOS with Calendar.app. Requires Xcode Command Line Tools for building from source.
 ---
 
@@ -20,7 +20,7 @@ go install github.com/BRO3886/ical/cmd/ical@latest
 Or build from source:
 
 ```bash
-git clone <repo-url> && cd ical
+git clone https://github.com/BRO3886/ical && cd ical
 make build    # produces bin/ical
 ```
 
