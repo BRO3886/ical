@@ -80,7 +80,7 @@ fi
 # --- Agent skill installation ---
 
 echo ""
-info "ical can install an AI agent skill that teaches Claude Code / Codex how to use it."
+info "ical can install an AI agent skill that teaches Claude Code / Codex / OpenClaw how to use it."
 printf "Install agent skill now? [Y/n] "
 read -r answer < /dev/tty 2>/dev/null || answer="n"
 if [ "$answer" != "n" ] && [ "$answer" != "N" ]; then
