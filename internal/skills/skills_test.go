@@ -3,14 +3,15 @@ package skills
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"testing/fstest"
 )
 
 func TestDefaultTargets(t *testing.T) {
 	targets := DefaultTargets("/home/user")
-	if len(targets) != 2 {
-		t.Fatalf("expected 2 targets, got %d", len(targets))
+	if len(targets) != 3 {
+		t.Fatalf("expected 3 targets, got %d", len(targets))
 	}
 
 	if targets[0].Key != "claude" {
@@ -25,6 +26,16 @@ func TestDefaultTargets(t *testing.T) {
 	}
 	if targets[1].BaseDir != "/home/user/.agents/skills" {
 		t.Errorf("expected codex base dir '/home/user/.agents/skills', got %q", targets[1].BaseDir)
+	}
+
+	if targets[2].Key != "openclaw" {
+		t.Errorf("expected third target key 'openclaw', got %q", targets[2].Key)
+	}
+	if targets[2].Name != "OpenClaw" {
+		t.Errorf("expected third target name 'OpenClaw', got %q", targets[2].Name)
+	}
+	if !strings.Contains(targets[2].BaseDir, ".openclaw/skills") {
+		t.Errorf("expected openclaw base dir to contain '.openclaw/skills', got %q", targets[2].BaseDir)
 	}
 }
 
@@ -320,6 +331,35 @@ func TestDetectAgentsBothPresent(t *testing.T) {
 
 	if len(detected) != 2 {
 		t.Errorf("expected 2 detected agents, got %d", len(detected))
+	}
+}
+
+func TestDetectAgentsAllPresent(t *testing.T) {
+	tmpDir := t.TempDir()
+	os.MkdirAll(filepath.Join(tmpDir, ".claude", "skills"), 0o755)
+	os.MkdirAll(filepath.Join(tmpDir, ".agents", "skills"), 0o755)
+	os.MkdirAll(filepath.Join(tmpDir, ".openclaw", "skills"), 0o755)
+
+	targets := DefaultTargets(tmpDir)
+	detected := DetectAgents(targets)
+
+	if len(detected) != 3 {
+		t.Errorf("expected 3 detected agents, got %d", len(detected))
+	}
+}
+
+func TestDetectAgentsOpenclawOnly(t *testing.T) {
+	tmpDir := t.TempDir()
+	os.MkdirAll(filepath.Join(tmpDir, ".openclaw", "skills"), 0o755)
+
+	targets := DefaultTargets(tmpDir)
+	detected := DetectAgents(targets)
+
+	if len(detected) != 1 {
+		t.Fatalf("expected 1 detected agent, got %d", len(detected))
+	}
+	if detected[0].Key != "openclaw" {
+		t.Errorf("expected detected agent 'openclaw', got %q", detected[0].Key)
 	}
 }
 
