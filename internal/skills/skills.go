@@ -28,6 +28,11 @@ func DefaultTargets(homeDir string) []AgentTarget {
 			Key:     "codex",
 			BaseDir: filepath.Join(homeDir, ".agents", "skills"),
 		},
+		{
+			Name:    "OpenClaw",
+			Key:     "openclaw",
+			BaseDir: filepath.Join(homeDir, ".openclaw", "skills"),
+		},
 	}
 }
 
