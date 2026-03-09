@@ -77,12 +77,3 @@ else
     info "Note: ${INSTALL_DIR} may not be in your PATH"
 fi
 
-# --- Agent skill installation ---
-
-echo ""
-info "ical can install an AI agent skill that teaches Claude Code / Codex / OpenClaw how to use it."
-printf "Install agent skill now? [Y/n] "
-read -r answer < /dev/tty 2>/dev/null || answer="n"
-if [ "$answer" != "n" ] && [ "$answer" != "N" ]; then
-    "${INSTALL_DIR}/${BINARY_NAME}" skills install || true
-fi

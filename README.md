@@ -97,9 +97,6 @@ ical delete
 | `ical search [query]`            | Search events                                     |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
-| `ical skills install`             | Install AI agent skill (Claude Code / Codex)      |
-| `ical skills uninstall`           | Remove AI agent skill                             |
-| `ical skills status`              | Show skill installation status                    |
 | `ical version`                    | Show version info                                 |
 | `ical completion`                 | Generate shell completions                        |
 
@@ -304,28 +301,6 @@ ical delete
 
 Interactive mode uses [charmbracelet/huh](https://github.com/charmbracelet/huh) forms with the Catppuccin theme. The event picker provides a searchable list of upcoming events for quick selection.
 
-## AI Agent Skills
-
-ical ships with an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it effectively.
-
-```bash
-# Install the skill (interactive — pick which agents)
-ical skills install
-
-# Install for a specific agent
-ical skills install --agent claude   # → ~/.claude/skills/ical-cli/
-ical skills install --agent codex    # → ~/.agents/skills/ical-cli/
-ical skills install --agent all      # Both
-
-# Check installation status
-ical skills status
-
-# Remove the skill
-ical skills uninstall
-```
-
-The skill is automatically kept in sync with the binary version. After updating ical, run `ical skills install` to update the skill files. ical will show a notice if installed skills are outdated.
-
 ## Shell Completions
 
 ```bash
@@ -352,9 +327,8 @@ ical/
 │   ├── parser/               # Natural language date parsing
 │   ├── ui/                   # Output formatting (table/json/plain)
 │   ├── export/               # JSON/CSV/ICS import/export
-│   ├── skills/               # Agent skill install/uninstall logic
 │   └── update/               # Background update check
-├── skills/cal-cli/           # Embedded agent skill (baked into binary)
+├── skills/cal-cli/           # Reference agent skill source
 ├── Makefile
 └── go.mod
 ```
