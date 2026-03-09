@@ -25,8 +25,7 @@ ical/
 │       ├── upcoming.go          # Shortcut: next N days
 │       ├── search.go            # Search events
 │       ├── export.go            # Export events (JSON/CSV/ICS)
-│       ├── import.go            # Import events (JSON/CSV)
-│       └── skills.go            # AI agent skill management (install/uninstall/status)
+│       └── import.go            # Import events (JSON/CSV)
 ├── internal/
 │   ├── ui/                      # Output formatting (table/json/plain)
 │   │   └── output.go
@@ -37,14 +36,11 @@ ical/
 │   ├── parser/                  # Natural language date parsing
 │   │   ├── date.go
 │   │   └── date_test.go
-│   ├── skills/                  # Agent skill install/uninstall logic
-│   │   └── skills.go
 │   └── update/                  # Background update check (cache + GitHub API)
 │       └── check.go
-├── skills/cal-cli/              # Embedded agent skill (go:embed into binary)
+├── skills/cal-cli/              # Reference agent skill source
 │   ├── SKILL.md
 │   └── references/
-├── skills.go                    # go:embed for skills directory
 ├── journals/                    # Engineering journals
 ├── docs/
 │   └── prd/                     # Product requirements
@@ -90,7 +86,6 @@ ical/
 - Recurrence display: human-readable ("Every 2 weeks on Mon, Wed")
 - Color coding: calendar colors shown, all-day events highlighted
 - Interactive mode (`-i`): add and update support guided huh forms
-- `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/` or `~/.agents/skills/ical-cli/`
 - Background update check: goroutine in PersistentPreRun, 2s timeout, 24h cache at `~/.cache/ical/update-check`
 - `ICAL_NO_UPDATE_CHECK=1` disables update check; also skipped for json output, piped stdout, dev builds
 

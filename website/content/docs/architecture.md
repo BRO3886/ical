@@ -43,8 +43,7 @@ ical/
 │       ├── upcoming.go          # Next N days
 │       ├── search.go            # Search events
 │       ├── export.go            # Export events (JSON/CSV/ICS)
-│       ├── import.go            # Import events (JSON/CSV)
-│       └── skills.go            # AI agent skill management
+│       └── import.go            # Import events (JSON/CSV)
 ├── internal/
 │   ├── parser/                  # Natural language date parsing
 │   │   ├── date.go
@@ -55,14 +54,11 @@ ical/
 │   │   ├── json.go
 │   │   ├── csv.go
 │   │   └── ics.go
-│   ├── skills/                  # Agent skill install/uninstall logic
-│   │   └── skills.go
 │   └── update/                  # Background update check
 │       └── check.go
-├── skills/cal-cli/              # Embedded agent skill (baked into binary)
+├── skills/cal-cli/              # Reference agent skill source
 │   ├── SKILL.md
 │   └── references/
-├── skills.go                    # go:embed for skills directory
 ├── Makefile
 └── go.mod
 ```
@@ -95,11 +91,9 @@ Instead, ical uses sequential row numbers (`#1`, `#2`, ...) displayed in table o
 
 When `--to` resolves to midnight (00:00:00), ical bumps it to 23:59:59 so that `--to "feb 12"` includes all events on February 12. Without this, midnight would exclude the entire day.
 
-### Embedded Agent Skills
+### Agent Skill Source
 
-ical embeds its own [agent skill](https://agentskills.io) files into the binary via `go:embed`. When a user runs `ical skills install`, the embedded files are written to the appropriate agent's skill directory (`~/.claude/skills/` or `~/.agents/skills/`). This ensures the skill documentation always matches the binary version — no separate download or version mismatch possible.
-
-A `.ical-version` file is written alongside the skill files to track which binary version installed them. When the binary is updated, `ical skills status` detects the mismatch and the background update check prints a staleness notice.
+The repository includes a reference [agent skill](https://agentskills.io) under `skills/cal-cli/`. It documents how AI coding agents can use `ical`, but the `ical` binary does not install or modify other agents' skill directories.
 
 ### Background Update Check
 

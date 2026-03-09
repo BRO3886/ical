@@ -95,9 +95,6 @@ ical export --format ics --from today --to "in 30 days" --output-file events.ics
 
 | Command                | Aliases | Description                                        |
 | ---------------------- | ------- | -------------------------------------------------- |
-| `ical skills install`   | —       | Install ical agent skill for Claude Code / Codex   |
-| `ical skills uninstall` | —       | Remove ical agent skill                            |
-| `ical skills status`    | —       | Show skill installation status                     |
 | `ical version`          | —       | Print version and build info                       |
 | `ical completion`       | —       | Generate shell completions (bash/zsh/fish)         |
 

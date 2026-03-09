@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BRO3886/ical/internal/skills"
 	"github.com/BRO3886/ical/internal/update"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -69,7 +68,7 @@ func shouldCheckForUpdate(cmd *cobra.Command) bool {
 
 	// Skip for meta commands
 	name := cmd.Name()
-	if name == "version" || name == "completion" || name == "skills" {
+	if name == "version" || name == "completion" {
 		return false
 	}
 
@@ -90,7 +89,7 @@ func shouldCheckForUpdate(cmd *cobra.Command) bool {
 	return true
 }
 
-// printUpdateNotice prints update and skills staleness notices to stderr.
+// printUpdateNotice prints update notices to stderr.
 func printUpdateNotice(_ *cobra.Command) {
 	// Collect update result (non-blocking — if goroutine isn't done, skip)
 	var result *update.Result
@@ -101,37 +100,11 @@ func printUpdateNotice(_ *cobra.Command) {
 		result = nil
 	}
 
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return
-	}
-
 	yellow := color.New(color.FgYellow)
 
 	if result != nil && result.HasUpdate {
 		fmt.Fprintln(os.Stderr)
 		yellow.Fprintf(os.Stderr, "A new version of ical is available: %s → %s\n", versionStr, result.Latest)
 		fmt.Fprintf(os.Stderr, "Update: curl -fsSL https://ical.sidv.dev/install | bash\n")
-	}
-
-	// Check skills staleness (local only, no HTTP)
-	printSkillsStalenessNotice(homeDir)
-}
-
-// printSkillsStalenessNotice checks if installed skills are outdated.
-func printSkillsStalenessNotice(homeDir string) {
-	if versionStr == "" || versionStr == "dev" {
-		return
-	}
-
-	targets := skills.InstalledTargets(skills.DefaultTargets(homeDir))
-	for _, t := range targets {
-		installed := skills.InstalledVersion(t)
-		if installed != "" && installed != versionStr {
-			yellow := color.New(color.FgYellow)
-			fmt.Fprintln(os.Stderr)
-			yellow.Fprintf(os.Stderr, "Installed skills are outdated (%s). Run: ical skills install\n", installed)
-			return // Only show once
-		}
 	}
 }

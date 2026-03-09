@@ -345,55 +345,9 @@ ical import data.json --force
 
 ---
 
-## ical skills
-
-Manage AI agent skills. The ical binary embeds its own agent skill files and can install them directly into the skills directory of supported AI coding agents.
-
-### ical skills install
-
-Install the ical agent skill for AI coding agents. Without `--agent`, shows an interactive multi-select picker.
-
-```bash
-ical skills install                # Interactive — pick agents
-ical skills install --agent claude # Direct — Claude Code only
-ical skills install --agent codex  # Direct — Codex CLI only
-ical skills install --agent all    # Both agents
-```
-
-| Flag      | Short | Description                          | Default     |
-| --------- | ----- | ------------------------------------ | ----------- |
-| `--agent` | —     | Target agent: claude, codex, or all  | Interactive |
-
-Supported targets:
-- `claude` → `~/.claude/skills/ical-cli/` (Claude Code, Copilot, Cursor, OpenCode, Augment)
-- `codex` → `~/.agents/skills/ical-cli/` (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
-
-### ical skills uninstall
-
-Remove the ical agent skill. Same `--agent` flag and interactive picker as install.
-
-```bash
-ical skills uninstall
-ical skills uninstall --agent claude
-```
-
-| Flag      | Short | Description                          | Default     |
-| --------- | ----- | ------------------------------------ | ----------- |
-| `--agent` | —     | Target agent: claude, codex, or all  | Interactive |
-
-### ical skills status
-
-Show where skills are installed and whether they match the current binary version.
-
-```bash
-ical skills status
-```
-
----
-
 ## ical version
 
-Print version and build information. Also shows a notice if a newer version is available or if installed skills are outdated.
+Print version and build information.
 
 ```bash
 ical version
