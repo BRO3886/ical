@@ -41,8 +41,9 @@ var skillsInstallCmd = &cobra.Command{
 
 Supported agents:
   claude    → ~/.claude/skills/ical-cli/    (Claude Code, Copilot, Cursor, OpenCode, Augment)
-  codex     → ~/.agents/skills/ical-cli/    (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
+  codex     → ~/.codex/skills/ical-cli/     (Codex CLI)
   openclaw  → ~/.openclaw/skills/ical-cli/  (OpenClaw)
+  others    → ~/.agents/skills/ical-cli/    (Copilot, Windsurf, OpenCode, Augment)
 
 Without --agent, shows an interactive picker to select which agents to install for.
 
@@ -53,7 +54,7 @@ https://ical.sidv.dev/docs — use --dry-run to preview what will be written.`,
 }
 
 func init() {
-	skillsInstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, or all")
+	skillsInstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, others, or all")
 	skillsInstallCmd.Flags().BoolVar(&skillsInstallDryRun, "dry-run", false, "Preview what would be installed without writing anything")
 	skillsCmd.AddCommand(skillsInstallCmd)
 }
@@ -182,7 +183,7 @@ var skillsUninstallCmd = &cobra.Command{
 }
 
 func init() {
-	skillsUninstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, or all")
+	skillsUninstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, others, or all")
 	skillsCmd.AddCommand(skillsUninstallCmd)
 }
 
@@ -303,7 +304,7 @@ func resolveAgentFlag(allTargets []skills.AgentTarget, flag string) ([]skills.Ag
 			return []skills.AgentTarget{t}, nil
 		}
 	}
-	return nil, fmt.Errorf("unknown agent %q (valid: claude, codex, openclaw, all)", flag)
+	return nil, fmt.Errorf("unknown agent %q (valid: claude, codex, openclaw, others, all)", flag)
 }
 
 func runAgentPicker(allTargets []skills.AgentTarget, homeDir, action string) ([]skills.AgentTarget, error) {

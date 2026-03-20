@@ -90,7 +90,7 @@ ical/
 - Recurrence display: human-readable ("Every 2 weeks on Mon, Wed")
 - Color coding: calendar colors shown, all-day events highlighted
 - Interactive mode (`-i`): add and update support guided huh forms
-- `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/` or `~/.agents/skills/ical-cli/`
+- `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/`, `~/.codex/skills/ical-cli/`, or `~/.agents/skills/ical-cli/`
 - Background update check: goroutine in PersistentPreRun, 2s timeout, 24h cache at `~/.cache/ical/update-check`
 - `ICAL_NO_UPDATE_CHECK=1` disables update check; also skipped for json output, piped stdout, dev builds
 

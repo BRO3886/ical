@@ -97,7 +97,7 @@ When `--to` resolves to midnight (00:00:00), ical bumps it to 23:59:59 so that `
 
 ### Embedded Agent Skills
 
-ical embeds its own [agent skill](https://agentskills.io) files into the binary via `go:embed`. When a user runs `ical skills install`, the embedded files are written to the appropriate agent's skill directory (`~/.claude/skills/` or `~/.agents/skills/`). This ensures the skill documentation always matches the binary version — no separate download or version mismatch possible.
+ical embeds its own [agent skill](https://agentskills.io) files into the binary via `go:embed`. When a user runs `ical skills install`, the embedded files are written to the appropriate agent's skill directory (`~/.claude/skills/`, `~/.codex/skills/`, `~/.openclaw/skills/`, or `~/.agents/skills/`). This ensures the skill documentation always matches the binary version — no separate download or version mismatch possible.
 
 A `.ical-version` file is written alongside the skill files to track which binary version installed them. When the binary is updated, `ical skills status` detects the mismatch and the background update check prints a staleness notice.
 

@@ -364,13 +364,14 @@ ical skills install --agent all       # All agents
 
 | Flag        | Short | Description                                         | Default     |
 | ----------- | ----- | --------------------------------------------------- | ----------- |
-| `--agent`   | —     | Target agent: claude, codex, openclaw, or all       | Interactive |
-| `--dry-run` | —     | Preview what would be installed without writing      | false       |
+| `--agent`   | —     | Target agent: claude, codex, openclaw, others, or all | Interactive |
+| `--dry-run` | —     | Preview what would be installed without writing        | false       |
 
 Supported targets:
 - `claude` → `~/.claude/skills/ical-cli/` (Claude Code, GitHub Copilot, Cursor, OpenCode, Augment)
-- `codex` → `~/.agents/skills/ical-cli/` (Codex CLI, GitHub Copilot, Windsurf, OpenCode, Augment)
+- `codex` → `~/.codex/skills/ical-cli/` (Codex CLI)
 - `openclaw` → `~/.openclaw/skills/ical-cli/` (OpenClaw)
+- `others` → `~/.agents/skills/ical-cli/` (Copilot, Windsurf, OpenCode, Augment)
 
 ### ical skills uninstall
 
