@@ -10,8 +10,8 @@ import (
 
 func TestDefaultTargets(t *testing.T) {
 	targets := DefaultTargets("/home/user")
-	if len(targets) != 3 {
-		t.Fatalf("expected 3 targets, got %d", len(targets))
+	if len(targets) != 4 {
+		t.Fatalf("expected 4 targets, got %d", len(targets))
 	}
 
 	if targets[0].Key != "claude" {
@@ -24,8 +24,8 @@ func TestDefaultTargets(t *testing.T) {
 	if targets[1].Key != "codex" {
 		t.Errorf("expected second target key 'codex', got %q", targets[1].Key)
 	}
-	if targets[1].BaseDir != "/home/user/.agents/skills" {
-		t.Errorf("expected codex base dir '/home/user/.agents/skills', got %q", targets[1].BaseDir)
+	if targets[1].BaseDir != "/home/user/.codex/skills" {
+		t.Errorf("expected codex base dir '/home/user/.codex/skills', got %q", targets[1].BaseDir)
 	}
 
 	if targets[2].Key != "openclaw" {
@@ -36,6 +36,13 @@ func TestDefaultTargets(t *testing.T) {
 	}
 	if !strings.Contains(targets[2].BaseDir, ".openclaw/skills") {
 		t.Errorf("expected openclaw base dir to contain '.openclaw/skills', got %q", targets[2].BaseDir)
+	}
+
+	if targets[3].Key != "others" {
+		t.Errorf("expected fourth target key 'others', got %q", targets[3].Key)
+	}
+	if targets[3].BaseDir != "/home/user/.agents/skills" {
+		t.Errorf("expected others base dir '/home/user/.agents/skills', got %q", targets[3].BaseDir)
 	}
 }
 
@@ -337,14 +344,15 @@ func TestDetectAgentsBothPresent(t *testing.T) {
 func TestDetectAgentsAllPresent(t *testing.T) {
 	tmpDir := t.TempDir()
 	os.MkdirAll(filepath.Join(tmpDir, ".claude", "skills"), 0o755)
-	os.MkdirAll(filepath.Join(tmpDir, ".agents", "skills"), 0o755)
+	os.MkdirAll(filepath.Join(tmpDir, ".codex", "skills"), 0o755)
 	os.MkdirAll(filepath.Join(tmpDir, ".openclaw", "skills"), 0o755)
+	os.MkdirAll(filepath.Join(tmpDir, ".agents", "skills"), 0o755)
 
 	targets := DefaultTargets(tmpDir)
 	detected := DetectAgents(targets)
 
-	if len(detected) != 3 {
-		t.Errorf("expected 3 detected agents, got %d", len(detected))
+	if len(detected) != 4 {
+		t.Errorf("expected 4 detected agents, got %d", len(detected))
 	}
 }
 

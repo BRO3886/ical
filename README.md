@@ -317,8 +317,9 @@ ical skills install
 
 # Install for a specific agent
 ical skills install --agent claude    # → ~/.claude/skills/ical-cli/
-ical skills install --agent codex     # → ~/.agents/skills/ical-cli/
+ical skills install --agent codex     # → ~/.codex/skills/ical-cli/
 ical skills install --agent openclaw  # → ~/.openclaw/skills/ical-cli/
+ical skills install --agent others    # → ~/.agents/skills/ical-cli/
 ical skills install --agent all       # All agents
 
 # Check installation status

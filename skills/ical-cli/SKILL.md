@@ -5,6 +5,9 @@ metadata:
   author: BRO3886
   version: "0.7.0"
 compatibility: Requires macOS with Calendar.app. Requires Xcode Command Line Tools for building from source.
+permissions:
+  macos:
+    macos_calendar: true
 ---
 
 # ical — CLI for macOS Calendar
@@ -95,7 +98,7 @@ ical export --format ics --from today --to "in 30 days" --output-file events.ics
 
 | Command                 | Aliases | Description                                                                    |
 | ----------------------- | ------- | ------------------------------------------------------------------------------ |
-| `ical skills install`   | —       | Install ical skill for Claude Code / Codex / OpenClaw (`--dry-run` to preview) |
+| `ical skills install`   | —       | Install ical skill for Claude Code / Codex / OpenClaw / others (`--dry-run` to preview) |
 | `ical skills uninstall` | —       | Remove ical agent skill                                                        |
 | `ical skills status`    | —       | Show skill installation status                                                 |
 | `ical version`          | —       | Print version and build info                                                   |

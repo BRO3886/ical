@@ -25,7 +25,7 @@ ical provides commands for managing macOS Calendar events and calendars. Every c
 | `ical search [query]`            | Search events                                     |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
-| `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw) |
+| `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw / others) |
 | `ical skills uninstall`           | Remove AI agent skill                             |
 | `ical skills status`              | Show skill installation status                    |
 | `ical version`                    | Show version info                                 |
@@ -475,22 +475,24 @@ ical skills install
 
 # Direct
 ical skills install --agent claude    # → ~/.claude/skills/ical-cli/
-ical skills install --agent codex     # → ~/.agents/skills/ical-cli/
+ical skills install --agent codex     # → ~/.codex/skills/ical-cli/
 ical skills install --agent openclaw  # → ~/.openclaw/skills/ical-cli/
+ical skills install --agent others    # → ~/.agents/skills/ical-cli/
 ical skills install --agent all       # All agents
 ```
 
 #### Flags
 
-| Flag        | Description                                              |
-|-------------|----------------------------------------------------------|
-| `--agent`   | Target agent: `claude`, `codex`, `openclaw`, or `all`    |
-| `--dry-run` | Preview what would be installed without writing           |
+| Flag        | Description                                                      |
+|-------------|------------------------------------------------------------------|
+| `--agent`   | Target agent: `claude`, `codex`, `openclaw`, `others`, or `all`  |
+| `--dry-run` | Preview what would be installed without writing                   |
 
 Supported targets:
 - **claude** → `~/.claude/skills/ical-cli/` — works with Claude Code, GitHub Copilot, Cursor, OpenCode, Augment
-- **codex** → `~/.agents/skills/ical-cli/` — works with Codex CLI, GitHub Copilot, Windsurf, OpenCode, Augment
+- **codex** → `~/.codex/skills/ical-cli/` — works with Codex CLI
 - **openclaw** → `~/.openclaw/skills/ical-cli/` — works with OpenClaw
+- **others** → `~/.agents/skills/ical-cli/` — works with Copilot, Windsurf, OpenCode, Augment
 
 ---
 
@@ -507,7 +509,7 @@ ical skills uninstall --agent claude
 
 | Flag      | Description                          |
 |-----------|--------------------------------------|
-| `--agent` | Target agent: `claude`, `codex`, or `all` |
+| `--agent` | Target agent: `claude`, `codex`, `openclaw`, `others`, or `all` |
 
 ---
 
