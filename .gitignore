@@ -23,6 +23,9 @@ coverage.txt
 .DS_Store
 Thumbs.db
 
+# Journals (symlinked to ~/projects/work-journals/ical)
+journals
+
 # Build
 dist/
 
