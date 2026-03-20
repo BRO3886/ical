@@ -63,13 +63,19 @@ Supports full names and 3-letter abbreviations: `sun`, `mon`, `tue`, `wed`, `thu
 
 ## Month + Day
 
-| Input            | Resolves to             |
-| ---------------- | ----------------------- |
-| `mar 15`         | March 15 at midnight    |
-| `march 15 2pm`   | March 15 at 2:00 PM     |
-| `dec 31 11:59pm` | December 31 at 11:59 PM |
+Both month-first and day-first ordering are supported:
 
-Supports full and abbreviated month names (jan/january through dec/december).
+| Input              | Resolves to             |
+| ------------------ | ----------------------- |
+| `mar 15`           | March 15 at midnight    |
+| `march 15 2pm`     | March 15 at 2:00 PM    |
+| `dec 31 11:59pm`   | December 31 at 11:59 PM |
+| `21 mar`           | March 21 at midnight    |
+| `21 mar 2pm`       | March 21 at 2:00 PM    |
+| `21 march at 2pm`  | March 21 at 2:00 PM    |
+| `21 march 2026`    | March 21, 2026          |
+
+Supports full and abbreviated month names (jan/january through dec/december). Day-first formats also accept an optional year.
 
 ## Time Only
 
