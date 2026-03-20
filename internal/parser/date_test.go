@@ -320,6 +320,75 @@ func TestParseDateRelativeTo_MonthDay(t *testing.T) {
 	}
 }
 
+func TestParseDateRelativeTo_DayFirstDates(t *testing.T) {
+	ist := mustLoadLoc(t, "Asia/Kolkata")
+	now := refTime(ist)
+
+	tests := []struct {
+		name  string
+		input string
+		want  time.Time
+	}{
+		{"21 mar", "21 mar", time.Date(2026, 3, 21, 0, 0, 0, 0, ist)},
+		{"21 March", "21 March", time.Date(2026, 3, 21, 0, 0, 0, 0, ist)},
+		{"21 mar 2pm", "21 mar 2pm", time.Date(2026, 3, 21, 14, 0, 0, 0, ist)},
+		{"21 march at 2pm", "21 march at 2pm", time.Date(2026, 3, 21, 14, 0, 0, 0, ist)},
+		{"21 mar 2:30pm", "21 mar 2:30pm", time.Date(2026, 3, 21, 14, 30, 0, 0, ist)},
+		{"15 jan", "15 jan", time.Date(2026, 1, 15, 0, 0, 0, 0, ist)},
+		{"1 dec 9am", "1 dec 9am", time.Date(2026, 12, 1, 9, 0, 0, 0, ist)},
+		{"21 march 2026", "21 march 2026", time.Date(2026, 3, 21, 0, 0, 0, 0, ist)},
+		{"21 march 2027", "21 march 2027", time.Date(2027, 3, 21, 0, 0, 0, 0, ist)},
+		{"21 mar 2026 2pm", "21 mar 2026 2pm", time.Date(2026, 3, 21, 14, 0, 0, 0, ist)},
+		{"ISO bare hour 2PM", "2026-03-21 2PM", time.Date(2026, 3, 21, 14, 0, 0, 0, ist)},
+		{"ISO bare hour 2pm", "2026-03-21 2pm", time.Date(2026, 3, 21, 14, 0, 0, 0, ist)},
+		// 24h time
+		{"21 mar 14:00", "21 mar 14:00", time.Date(2026, 3, 21, 14, 0, 0, 0, ist)},
+		// Single digit day
+		{"1 mar", "1 mar", time.Date(2026, 3, 1, 0, 0, 0, 0, ist)},
+		// Case insensitive (input goes through strings.ToLower)
+		{"21 MAR", "21 MAR", time.Date(2026, 3, 21, 0, 0, 0, 0, ist)},
+		{"21 Mar", "21 Mar", time.Date(2026, 3, 21, 0, 0, 0, 0, ist)},
+		// Month-first with year (regression: ensure year support didn't break month-first)
+		{"mar 21 2026", "mar 21 2026", time.Date(2026, 3, 21, 0, 0, 0, 0, ist)},
+		{"march 15 2027", "march 15 2027", time.Date(2027, 3, 15, 0, 0, 0, 0, ist)},
+		{"mar 15 2026 3pm", "mar 15 2026 3pm", time.Date(2026, 3, 15, 15, 0, 0, 0, ist)},
+		// Month-first with "at" still works
+		{"mar 15 at 2pm", "mar 15 at 2pm", time.Date(2026, 3, 15, 14, 0, 0, 0, ist)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseDateRelativeTo(tt.input, now)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseDateRelativeTo_DayFirstInvalidDates(t *testing.T) {
+	ist := mustLoadLoc(t, "Asia/Kolkata")
+	now := refTime(ist)
+
+	inputs := []string{
+		"31 feb",  // Feb doesn't have 31 days
+		"32 mar",  // No month has 32 days
+		"0 jan",   // Day 0 invalid
+	}
+
+	for _, input := range inputs {
+		t.Run(input, func(t *testing.T) {
+			_, err := ParseDateRelativeTo(input, now)
+			if err == nil {
+				t.Errorf("expected error for input %q", input)
+			}
+		})
+	}
+}
+
 func TestParseDateRelativeTo_StandaloneWeekday(t *testing.T) {
 	ist := mustLoadLoc(t, "Asia/Kolkata")
 	now := refTime(ist) // Wednesday

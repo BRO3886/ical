@@ -73,11 +73,16 @@ All relative expressions are evaluated at the moment the command runs.
 
 ### Month + Day
 
-| Input        | Resolves to                  |
-|--------------|------------------------------|
-| `mar 15`     | March 15 of this year        |
-| `march 15`   | March 15 of this year       |
-| `dec 25`     | December 25 of this year    |
+Both month-first and day-first ordering are supported:
+
+| Input             | Resolves to                  |
+|-------------------|------------------------------|
+| `mar 15`          | March 15 of this year        |
+| `march 15`        | March 15 of this year        |
+| `dec 25`          | December 25 of this year     |
+| `21 mar`          | March 21 of this year        |
+| `21 march 2pm`    | March 21 at 2:00 PM          |
+| `21 march 2026`   | March 21, 2026               |
 
 ### ISO 8601
 

@@ -23,7 +23,7 @@ func ParseDate(input string) (time.Time, error) {
 //     "this week" (Sun 23:59), "next week" (next Mon), "next month" (1st of next month)
 //   - Relative: "in 3 hours", "in 2 weeks", "5 days ago"
 //   - Weekdays: "next friday", "monday 2pm", "friday at 3:30pm"
-//   - Month-day: "mar 15", "december 31 11:59pm"
+//   - Month-day: "mar 15", "december 31 11:59pm", "21 mar", "21 march 2026"
 //   - Time only: "5pm", "17:00", "3:30pm"
 //   - Standard formats: ISO 8601, RFC 3339, US date, etc.
 func ParseDateRelativeTo(input string, now time.Time) (time.Time, error) {
@@ -128,6 +128,8 @@ func tryStandardFormats(input string, loc *time.Location) (time.Time, error) {
 		"2006-01-02T15:04",
 		"2006-01-02 3:04PM",
 		"2006-01-02 3:04pm",
+		"2006-01-02 3PM",
+		"2006-01-02 3pm",
 		"2006-01-02",
 		"01/02/2006",
 		"01/02/2006 15:04",
@@ -329,31 +331,59 @@ var months = map[string]time.Month{
 	"dec": time.December, "december": time.December,
 }
 
+// reMonthDay matches month-first: "mar 15", "march 15 2pm", "mar 15 at 2pm"
 var reMonthDay = regexp.MustCompile(`^([a-z]+)\s+(\d{1,2})(?:\s+(.+))?$`)
 
+// reDayMonth matches day-first: "21 mar", "21 march 2026", "21 mar 2pm", "21 mar 2026 2pm"
+var reDayMonth = regexp.MustCompile(`^(\d{1,2})\s+([a-z]+)(?:\s+(.+))?$`)
+
 func parseMonthDay(input string, now time.Time) (time.Time, error) {
-	m := reMonthDay.FindStringSubmatch(input)
-	if m == nil {
-		return time.Time{}, fmt.Errorf("not a month-day expression")
+	// Try month-first: "mar 15", "march 15 2pm"
+	if m := reMonthDay.FindStringSubmatch(input); m != nil {
+		if mon, ok := months[m[1]]; ok {
+			day, _ := strconv.Atoi(m[2])
+			return buildMonthDayResult(mon, day, m[3], now)
+		}
 	}
 
-	mon, ok := months[m[1]]
-	if !ok {
-		return time.Time{}, fmt.Errorf("unknown month: %s", m[1])
+	// Try day-first: "21 mar", "21 march 2026", "21 mar 2pm"
+	if m := reDayMonth.FindStringSubmatch(input); m != nil {
+		day, _ := strconv.Atoi(m[1])
+		if mon, ok := months[m[2]]; ok {
+			return buildMonthDayResult(mon, day, m[3], now)
+		}
 	}
 
-	day, _ := strconv.Atoi(m[2])
+	return time.Time{}, fmt.Errorf("not a month-day expression")
+}
+
+func buildMonthDayResult(mon time.Month, day int, rest string, now time.Time) (time.Time, error) {
 	if day < 1 || day > 31 {
 		return time.Time{}, fmt.Errorf("invalid day: %d", day)
 	}
 
 	y := now.Year()
+	rest = strings.TrimSpace(rest)
+
+	// Check if rest starts with a year: "2026", "2026 2pm"
+	if rest != "" {
+		parts := strings.Fields(rest)
+		if yr, err := strconv.Atoi(parts[0]); err == nil && yr >= 1000 && yr <= 9999 {
+			y = yr
+			rest = strings.TrimSpace(strings.Join(parts[1:], " "))
+		}
+	}
+
 	result := time.Date(y, mon, day, 0, 0, 0, 0, now.Location())
 
-	// If there's a time part
-	if m[3] != "" {
-		timeStr := strings.TrimSpace(m[3])
-		timeStr = strings.TrimPrefix(timeStr, "at ")
+	// Catch overflow: time.Date normalizes e.g. Feb 31 → Mar 3
+	if result.Month() != mon || result.Day() != day {
+		return time.Time{}, fmt.Errorf("invalid date: %s %d", mon, day)
+	}
+
+	// Parse optional time component
+	if rest != "" {
+		timeStr := strings.TrimPrefix(rest, "at ")
 		if hour, min, err := parseTimeStr(timeStr); err == nil {
 			result = time.Date(y, mon, day, hour, min, 0, 0, now.Location())
 		}

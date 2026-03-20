@@ -152,7 +152,7 @@ ical search "standup" --from "2 weeks ago"
 ical upcoming --days 14
 ```
 
-Supported patterns: `today`, `tomorrow`, `next monday`, `in 3 hours`, `eod`, `eow`, `this week`, `5pm`, `mar 15`, `2 days ago`, and more. See [references/dates.md](references/dates.md) for the full list.
+Supported patterns: `today`, `tomorrow`, `next monday`, `in 3 hours`, `eod`, `eow`, `this week`, `5pm`, `mar 15`, `21 mar`, `21 march 2026`, `2 days ago`, and more. See [references/dates.md](references/dates.md) for the full list.
 
 **Timezone abbreviations (CDT, CST, EST, etc.) cannot be embedded in date strings** — the parser will reject them. For events in a different timezone than the local machine, use the `--timezone` flag:
 
