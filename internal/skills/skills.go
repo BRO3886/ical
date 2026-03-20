@@ -37,7 +37,7 @@ func DefaultTargets(homeDir string) []AgentTarget {
 }
 
 const skillDirName = "ical-cli"
-const versionFileName = ".ical-version"
+const VersionFileName = ".ical-version"
 
 // SkillDir returns the full path to the skill directory for a given target.
 func SkillDir(target AgentTarget) string {
@@ -95,7 +95,7 @@ func Install(embeddedFS fs.FS, target AgentTarget, version string) ([]string, er
 	}
 
 	// Write version tracking file
-	versionPath := filepath.Join(destDir, versionFileName)
+	versionPath := filepath.Join(destDir, VersionFileName)
 	if err := os.WriteFile(versionPath, []byte(version+"\n"), 0o644); err != nil {
 		return nil, fmt.Errorf("failed to write version file: %w", err)
 	}
@@ -126,7 +126,7 @@ func Uninstall(target AgentTarget) (bool, error) {
 // InstalledVersion reads the version from an installed skill directory.
 // Returns empty string if not installed or version file is missing.
 func InstalledVersion(target AgentTarget) string {
-	versionPath := filepath.Join(SkillDir(target), versionFileName)
+	versionPath := filepath.Join(SkillDir(target), VersionFileName)
 	data, err := os.ReadFile(versionPath)
 	if err != nil {
 		return ""

@@ -78,7 +78,9 @@ func runSkillsInstall(cmd *cobra.Command, args []string) error {
 		return printDryRun(ical.EmbeddedSkills, targets, homeDir)
 	}
 
-	// Show disclaimer and ask for confirmation (interactive only)
+	// Show disclaimer and ask for confirmation (interactive only).
+	// Non-interactive invocations (piped stdin, --agent in CI) skip this
+	// intentionally so scripts and agents can install without blocking.
 	if isInteractive() {
 		if !confirmInstall(targets, homeDir) {
 			fmt.Println("Cancelled.")
@@ -144,7 +146,7 @@ func printDryRun(embeddedFS fs.FS, targets []skills.AgentTarget, homeDir string)
 		for _, f := range files {
 			fmt.Printf("  %s\n", f)
 		}
-		fmt.Printf("  %s\n\n", ".ical-version")
+		fmt.Printf("  %s\n\n", skills.VersionFileName)
 	}
 
 	fmt.Println("These are the same docs published at https://ical.sidv.dev/docs")

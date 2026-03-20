@@ -93,13 +93,13 @@ ical export --format ics --from today --to "in 30 days" --output-file events.ics
 
 ### Skills & Other
 
-| Command                | Aliases | Description                                        |
-| ---------------------- | ------- | -------------------------------------------------- |
-| `ical skills install`            | —       | Install ical skill for Claude Code / Codex / OpenClaw (`--dry-run` to preview) |
-| `ical skills uninstall`          | —       | Remove ical agent skill                            |
-| `ical skills status`             | —       | Show skill installation status                     |
-| `ical version`          | —       | Print version and build info                       |
-| `ical completion`       | —       | Generate shell completions (bash/zsh/fish)         |
+| Command                 | Aliases | Description                                                                    |
+| ----------------------- | ------- | ------------------------------------------------------------------------------ |
+| `ical skills install`   | —       | Install ical skill for Claude Code / Codex / OpenClaw (`--dry-run` to preview) |
+| `ical skills uninstall` | —       | Remove ical agent skill                                                        |
+| `ical skills status`    | —       | Show skill installation status                                                 |
+| `ical version`          | —       | Print version and build info                                                   |
+| `ical completion`       | —       | Generate shell completions (bash/zsh/fish)                                     |
 
 For full flag details on every command, see [references/commands.md](references/commands.md).
 
