@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 
 	ical "github.com/BRO3886/ical"
@@ -31,6 +32,8 @@ func init() {
 
 // --- skills install ---
 
+var skillsInstallDryRun bool
+
 var skillsInstallCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Install ical skill for AI agents",
@@ -41,12 +44,17 @@ Supported agents:
   codex     → ~/.agents/skills/ical-cli/    (Codex CLI, Copilot, Windsurf, OpenCode, Augment)
   openclaw  → ~/.openclaw/skills/ical-cli/  (OpenClaw)
 
-Without --agent, shows an interactive picker to select which agents to install for.`,
+Without --agent, shows an interactive picker to select which agents to install for.
+
+The skill files are documentation (SKILL.md + reference pages) that teach AI
+agents how to invoke ical. They contain the same information published at
+https://ical.sidv.dev/docs — use --dry-run to preview what will be written.`,
 	RunE: runSkillsInstall,
 }
 
 func init() {
 	skillsInstallCmd.Flags().StringVar(&skillsAgentFlag, "agent", "", "Agent target: claude, codex, openclaw, or all")
+	skillsInstallCmd.Flags().BoolVar(&skillsInstallDryRun, "dry-run", false, "Preview what would be installed without writing anything")
 	skillsCmd.AddCommand(skillsInstallCmd)
 }
 
@@ -65,7 +73,83 @@ func runSkillsInstall(cmd *cobra.Command, args []string) error {
 		return nil // user cancelled
 	}
 
+	// Dry-run: show what would be written and exit
+	if skillsInstallDryRun {
+		return printDryRun(ical.EmbeddedSkills, targets, homeDir)
+	}
+
+	// Show disclaimer and ask for confirmation (interactive only)
+	if isInteractive() {
+		if !confirmInstall(targets, homeDir) {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+	}
+
 	return installToTargets(ical.EmbeddedSkills, targets, homeDir)
+}
+
+// confirmInstall shows a disclaimer about what skills install does and asks
+// for explicit confirmation. Returns true if the user agrees.
+func confirmInstall(targets []skills.AgentTarget, homeDir string) bool {
+	cyan := color.New(color.FgCyan)
+	cyan.Println("\nThe skill files are documentation that teaches AI agents how to use ical.")
+	cyan.Println("They contain the same content published at https://ical.sidv.dev/docs")
+	fmt.Println("\nThe following paths will be created:")
+	for _, t := range targets {
+		fmt.Printf("  • %s\n", skills.DisplayPath(skills.SkillDir(t), homeDir))
+	}
+	fmt.Println("\nUse --dry-run to preview the exact files without writing anything.")
+
+	var confirm bool
+	form := huh.NewForm(
+		huh.NewGroup(
+			huh.NewConfirm().
+				Title("Proceed with installation?").
+				Value(&confirm),
+		),
+	).WithTheme(huh.ThemeCatppuccin())
+
+	if err := form.Run(); err != nil {
+		return false
+	}
+	return confirm
+}
+
+// printDryRun lists the files that would be written without actually writing them.
+func printDryRun(embeddedFS fs.FS, targets []skills.AgentTarget, homeDir string) error {
+	cyan := color.New(color.FgCyan, color.Bold)
+	cyan.Println("Dry run — no files will be written.")
+	fmt.Println()
+
+	// Collect embedded file paths
+	var files []string
+	err := fs.WalkDir(embeddedFS, "skills/cal-cli", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			rel, _ := filepath.Rel("skills/cal-cli", path)
+			files = append(files, rel)
+		}
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to walk embedded skills: %w", err)
+	}
+
+	for _, t := range targets {
+		displayDir := skills.DisplayPath(skills.SkillDir(t), homeDir)
+		fmt.Printf("%s (%s):\n", t.Name, displayDir)
+		for _, f := range files {
+			fmt.Printf("  %s\n", f)
+		}
+		fmt.Printf("  %s\n\n", ".ical-version")
+	}
+
+	fmt.Println("These are the same docs published at https://ical.sidv.dev/docs")
+	fmt.Println("Run without --dry-run to install.")
+	return nil
 }
 
 func installToTargets(embeddedFS fs.FS, targets []skills.AgentTarget, homeDir string) error {
