@@ -464,10 +464,13 @@ Manage the embedded AI agent skill. ical ships with an [agent skill](https://age
 
 ### ical skills install
 
-Install the skill to the selected agent's skill directory. Without `--agent`, shows an interactive picker.
+Install the skill to the selected agent's skill directory. Without `--agent`, shows an interactive picker. In interactive mode, a confirmation prompt shows exactly which paths will be created before writing anything. The skill files are the same documentation published at [ical.sidv.dev/docs](https://ical.sidv.dev/docs).
 
 ```bash
-# Interactive — pick which agents
+# Preview what would be installed (no files written)
+ical skills install --dry-run
+
+# Interactive — pick which agents, then confirm
 ical skills install
 
 # Direct
@@ -478,9 +481,10 @@ ical skills install --agent all      # Both
 
 #### Flags
 
-| Flag      | Description                          |
-|-----------|--------------------------------------|
-| `--agent` | Target agent: `claude`, `codex`, or `all` |
+| Flag        | Description                                      |
+|-------------|--------------------------------------------------|
+| `--agent`   | Target agent: `claude`, `codex`, or `all`        |
+| `--dry-run` | Preview what would be installed without writing   |
 
 Supported targets:
 - **claude** → `~/.claude/skills/ical-cli/` — works with Claude Code, GitHub Copilot, Cursor, OpenCode, Augment

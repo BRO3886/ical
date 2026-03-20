@@ -152,13 +152,17 @@ ical update -i
 
 ## AI Agent Skills
 
-ical includes an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it. After installing the binary, install the skill:
+ical includes an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it. The skill files contain the same documentation published at [ical.sidv.dev/docs](https://ical.sidv.dev/docs). You can preview what would be installed before writing anything:
 
 ```bash
+# Preview the files that would be written
+ical skills install --dry-run
+
+# Install (interactive picker + confirmation prompt)
 ical skills install
 ```
 
-This opens an interactive picker to select which agents to install for. You can also target specific agents:
+You can also target specific agents directly:
 
 ```bash
 ical skills install --agent claude   # Claude Code, Copilot, Cursor, OpenCode, Augment

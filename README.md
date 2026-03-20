@@ -306,10 +306,13 @@ Interactive mode uses [charmbracelet/huh](https://github.com/charmbracelet/huh) 
 
 ## AI Agent Skills
 
-ical ships with an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it effectively.
+ical ships with an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it effectively. The skill files contain the same documentation published at [ical.sidv.dev/docs](https://ical.sidv.dev/docs).
 
 ```bash
-# Install the skill (interactive — pick which agents)
+# Preview what would be installed (no files written)
+ical skills install --dry-run
+
+# Install the skill (interactive — pick which agents, then confirm)
 ical skills install
 
 # Install for a specific agent

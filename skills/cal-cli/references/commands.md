@@ -351,18 +351,20 @@ Manage AI agent skills. The ical binary embeds its own agent skill files and can
 
 ### ical skills install
 
-Install the ical agent skill for AI coding agents. Without `--agent`, shows an interactive multi-select picker.
+Install the ical agent skill for AI coding agents. Without `--agent`, shows an interactive multi-select picker followed by a confirmation prompt. The skill files are the same documentation published at https://ical.sidv.dev/docs.
 
 ```bash
-ical skills install                # Interactive — pick agents
+ical skills install --dry-run      # Preview files without writing
+ical skills install                # Interactive — pick agents + confirm
 ical skills install --agent claude # Direct — Claude Code only
 ical skills install --agent codex  # Direct — Codex CLI only
 ical skills install --agent all    # Both agents
 ```
 
-| Flag      | Short | Description                          | Default     |
-| --------- | ----- | ------------------------------------ | ----------- |
-| `--agent` | —     | Target agent: claude, codex, or all  | Interactive |
+| Flag        | Short | Description                                    | Default     |
+| ----------- | ----- | ---------------------------------------------- | ----------- |
+| `--agent`   | —     | Target agent: claude, codex, or all            | Interactive |
+| `--dry-run` | —     | Preview what would be installed without writing | false       |
 
 Supported targets:
 - `claude` → `~/.claude/skills/ical-cli/` (Claude Code, Copilot, Cursor, OpenCode, Augment)
