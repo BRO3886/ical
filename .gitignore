@@ -24,7 +24,7 @@ coverage.txt
 Thumbs.db
 
 # Journals (symlinked to ~/projects/work-journals/ical)
-journals/
+journals
 
 # Build
 dist/
