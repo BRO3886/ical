@@ -56,14 +56,14 @@ func Install(embeddedFS fs.FS, target AgentTarget, version string) ([]string, er
 
 	var written []string
 
-	err := fs.WalkDir(embeddedFS, "skills/cal-cli", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(embeddedFS, "skills/ical-cli", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
 		// Convert embedded path to destination path
-		// path is like "skills/cal-cli/SKILL.md" -> "SKILL.md"
-		relPath, err := filepath.Rel("skills/cal-cli", path)
+		// path is like "skills/ical-cli/SKILL.md" -> "SKILL.md"
+		relPath, err := filepath.Rel("skills/ical-cli", path)
 		if err != nil {
 			return err
 		}

@@ -95,6 +95,20 @@ Supports full and abbreviated month names (jan/january through dec/december).
 | Month name + time | `Feb 15, 2026 2:30PM` / `Feb 15, 2026 14:30`  |
 | Day-first         | `15 Feb 2026` / `15 February 2026`            |
 
+## Timezone Handling
+
+**Timezone abbreviations (CDT, CST, EST, etc.) cannot be embedded in date strings** — the parser will reject them. Use the `--timezone` flag on `add` or `update` with an IANA timezone name:
+
+```bash
+# WRONG — will fail
+ical add "Meeting" --start "2026-06-17 at 2pm CDT"
+
+# CORRECT — use IANA timezone
+ical add "Meeting" --start "2026-06-17 14:00" --timezone "America/Chicago"
+```
+
+Accepted values: any IANA name (e.g., `America/Chicago`, `America/New_York`, `Europe/Madrid`). Times are stored correctly and displayed in the machine's local timezone.
+
 ## Alert Durations
 
 The `--alert` flag on `add` and `update` accepts duration strings:

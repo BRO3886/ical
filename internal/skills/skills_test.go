@@ -67,16 +67,16 @@ func TestDisplayPath(t *testing.T) {
 	}
 }
 
-// newTestFS creates a mock embedded filesystem matching the skills/cal-cli structure.
+// newTestFS creates a mock embedded filesystem matching the skills/ical-cli structure.
 func newTestFS() *fstest.MapFS {
 	return &fstest.MapFS{
-		"skills/cal-cli/SKILL.md": &fstest.MapFile{
-			Data: []byte("---\nname: cal-cli\n---\n# Test skill\n"),
+		"skills/ical-cli/SKILL.md": &fstest.MapFile{
+			Data: []byte("---\nname: ical-cli\n---\n# Test skill\n"),
 		},
-		"skills/cal-cli/references/commands.md": &fstest.MapFile{
+		"skills/ical-cli/references/commands.md": &fstest.MapFile{
 			Data: []byte("# Commands\n"),
 		},
-		"skills/cal-cli/references/dates.md": &fstest.MapFile{
+		"skills/ical-cli/references/dates.md": &fstest.MapFile{
 			Data: []byte("# Dates\n"),
 		},
 	}
@@ -106,7 +106,7 @@ func TestInstall(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read installed SKILL.md: %v", err)
 	}
-	if string(data) != "---\nname: cal-cli\n---\n# Test skill\n" {
+	if string(data) != "---\nname: ical-cli\n---\n# Test skill\n" {
 		t.Errorf("SKILL.md content mismatch: %q", string(data))
 	}
 

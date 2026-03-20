@@ -93,6 +93,20 @@ All relative expressions are evaluated at the moment the command runs.
 | `eod`  | Today at 5:00 PM         |
 | `eow`  | Friday at 5:00 PM        |
 
+## Timezone Handling
+
+Timezone abbreviations like `CDT`, `EST`, or `PST` **cannot** be embedded in date strings — the parser will reject them. To create events in a different timezone, use the `--timezone` flag with an IANA timezone name:
+
+```bash
+# This will fail
+ical add "Meeting" --start "2026-06-17 at 2pm CDT"
+
+# Use --timezone instead
+ical add "Meeting" --start "2026-06-17 14:00" --timezone "America/Chicago"
+```
+
+The `--timezone` flag accepts any IANA name (e.g., `America/Chicago`, `America/New_York`, `Europe/Madrid`). Events are stored with the correct timezone and displayed in your local timezone.
+
 ## End-of-Day Behavior
 
 When a date is used with the `--to` flag and resolves to midnight (00:00:00), ical automatically bumps it to 23:59:59 of that day. This ensures that `--to "feb 12"` includes all events on February 12, not just those before midnight.

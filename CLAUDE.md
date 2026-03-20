@@ -41,7 +41,7 @@ ical/
 │   │   └── skills.go
 │   └── update/                  # Background update check (cache + GitHub API)
 │       └── check.go
-├── skills/cal-cli/              # Embedded agent skill (go:embed into binary)
+├── skills/ical-cli/             # Embedded agent skill (go:embed into binary)
 │   ├── SKILL.md
 │   └── references/
 ├── skills.go                    # go:embed for skills directory

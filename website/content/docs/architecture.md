@@ -59,7 +59,7 @@ ical/
 │   │   └── skills.go
 │   └── update/                  # Background update check
 │       └── check.go
-├── skills/cal-cli/              # Embedded agent skill (baked into binary)
+├── skills/ical-cli/             # Embedded agent skill (baked into binary)
 │   ├── SKILL.md
 │   └── references/
 ├── skills.go                    # go:embed for skills directory
