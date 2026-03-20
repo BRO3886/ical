@@ -358,7 +358,7 @@ ical/
 │   ├── export/               # JSON/CSV/ICS import/export
 │   ├── skills/               # Agent skill install/uninstall logic
 │   └── update/               # Background update check
-├── skills/cal-cli/           # Embedded agent skill (baked into binary)
+├── skills/ical-cli/          # Embedded agent skill (baked into binary)
 ├── Makefile
 └── go.mod
 ```

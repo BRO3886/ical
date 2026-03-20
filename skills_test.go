@@ -6,7 +6,7 @@ import (
 )
 
 func TestEmbeddedSkillsContainsSkillMD(t *testing.T) {
-	data, err := fs.ReadFile(EmbeddedSkills, "skills/cal-cli/SKILL.md")
+	data, err := fs.ReadFile(EmbeddedSkills, "skills/ical-cli/SKILL.md")
 	if err != nil {
 		t.Fatalf("failed to read embedded SKILL.md: %v", err)
 	}
@@ -22,8 +22,8 @@ func TestEmbeddedSkillsContainsSkillMD(t *testing.T) {
 
 func TestEmbeddedSkillsContainsReferences(t *testing.T) {
 	files := []string{
-		"skills/cal-cli/references/commands.md",
-		"skills/cal-cli/references/dates.md",
+		"skills/ical-cli/references/commands.md",
+		"skills/ical-cli/references/dates.md",
 	}
 
 	for _, f := range files {
@@ -40,7 +40,7 @@ func TestEmbeddedSkillsContainsReferences(t *testing.T) {
 
 func TestEmbeddedSkillsWalkDir(t *testing.T) {
 	var files []string
-	err := fs.WalkDir(EmbeddedSkills, "skills/cal-cli", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(EmbeddedSkills, "skills/ical-cli", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

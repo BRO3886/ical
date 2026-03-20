@@ -151,6 +151,18 @@ ical upcoming --days 14
 
 Supported patterns: `today`, `tomorrow`, `next monday`, `in 3 hours`, `eod`, `eow`, `this week`, `5pm`, `mar 15`, `2 days ago`, and more. See [references/dates.md](references/dates.md) for the full list.
 
+**Timezone abbreviations (CDT, CST, EST, etc.) cannot be embedded in date strings** — the parser will reject them. For events in a different timezone than the local machine, use the `--timezone` flag:
+
+```bash
+# WRONG — will fail
+ical add "Meeting" --start "2026-06-17 at 2pm CDT"
+
+# CORRECT — use IANA timezone
+ical add "Meeting" --start "2026-06-17 14:00" --timezone "America/Chicago"
+```
+
+The `--timezone` flag accepts IANA names (e.g., `America/Chicago`, `America/New_York`, `Europe/Madrid`). Times display in the machine's local timezone but are stored correctly.
+
 ### Interactive Mode
 
 The `add` and `update` commands support `-i` for guided form-based input:

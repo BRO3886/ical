@@ -126,12 +126,12 @@ func printDryRun(embeddedFS fs.FS, targets []skills.AgentTarget, homeDir string)
 
 	// Collect embedded file paths
 	var files []string
-	err := fs.WalkDir(embeddedFS, "skills/cal-cli", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(embeddedFS, "skills/ical-cli", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if !d.IsDir() {
-			rel, _ := filepath.Rel("skills/cal-cli", path)
+			rel, _ := filepath.Rel("skills/ical-cli", path)
 			files = append(files, rel)
 		}
 		return nil
