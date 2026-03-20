@@ -1,7 +1,7 @@
 ---
 title: "Commands"
 description: "Complete reference for every ical command, flag, and option. Covers list, add, update, delete, search, export, import, and calendar management."
-keywords: ["ical commands", "macOS Calendar CLI commands", "ical list events", "ical add event", "calendar CLI reference", "ical flags options"]
+keywords: ["ical commands", "macOS Calendar CLI commands", "ical list events", "ical add event", "calendar CLI reference", "ical flags options", "Claude Code calendar skill", "Codex CLI calendar skill", "OpenClaw calendar"]
 weight: 2
 ---
 
@@ -25,7 +25,7 @@ ical provides commands for managing macOS Calendar events and calendars. Every c
 | `ical search [query]`            | Search events                                     |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
-| `ical skills install`             | Install AI agent skill (Claude Code / Codex)      |
+| `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw) |
 | `ical skills uninstall`           | Remove AI agent skill                             |
 | `ical skills status`              | Show skill installation status                    |
 | `ical version`                    | Show version info                                 |
@@ -460,7 +460,7 @@ The format is auto-detected from the file extension (`.json` or `.csv`).
 
 ## ical skills
 
-Manage the embedded AI agent skill. ical ships with an [agent skill](https://agentskills.io) baked into the binary that teaches AI coding agents how to use it.
+Manage the embedded AI agent skill. ical ships with an [agent skill](https://agentskills.io) baked into the binary that teaches AI coding agents (Claude Code, Codex CLI, OpenClaw, GitHub Copilot, Cursor, Windsurf, Augment) how to use it.
 
 ### ical skills install
 
@@ -474,21 +474,23 @@ ical skills install --dry-run
 ical skills install
 
 # Direct
-ical skills install --agent claude   # → ~/.claude/skills/ical-cli/
-ical skills install --agent codex    # → ~/.agents/skills/ical-cli/
-ical skills install --agent all      # Both
+ical skills install --agent claude    # → ~/.claude/skills/ical-cli/
+ical skills install --agent codex     # → ~/.agents/skills/ical-cli/
+ical skills install --agent openclaw  # → ~/.openclaw/skills/ical-cli/
+ical skills install --agent all       # All agents
 ```
 
 #### Flags
 
-| Flag        | Description                                      |
-|-------------|--------------------------------------------------|
-| `--agent`   | Target agent: `claude`, `codex`, or `all`        |
-| `--dry-run` | Preview what would be installed without writing   |
+| Flag        | Description                                              |
+|-------------|----------------------------------------------------------|
+| `--agent`   | Target agent: `claude`, `codex`, `openclaw`, or `all`    |
+| `--dry-run` | Preview what would be installed without writing           |
 
 Supported targets:
 - **claude** → `~/.claude/skills/ical-cli/` — works with Claude Code, GitHub Copilot, Cursor, OpenCode, Augment
 - **codex** → `~/.agents/skills/ical-cli/` — works with Codex CLI, GitHub Copilot, Windsurf, OpenCode, Augment
+- **openclaw** → `~/.openclaw/skills/ical-cli/` — works with OpenClaw
 
 ---
 

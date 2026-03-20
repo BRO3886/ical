@@ -97,7 +97,7 @@ ical delete
 | `ical search [query]`            | Search events                                     |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
-| `ical skills install`             | Install AI agent skill (Claude Code / Codex)      |
+| `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw) |
 | `ical skills uninstall`           | Remove AI agent skill                             |
 | `ical skills status`              | Show skill installation status                    |
 | `ical version`                    | Show version info                                 |
@@ -306,7 +306,7 @@ Interactive mode uses [charmbracelet/huh](https://github.com/charmbracelet/huh) 
 
 ## AI Agent Skills
 
-ical ships with an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, Copilot, Cursor, etc.) how to use it effectively. The skill files contain the same documentation published at [ical.sidv.dev/docs](https://ical.sidv.dev/docs).
+ical ships with an embedded [agent skill](https://agentskills.io) that teaches AI coding agents (Claude Code, Codex CLI, OpenClaw, GitHub Copilot, Cursor, Windsurf, Augment) how to use it effectively. The skill files contain the same documentation published at [ical.sidv.dev/docs](https://ical.sidv.dev/docs).
 
 ```bash
 # Preview what would be installed (no files written)
@@ -316,9 +316,10 @@ ical skills install --dry-run
 ical skills install
 
 # Install for a specific agent
-ical skills install --agent claude   # → ~/.claude/skills/ical-cli/
-ical skills install --agent codex    # → ~/.agents/skills/ical-cli/
-ical skills install --agent all      # Both
+ical skills install --agent claude    # → ~/.claude/skills/ical-cli/
+ical skills install --agent codex     # → ~/.agents/skills/ical-cli/
+ical skills install --agent openclaw  # → ~/.openclaw/skills/ical-cli/
+ical skills install --agent all       # All agents
 
 # Check installation status
 ical skills status

@@ -95,7 +95,7 @@ ical export --format ics --from today --to "in 30 days" --output-file events.ics
 
 | Command                | Aliases | Description                                        |
 | ---------------------- | ------- | -------------------------------------------------- |
-| `ical skills install`            | —       | Install ical agent skill (use `--dry-run` to preview) |
+| `ical skills install`            | —       | Install ical skill for Claude Code / Codex / OpenClaw (`--dry-run` to preview) |
 | `ical skills uninstall`          | —       | Remove ical agent skill                            |
 | `ical skills status`             | —       | Show skill installation status                     |
 | `ical version`          | —       | Print version and build info                       |
