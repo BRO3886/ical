@@ -93,7 +93,7 @@ ical delete
 | `ical show [# or id]`            | Show event details (interactive picker if no arg) |
 | `ical add [title]`               | Create an event (`-i` for interactive)            |
 | `ical update [# or id]`          | Update an event (`-i` for interactive)            |
-| `ical delete [# or id]`          | Delete an event (interactive picker if no arg)    |
+| `ical delete [# or id...]`       | Delete one or more events (interactive picker if no arg) |
 | `ical search [query]`            | Search events                                     |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
@@ -237,6 +237,9 @@ ical delete 3
 # Skip confirmation
 ical delete 3 -f
 
+# Batch delete multiple events
+ical delete 1 2 3 --force
+
 # Delete future occurrences
 ical delete 2 --span future
 ```
@@ -354,7 +357,6 @@ ical/
 │   ├── main.go              # Entry point
 │   └── commands/             # Cobra commands (one per file)
 ├── internal/
-│   ├── parser/               # Natural language date parsing
 │   ├── ui/                   # Output formatting (table/json/plain)
 │   ├── export/               # JSON/CSV/ICS import/export
 │   ├── skills/               # Agent skill install/uninstall logic
