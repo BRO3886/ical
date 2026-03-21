@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
@@ -30,7 +30,7 @@ var searchCmd = &cobra.Command{
 		now := time.Now()
 		from := now.AddDate(0, 0, -30) // 30 days ago
 		if searchFrom != "" {
-			t, err := parser.ParseDate(searchFrom)
+			t, err := dateparser.ParseDate(searchFrom)
 			if err != nil {
 				return fmt.Errorf("invalid --from date: %w", err)
 			}
@@ -39,7 +39,7 @@ var searchCmd = &cobra.Command{
 
 		to := now.AddDate(0, 0, 30) // 30 days ahead
 		if searchTo != "" {
-			t, err := parser.ParseDate(searchTo)
+			t, err := dateparser.ParseDate(searchTo)
 			if err != nil {
 				return fmt.Errorf("invalid --to date: %w", err)
 			}

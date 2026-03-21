@@ -34,9 +34,6 @@ ical/
 │   │   ├── json.go
 │   │   ├── csv.go
 │   │   └── ics.go
-│   ├── parser/                  # Natural language date parsing
-│   │   ├── date.go
-│   │   └── date_test.go
 │   ├── skills/                  # Agent skill install/uninstall logic
 │   │   └── skills.go
 │   └── update/                  # Background update check (cache + GitHub API)
@@ -54,7 +51,7 @@ ical/
 ```
 
 ## Key Dependencies
-- `github.com/BRO3886/go-eventkit` — calendar bindings (the whole point)
+- `github.com/BRO3886/go-eventkit` — calendar bindings + shared dateparser (the whole point)
 - `github.com/spf13/cobra` — CLI framework
 - `github.com/olekukonko/tablewriter` v1.x — table output (new API: `NewTable()`, `.Header()`, `.Append()`, `.Render()`)
 - `github.com/fatih/color` — terminal colors
@@ -62,6 +59,7 @@ ical/
 
 ## Critical: Architecture Rules
 - **All reads/writes go through `go-eventkit/calendar`** — no direct EventKit or AppleScript
+- **Date parsing uses `go-eventkit/dateparser`** — shared package, no internal parser
 - **Single binary** — go-eventkit compiles EventKit via cgo into the binary
 - **macOS only** — exit gracefully with error on other platforms
 - Events require date ranges for queries — no unbounded fetches
@@ -85,12 +83,13 @@ ical/
 - `--to` dates: `endOfDayIfMidnight()` bumps midnight to 23:59:59 (in list, search, export, pickEvent)
 - All list/show commands support `-o json|table|plain`
 - Date display: human-readable by default, ISO 8601 in JSON
-- Confirmation prompt for delete, `--force` to skip
+- Confirmation prompt for delete, `--force` to skip; batch delete with multiple args
+- Recurrence rules validated via `RecurrenceRule.Validate()` before EventKit call
 - Natural language dates: "today", "tomorrow", "next friday", "in 3 hours", "this week", etc.
 - Recurrence display: human-readable ("Every 2 weeks on Mon, Wed")
 - Color coding: calendar colors shown, all-day events highlighted
 - Interactive mode (`-i`): add and update support guided huh forms
-- `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/`, `~/.codex/skills/ical-cli/`, or `~/.agents/skills/ical-cli/`
+- `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/`, `~/.codex/skills/ical-cli/`, `~/.openclaw/skills/ical-cli/`, or `~/.agents/skills/ical-cli/`
 - Background update check: goroutine in PersistentPreRun, 2s timeout, 24h cache at `~/.cache/ical/update-check`
 - `ICAL_NO_UPDATE_CHECK=1` disables update check; also skipped for json output, piped stdout, dev builds
 

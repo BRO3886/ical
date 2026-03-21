@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
@@ -87,14 +87,14 @@ Use -i for interactive mode with guided prompts.`,
 			input.Title = strPtr(updateTitle)
 		}
 		if cmd.Flags().Changed("start") {
-			t, err := parser.ParseDate(updateStart)
+			t, err := dateparser.ParseDate(updateStart)
 			if err != nil {
 				return fmt.Errorf("invalid --start: %w", err)
 			}
 			input.StartDate = &t
 		}
 		if cmd.Flags().Changed("end") {
-			t, err := parser.ParseDate(updateEnd)
+			t, err := dateparser.ParseDate(updateEnd)
 			if err != nil {
 				return fmt.Errorf("invalid --end: %w", err)
 			}
@@ -131,7 +131,7 @@ Use -i for interactive mode with guided prompts.`,
 			} else {
 				alerts := make([]calendar.Alert, 0, len(updateAlerts))
 				for _, a := range updateAlerts {
-					d, err := parser.ParseAlertDuration(a)
+					d, err := dateparser.ParseAlertDuration(a)
 					if err != nil {
 						return err
 					}
@@ -253,7 +253,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 				if strings.TrimSpace(s) == "" {
 					return fmt.Errorf("start date is required")
 				}
-				_, err := parser.ParseDate(s)
+				_, err := dateparser.ParseDate(s)
 				if err != nil {
 					return fmt.Errorf("invalid date: %v", err)
 				}
@@ -267,7 +267,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 				if strings.TrimSpace(s) == "" {
 					return nil
 				}
-				_, err := parser.ParseDate(s)
+				_, err := dateparser.ParseDate(s)
 				if err != nil {
 					return fmt.Errorf("invalid date: %v", err)
 				}
@@ -343,13 +343,13 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 		input.Calendar = strPtr(calName)
 	}
 
-	newStart, _ := parser.ParseDate(startStr) // validated above
+	newStart, _ := dateparser.ParseDate(startStr) // validated above
 	if !newStart.Equal(event.StartDate) {
 		input.StartDate = &newStart
 	}
 
 	if strings.TrimSpace(endStr) != "" {
-		newEnd, _ := parser.ParseDate(endStr) // validated above
+		newEnd, _ := dateparser.ParseDate(endStr) // validated above
 		if !newEnd.Equal(event.EndDate) {
 			input.EndDate = &newEnd
 		}
@@ -398,7 +398,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 				if a == "" {
 					continue
 				}
-				d, err := parser.ParseAlertDuration(a)
+				d, err := dateparser.ParseAlertDuration(a)
 				if err != nil {
 					return err
 				}

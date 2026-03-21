@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/charmbracelet/huh"
 	"github.com/fatih/color"
@@ -24,17 +24,17 @@ var (
 )
 
 var deleteCmd = &cobra.Command{
-	Use:     "delete [number or id]",
+	Use:     "delete [number or id...]",
 	Aliases: []string{"rm", "remove"},
-	Short:   "Delete an event",
-	Long: `Deletes an event. Asks for confirmation by default.
+	Short:   "Delete one or more events",
+	Long: `Deletes one or more events. Asks for confirmation by default.
 
 With no arguments, shows an interactive picker to select the event.
 Use --from/--to or --days to control the picker's date range.
 
-With an argument, accepts a row number from the last listing or a full/partial event ID.
-Use --id for exact event ID lookup (no prefix matching).`,
-	Args: cobra.MaximumNArgs(1),
+With one argument, accepts a row number from the last listing or a full/partial event ID.
+With multiple arguments, performs a batch delete using row numbers or event IDs.
+Use --id for exact event ID lookup (no prefix matching, single event only).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := calendar.New()
 		if err != nil {
@@ -46,6 +46,17 @@ Use --id for exact event ID lookup (no prefix matching).`,
 			return fmt.Errorf("cannot use both --id and a positional argument")
 		}
 
+		span := calendar.SpanThisEvent
+		if deleteSpan == "future" {
+			span = calendar.SpanFutureEvents
+		}
+
+		// Batch delete: multiple positional args
+		if len(args) > 1 {
+			return runBatchDelete(client, args, span)
+		}
+
+		// Single event delete
 		var event *calendar.Event
 		if idFlagSet {
 			event, err = client.Event(deleteID)
@@ -82,11 +93,6 @@ Use --id for exact event ID lookup (no prefix matching).`,
 			}
 		}
 
-		span := calendar.SpanThisEvent
-		if deleteSpan == "future" {
-			span = calendar.SpanFutureEvents
-		}
-
 		if err := client.DeleteEvent(event.ID, span); err != nil {
 			return fmt.Errorf("failed to delete event: %w", err)
 		}
@@ -96,6 +102,66 @@ Use --id for exact event ID lookup (no prefix matching).`,
 		fmt.Printf("%s\n", event.Title)
 		return nil
 	},
+}
+
+// runBatchDelete resolves multiple args to events and deletes them in a single batch call.
+func runBatchDelete(client *calendar.Client, args []string, span calendar.Span) error {
+	// Resolve all args to events first
+	events := make([]*calendar.Event, 0, len(args))
+	for _, arg := range args {
+		event, err := findEventByPrefix(client, arg)
+		if err != nil {
+			return fmt.Errorf("resolving %q: %w", arg, err)
+		}
+		events = append(events, event)
+	}
+
+	// Confirmation
+	if !deleteForce {
+		red := color.New(color.FgRed, color.Bold)
+		red.Printf("Delete %d events:\n", len(events))
+		for _, e := range events {
+			fmt.Printf("  - %s (%s)\n", e.Title, e.StartDate.Format("Jan 02 15:04"))
+		}
+
+		fmt.Print("Are you sure? [y/N] ")
+		reader := bufio.NewReader(os.Stdin)
+		response, _ := reader.ReadString('\n')
+		response = strings.TrimSpace(strings.ToLower(response))
+		if response != "y" && response != "yes" {
+			fmt.Println("Cancelled.")
+			return nil
+		}
+	}
+
+	// Collect IDs and delete in batch
+	ids := make([]string, len(events))
+	nameByID := make(map[string]string, len(events))
+	for i, e := range events {
+		ids[i] = e.ID
+		nameByID[e.ID] = e.Title
+	}
+
+	errs := client.DeleteEvents(ids, span)
+
+	green := color.New(color.FgGreen, color.Bold)
+	redC := color.New(color.FgRed, color.Bold)
+	var failed int
+	for _, id := range ids {
+		if err, ok := errs[id]; ok && err != nil {
+			redC.Print("Failed: ")
+			fmt.Printf("%s — %v\n", nameByID[id], err)
+			failed++
+		} else {
+			green.Print("Deleted: ")
+			fmt.Printf("%s\n", nameByID[id])
+		}
+	}
+
+	if failed > 0 {
+		return fmt.Errorf("%d of %d events failed to delete", failed, len(ids))
+	}
+	return nil
 }
 
 func init() {
@@ -116,7 +182,7 @@ func pickEvent(client *calendar.Client, fromStr, toStr string, days int) (*calen
 
 	from := startOfDay(now)
 	if fromStr != "" {
-		t, err := parser.ParseDate(fromStr)
+		t, err := dateparser.ParseDate(fromStr)
 		if err != nil {
 			return nil, fmt.Errorf("invalid --from date: %w", err)
 		}
@@ -125,7 +191,7 @@ func pickEvent(client *calendar.Client, fromStr, toStr string, days int) (*calen
 
 	to := from.AddDate(0, 0, days)
 	if toStr != "" {
-		t, err := parser.ParseDate(toStr)
+		t, err := dateparser.ParseDate(toStr)
 		if err != nil {
 			return nil, fmt.Errorf("invalid --to date: %w", err)
 		}
@@ -146,7 +212,7 @@ func pickEvent(client *calendar.Client, fromStr, toStr string, days int) (*calen
 	for i, e := range events {
 		start := localizeEventTime(e.StartDate, e.TimeZone)
 		end := localizeEventTime(e.EndDate, e.TimeZone)
-		label := fmt.Sprintf("%s  %s (%s)", parser.FormatTimeRange(start, end, e.AllDay), e.Title, e.Calendar)
+		label := fmt.Sprintf("%s  %s (%s)", dateparser.FormatTimeRange(start, end, e.AllDay), e.Title, e.Calendar)
 		options[i] = huh.NewOption(label, e.ID)
 	}
 

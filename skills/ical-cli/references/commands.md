@@ -256,11 +256,12 @@ Aliases: `edit`
 
 ## ical delete
 
-Delete an event. Asks for confirmation by default.
+Delete one or more events. Asks for confirmation by default.
 
 ```bash
 ical delete 1 --force                              # Row number, skip confirmation
 ical rm 2 --force                                  # Alias
+ical delete 1 2 3 --force                          # Batch delete multiple events
 ical delete                                        # Interactive picker
 ical delete 3 --span future                        # Delete this and future occurrences
 ical delete --id "577B8983-DF44:ABC123" --force   # Exact event ID (agents: use this)

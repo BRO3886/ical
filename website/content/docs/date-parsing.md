@@ -7,7 +7,7 @@ weight: 3
 
 ## Overview
 
-Every flag that accepts a date (`--from`, `--to`, `--start`, `--end`, `--repeat-until`) supports natural language input. The built-in parser handles 20+ patterns without any external dependencies.
+Every flag that accepts a date (`--from`, `--to`, `--start`, `--end`, `--repeat-until`) supports natural language input. The parser is provided by the shared [`go-eventkit/dateparser`](https://github.com/BRO3886/go-eventkit) package, which handles 20+ patterns and is battle-tested across both ical and [rem](https://github.com/BRO3886/rem).
 
 All relative expressions are evaluated at the moment the command runs.
 
