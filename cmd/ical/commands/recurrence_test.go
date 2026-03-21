@@ -86,6 +86,27 @@ func TestBuildRecurrenceRule(t *testing.T) {
 			wantErr:     true,
 		},
 		{
+			name:     "repeat-days with daily errors",
+			repeat:   "daily",
+			interval: 1,
+			days:     "mon",
+			wantErr:  true,
+		},
+		{
+			name:     "repeat-days with monthly errors",
+			repeat:   "monthly",
+			interval: 1,
+			days:     "mon,wed",
+			wantErr:  true,
+		},
+		{
+			name:     "repeat-days with yearly errors",
+			repeat:   "yearly",
+			interval: 1,
+			days:     "fri",
+			wantErr:  true,
+		},
+		{
 			name:     "zero interval defaults to 1",
 			repeat:   "daily",
 			interval: 0,

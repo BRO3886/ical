@@ -380,9 +380,14 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 		interval = 1
 	}
 
+	freq := strings.ToLower(addRepeat)
+	if addRepeatDays != "" && freq != "weekly" {
+		return eventkit.RecurrenceRule{}, fmt.Errorf("--repeat-days is only valid with --repeat weekly, got --repeat %s", freq)
+	}
+
 	var rule eventkit.RecurrenceRule
 
-	switch strings.ToLower(addRepeat) {
+	switch freq {
 	case "daily":
 		rule = eventkit.Daily(interval)
 	case "weekly":
