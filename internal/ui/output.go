@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/fatih/color"
@@ -104,10 +104,10 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 	for i, e := range events {
 		start := localizeTime(e.StartDate, e.TimeZone)
 		end := localizeTime(e.EndDate, e.TimeZone)
-		timeStr := parser.FormatTimeRange(start, end, e.AllDay)
+		timeStr := dateparser.FormatTimeRange(start, end, e.AllDay)
 		title := truncate(e.Title, 40)
 		loc := truncate(e.Location, 25)
-		dur := parser.FormatDuration(start, end, e.AllDay)
+		dur := dateparser.FormatDuration(start, end, e.AllDay)
 		calName := e.Calendar
 
 		if e.AllDay {
@@ -291,7 +291,7 @@ func printEventDetailTable(e *calendar.Event, w io.Writer) {
 	}
 
 	bold.Fprintf(w, "Duration:     ")
-	fmt.Fprintln(w, parser.FormatDuration(start, end, e.AllDay))
+	fmt.Fprintln(w, dateparser.FormatDuration(start, end, e.AllDay))
 
 	if e.AllDay {
 		bold.Fprintf(w, "All Day:      ")
@@ -566,7 +566,7 @@ func PrintCreatedEvent(e *calendar.Event) {
 	green.Print("Created: ")
 	fmt.Printf("%s\n", e.Title)
 	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(start, end, e.AllDay))
+	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
 	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
 }
 
@@ -602,6 +602,6 @@ func PrintUpdatedEvent(e *calendar.Event) {
 	green.Print("Updated: ")
 	fmt.Printf("%s\n", e.Title)
 	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", parser.FormatTimeRange(start, end, e.AllDay))
+	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
 	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
 }

@@ -1,6 +1,6 @@
 # Natural Language Date Reference
 
-Date flags (`--from`, `--to`, `--start`, `--end`) on ical commands accept natural language dates. All parsing is built-in with no external dependencies.
+Date flags (`--from`, `--to`, `--start`, `--end`) on ical commands accept natural language dates. Parsing is provided by the shared [`go-eventkit/dateparser`](https://github.com/BRO3886/go-eventkit) package.
 
 ## Keywords
 

@@ -46,9 +46,6 @@ ical/
 │       ├── import.go            # Import events (JSON/CSV)
 │       └── skills.go            # AI agent skill management
 ├── internal/
-│   ├── parser/                  # Natural language date parsing
-│   │   ├── date.go
-│   │   └── date_test.go
 │   ├── ui/                      # Output formatting (table/json/plain)
 │   │   └── output.go
 │   ├── export/                  # Import/export logic
@@ -71,7 +68,7 @@ ical/
 
 | Package                        | Purpose                              |
 |--------------------------------|--------------------------------------|
-| `github.com/BRO3886/go-eventkit` | Native EventKit bindings (cgo)    |
+| `github.com/BRO3886/go-eventkit` | Native EventKit bindings (cgo) + shared dateparser |
 | `github.com/spf13/cobra`      | CLI framework                        |
 | `github.com/olekukonko/tablewriter` | Table output formatting         |
 | `github.com/fatih/color`       | Terminal colors                     |

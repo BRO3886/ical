@@ -3,7 +3,7 @@ name: ical
 description: Manages macOS Calendar events and calendars from the terminal using the ical CLI. Full CRUD for both events and calendars. Supports natural language dates, recurrence rules, alerts, interactive mode, import/export (JSON/CSV/ICS), and multiple output formats. Use when the user wants to interact with Apple Calendar via command line, automate calendar workflows, or build scripts around macOS Calendar.
 metadata:
   author: BRO3886
-  version: "0.7.0"
+  version: "0.8.0"
 compatibility: Requires macOS with Calendar.app. Requires Xcode Command Line Tools for building from source.
 permissions:
   macos:
@@ -51,6 +51,9 @@ ical show 2
 # Delete an event (--force skips confirmation prompt, required in scripts/agents)
 ical delete 2 --force
 
+# Batch delete multiple events at once
+ical delete 1 2 3 --force
+
 # Search for events
 ical search "meeting" --from "30 days ago" --to "next month"
 
@@ -67,7 +70,7 @@ ical export --format ics --from today --to "in 30 days" --output-file events.ics
 | `ical add`    | `create`, `new` | Create an event         |
 | `ical show`   | `get`, `info`   | Show full event details |
 | `ical update` | `edit`          | Update event properties |
-| `ical delete` | `rm`, `remove`  | Delete an event         |
+| `ical delete` | `rm`, `remove`  | Delete one or more events |
 
 ### Event Views
 
@@ -118,6 +121,7 @@ ical show 2                                # Show details for row #2
 ical update 3 --title "New title"          # Update row #3
 ical delete 1 --force                      # Delete row #1 (skip confirmation)
 ical delete 1                              # Delete row #1 (prompts for confirmation)
+ical delete 1 2 3 --force                  # Batch delete rows #1, #2, #3
 ```
 
 Row numbers reset each time you run a list/today/upcoming command. With no arguments, `show`, `update`, and `delete` launch an interactive picker instead.

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
@@ -54,14 +54,14 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("--start is required")
 		}
 
-		startTime, err := parser.ParseDate(addStart)
+		startTime, err := dateparser.ParseDate(addStart)
 		if err != nil {
 			return fmt.Errorf("invalid --start date: %w", err)
 		}
 
 		endTime := startTime.Add(time.Hour)
 		if addEnd != "" {
-			endTime, err = parser.ParseDate(addEnd)
+			endTime, err = dateparser.ParseDate(addEnd)
 			if err != nil {
 				return fmt.Errorf("invalid --end date: %w", err)
 			}
@@ -92,7 +92,7 @@ var addCmd = &cobra.Command{
 
 		// Parse alerts
 		for _, a := range addAlerts {
-			d, err := parser.ParseAlertDuration(a)
+			d, err := dateparser.ParseAlertDuration(a)
 			if err != nil {
 				return err
 			}
@@ -200,7 +200,7 @@ func runAddInteractive() error {
 				if strings.TrimSpace(s) == "" {
 					return fmt.Errorf("start date is required")
 				}
-				_, err := parser.ParseDate(s)
+				_, err := dateparser.ParseDate(s)
 				if err != nil {
 					return fmt.Errorf("invalid date: %v", err)
 				}
@@ -216,7 +216,7 @@ func runAddInteractive() error {
 				if strings.TrimSpace(s) == "" {
 					return nil
 				}
-				_, err := parser.ParseDate(s)
+				_, err := dateparser.ParseDate(s)
 				if err != nil {
 					return fmt.Errorf("invalid date: %v", err)
 				}
@@ -305,14 +305,14 @@ func runAddInteractive() error {
 	}
 
 	// Build event input
-	startTime, _ := parser.ParseDate(startStr) // validated above
+	startTime, _ := dateparser.ParseDate(startStr) // validated above
 
 	endTime := startTime.Add(time.Hour)
 	if allDay {
 		endTime = time.Date(startTime.Year(), startTime.Month(), startTime.Day()+1,
 			0, 0, 0, 0, startTime.Location())
 	} else if strings.TrimSpace(endStr) != "" {
-		endTime, _ = parser.ParseDate(endStr) // validated above
+		endTime, _ = dateparser.ParseDate(endStr) // validated above
 	}
 
 	if tz != "" {
@@ -342,7 +342,7 @@ func runAddInteractive() error {
 			if a == "" {
 				continue
 			}
-			d, err := parser.ParseAlertDuration(a)
+			d, err := dateparser.ParseAlertDuration(a)
 			if err != nil {
 				return err
 			}
@@ -380,9 +380,14 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 		interval = 1
 	}
 
+	freq := strings.ToLower(addRepeat)
+	if addRepeatDays != "" && freq != "weekly" {
+		return eventkit.RecurrenceRule{}, fmt.Errorf("--repeat-days is only valid with --repeat weekly, got --repeat %s", freq)
+	}
+
 	var rule eventkit.RecurrenceRule
 
-	switch strings.ToLower(addRepeat) {
+	switch freq {
 	case "daily":
 		rule = eventkit.Daily(interval)
 	case "weekly":
@@ -400,7 +405,7 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 	}
 
 	if addRepeatUntil != "" {
-		t, err := parser.ParseDate(addRepeatUntil)
+		t, err := dateparser.ParseDate(addRepeatUntil)
 		if err != nil {
 			return rule, fmt.Errorf("invalid --repeat-until: %w", err)
 		}
@@ -409,6 +414,10 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 
 	if addRepeatCount > 0 {
 		rule = rule.Count(addRepeatCount)
+	}
+
+	if err := rule.Validate(); err != nil {
+		return rule, fmt.Errorf("invalid recurrence rule: %w", err)
 	}
 
 	return rule, nil

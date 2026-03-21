@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ var listCmd = &cobra.Command{
 
 		from := startOfDay(now)
 		if listFrom != "" {
-			t, err := parser.ParseDate(listFrom)
+			t, err := dateparser.ParseDate(listFrom)
 			if err != nil {
 				return fmt.Errorf("invalid --from date: %w", err)
 			}
@@ -43,7 +43,7 @@ var listCmd = &cobra.Command{
 
 		to := from.Add(24 * time.Hour)
 		if listTo != "" {
-			t, err := parser.ParseDate(listTo)
+			t, err := dateparser.ParseDate(listTo)
 			if err != nil {
 				return fmt.Errorf("invalid --to date: %w", err)
 			}

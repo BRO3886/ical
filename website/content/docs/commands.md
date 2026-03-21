@@ -350,7 +350,7 @@ ical update --id "577B8983-DF44:abc" --title "New Title"
 
 ## ical delete
 
-Delete an event with a confirmation prompt.
+Delete one or more events with a confirmation prompt.
 
 ```bash
 # Interactive picker with confirmation
@@ -361,6 +361,9 @@ ical delete 3
 
 # Skip confirmation
 ical delete 3 -f
+
+# Batch delete multiple events at once
+ical delete 1 2 3 --force
 
 # Delete future occurrences of recurring event
 ical delete 2 --span future
@@ -377,8 +380,19 @@ ical delete --id "577B8983-DF44:abc" --force
 | `--force`  | `-f`  | Skip confirmation prompt                      |
 | `--span`   |       | Apply to: `this` or `future` occurrences      |
 
+### Batch Delete
+
+Multiple row numbers or event IDs can be passed as positional arguments to delete several events in a single operation:
+
+```bash
+ical list --from today --to "next friday"   # Shows #1, #2, #3...
+ical delete 1 3 5 --force                   # Delete events #1, #3, #5
+```
+
+Batch delete uses go-eventkit's `DeleteEvents` API for efficient single-call deletion. Each event is resolved individually, and per-event errors are reported without aborting the entire batch.
+
 > Always pass `--force` when running non-interactively (scripts, agents). There is no `--confirm` flag.
-> `--id` and a positional argument are mutually exclusive.
+> `--id` and a positional argument are mutually exclusive. `--id` only works for single event deletion.
 
 ---
 

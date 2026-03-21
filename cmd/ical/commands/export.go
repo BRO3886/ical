@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/BRO3886/ical/internal/export"
-	"github.com/BRO3886/ical/internal/parser"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +27,7 @@ var exportCmd = &cobra.Command{
 		now := time.Now()
 		from := now.AddDate(0, 0, -30)
 		if exportFrom != "" {
-			t, err := parser.ParseDate(exportFrom)
+			t, err := dateparser.ParseDate(exportFrom)
 			if err != nil {
 				return fmt.Errorf("invalid --from date: %w", err)
 			}
@@ -36,7 +36,7 @@ var exportCmd = &cobra.Command{
 
 		to := now.AddDate(0, 0, 30)
 		if exportTo != "" {
-			t, err := parser.ParseDate(exportTo)
+			t, err := dateparser.ParseDate(exportTo)
 			if err != nil {
 				return fmt.Errorf("invalid --to date: %w", err)
 			}
