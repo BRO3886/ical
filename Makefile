@@ -4,7 +4,7 @@ COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
 
-.PHONY: all build install test clean completions release help
+.PHONY: all build install test clean completions release formula help
 
 all: build
 
@@ -27,7 +27,43 @@ release: ## Build release tarballs for GitHub upload (arm64 + amd64)
 		tar -czf bin/ical-darwin-$$arch.tar.gz -C bin ical; \
 		rm bin/ical; \
 	done
+	@echo ""
+	@echo "SHA256 checksums (copy into Formula/ical.rb or run 'make formula'):"
+	@shasum -a 256 bin/ical-darwin-arm64.tar.gz bin/ical-darwin-amd64.tar.gz
+	@echo ""
 	@echo "Upload bin/ical-darwin-{arm64,amd64}.tar.gz to GitHub Releases"
+
+formula: ## Generate Homebrew formula (run after 'make release')
+	@if [ ! -f bin/ical-darwin-arm64.tar.gz ] || [ ! -f bin/ical-darwin-amd64.tar.gz ]; then \
+		echo "Run 'make release' first to build the tarballs"; exit 1; \
+	fi
+	@ARM64_SHA=$$(shasum -a 256 bin/ical-darwin-arm64.tar.gz | awk '{print $$1}'); \
+	AMD64_SHA=$$(shasum -a 256 bin/ical-darwin-amd64.tar.gz | awk '{print $$1}'); \
+	VER=$$(echo "$(VERSION)" | sed 's/^v//'); \
+	echo 'class Ical < Formula'; \
+	echo '  desc "CLI for macOS Calendar — fast native EventKit bindings"'; \
+	echo '  homepage "https://github.com/BRO3886/ical"'; \
+	echo "  version \"$$VER\""; \
+	echo '  license "MIT"'; \
+	echo ''; \
+	echo '  on_arm do'; \
+	echo "    url \"https://github.com/BRO3886/ical/releases/download/$(VERSION)/ical-darwin-arm64.tar.gz\""; \
+	echo "    sha256 \"$$ARM64_SHA\""; \
+	echo '  end'; \
+	echo ''; \
+	echo '  on_intel do'; \
+	echo "    url \"https://github.com/BRO3886/ical/releases/download/$(VERSION)/ical-darwin-amd64.tar.gz\""; \
+	echo "    sha256 \"$$AMD64_SHA\""; \
+	echo '  end'; \
+	echo ''; \
+	echo '  def install'; \
+	echo '    bin.install "ical"'; \
+	echo '  end'; \
+	echo ''; \
+	echo '  test do'; \
+	echo '    system "#{bin}/ical", "--version"'; \
+	echo '  end'; \
+	echo 'end'
 
 clean: ## Remove built binaries
 	rm -rf bin/
