@@ -22,6 +22,7 @@ var (
 	listSort            string
 	listLimit           int
 	listExcludeCalendar []string
+	listAttendee        string
 )
 
 var listCmd = &cobra.Command{
@@ -64,6 +65,7 @@ func init() {
 	listCmd.Flags().StringVar(&listSort, "sort", "start", "Sort by: start, end, title, calendar")
 	listCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	listCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
+	listCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee name or email")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -98,6 +100,17 @@ func listEvents(from, to time.Time) error {
 		filtered := make([]calendar.Event, 0, len(events))
 		for _, e := range events {
 			if !excluded[strings.ToLower(e.Calendar)] {
+				filtered = append(filtered, e)
+			}
+		}
+		events = filtered
+	}
+
+	if listAttendee != "" {
+		query := strings.ToLower(listAttendee)
+		filtered := make([]calendar.Event, 0, len(events))
+		for _, e := range events {
+			if attendeeMatches(e, query) {
 				filtered = append(filtered, e)
 			}
 		}
@@ -161,4 +174,22 @@ func endOfDayIfMidnight(t time.Time) time.Time {
 		return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
 	}
 	return t
+}
+
+// attendeeMatches returns true if any attendee name/email or the organizer
+// matches the query (case-insensitive substring). The query must already be
+// lowercased by the caller.
+func attendeeMatches(e calendar.Event, query string) bool {
+	for _, att := range e.Attendees {
+		if strings.Contains(strings.ToLower(att.Name), query) {
+			return true
+		}
+		if strings.Contains(strings.ToLower(att.Email), query) {
+			return true
+		}
+	}
+	if e.Organizer != "" && strings.Contains(strings.ToLower(e.Organizer), query) {
+		return true
+	}
+	return false
 }
