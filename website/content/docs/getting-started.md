@@ -1,7 +1,7 @@
 ---
 title: "Getting Started"
-description: "Install ical and start managing your macOS Calendar from the terminal. Supports curl install, go install, and manual download on macOS."
-keywords: ["install ical macOS", "macOS Calendar CLI install", "go install ical", "ical getting started", "EventKit CLI setup", "Claude Code skill install", "Codex CLI skill install", "OpenClaw skill"]
+description: "Install ical and start managing your macOS Calendar from the terminal. Supports Homebrew, curl install, go install, and manual download on macOS."
+keywords: ["install ical macOS", "brew install ical", "homebrew ical", "macOS Calendar CLI install", "go install ical", "ical getting started", "EventKit CLI setup", "Claude Code skill install", "Codex CLI skill install", "OpenClaw skill"]
 weight: 1
 ---
 
@@ -15,7 +15,14 @@ ical uses cgo to compile native EventKit bindings directly into the binary. It d
 
 ## Installation
 
-### Quick install (recommended)
+### Homebrew
+
+```bash
+brew tap BRO3886/tap
+brew install ical
+```
+
+### Quick install
 
 ```bash
 curl -fsSL https://ical.sidv.dev/install | bash
