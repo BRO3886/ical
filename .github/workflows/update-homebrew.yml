@@ -1,0 +1,81 @@
+name: Update Homebrew formula
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-tap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for release assets
+        run: sleep 30
+
+      - name: Get release info
+        id: release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download and checksum
+        id: checksums
+        run: |
+          ARM_URL="https://github.com/BRO3886/ical/releases/download/${{ github.ref_name }}/ical-darwin-arm64.tar.gz"
+          AMD_URL="https://github.com/BRO3886/ical/releases/download/${{ github.ref_name }}/ical-darwin-amd64.tar.gz"
+          curl -sL "$ARM_URL" -o arm64.tar.gz
+          curl -sL "$AMD_URL" -o amd64.tar.gz
+          echo "arm64_sha=$(shasum -a 256 arm64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "amd64_sha=$(shasum -a 256 amd64.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tap
+        uses: actions/checkout@v4
+        with:
+          repository: BRO3886/homebrew-tap
+          token: ${{ secrets.TAP_GITHUB_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update formula
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          TAG="${{ github.ref_name }}"
+          ARM_SHA="${{ steps.checksums.outputs.arm64_sha }}"
+          AMD_SHA="${{ steps.checksums.outputs.amd64_sha }}"
+          cat > homebrew-tap/Formula/ical.rb <<EOF
+          class Ical < Formula
+            desc "Fast, native macOS Calendar CLI built on go-eventkit"
+            homepage "https://github.com/BRO3886/ical"
+            version "${VERSION}"
+            license "MIT"
+
+            depends_on :macos
+
+            on_arm do
+              url "https://github.com/BRO3886/ical/releases/download/${TAG}/ical-darwin-arm64.tar.gz"
+              sha256 "${ARM_SHA}"
+            end
+
+            on_intel do
+              url "https://github.com/BRO3886/ical/releases/download/${TAG}/ical-darwin-amd64.tar.gz"
+              sha256 "${AMD_SHA}"
+            end
+
+            def install
+              bin.install "ical"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("\#{bin}/ical version")
+            end
+          end
+          EOF
+          sed -i 's/^          //' homebrew-tap/Formula/ical.rb
+
+      - name: Commit and push
+        run: |
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/ical.rb
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "feat: bump ical to ${{ steps.release.outputs.version }}"
+          git push
