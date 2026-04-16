@@ -36,23 +36,27 @@ jobs:
 
       - name: Update formula
         run: |
-          cat > homebrew-tap/Formula/ical.rb << 'FORMULA'
+          VERSION="${{ steps.release.outputs.version }}"
+          TAG="${{ github.ref_name }}"
+          ARM_SHA="${{ steps.checksums.outputs.arm64_sha }}"
+          AMD_SHA="${{ steps.checksums.outputs.amd64_sha }}"
+          cat > homebrew-tap/Formula/ical.rb <<EOF
           class Ical < Formula
             desc "Fast, native macOS Calendar CLI built on go-eventkit"
             homepage "https://github.com/BRO3886/ical"
-            version "${{ steps.release.outputs.version }}"
+            version "${VERSION}"
             license "MIT"
 
             depends_on :macos
 
             on_arm do
-              url "https://github.com/BRO3886/ical/releases/download/${{ github.ref_name }}/ical-darwin-arm64.tar.gz"
-              sha256 "${{ steps.checksums.outputs.arm64_sha }}"
+              url "https://github.com/BRO3886/ical/releases/download/${TAG}/ical-darwin-arm64.tar.gz"
+              sha256 "${ARM_SHA}"
             end
 
             on_intel do
-              url "https://github.com/BRO3886/ical/releases/download/${{ github.ref_name }}/ical-darwin-amd64.tar.gz"
-              sha256 "${{ steps.checksums.outputs.amd64_sha }}"
+              url "https://github.com/BRO3886/ical/releases/download/${TAG}/ical-darwin-amd64.tar.gz"
+              sha256 "${AMD_SHA}"
             end
 
             def install
@@ -60,10 +64,10 @@ jobs:
             end
 
             test do
-              assert_match version.to_s, shell_output("#{bin}/ical version")
+              assert_match version.to_s, shell_output("\#{bin}/ical version")
             end
           end
-          FORMULA
+          EOF
           sed -i 's/^          //' homebrew-tap/Formula/ical.rb
 
       - name: Commit and push
