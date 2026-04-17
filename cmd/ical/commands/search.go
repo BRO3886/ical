@@ -87,7 +87,7 @@ func init() {
 	searchCmd.Flags().StringVarP(&searchTo, "to", "t", "", "End of search range (default: 30 days ahead)")
 	searchCmd.Flags().StringVarP(&searchCalendar, "calendar", "c", "", "Filter by calendar")
 	searchCmd.Flags().IntVarP(&searchLimit, "limit", "n", 0, "Max results")
-	searchCmd.Flags().StringVarP(&searchAttendee, "attendee", "a", "", "Filter by attendee name or email")
+	searchCmd.Flags().StringVarP(&searchAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
 
 	rootCmd.AddCommand(searchCmd)
 }
