@@ -4,7 +4,7 @@ COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
 
-.PHONY: all build install test clean completions release help
+.PHONY: all build install test lint clean completions release help
 
 all: build
 
@@ -17,6 +17,9 @@ install: build ## Install the binary to $GOPATH/bin
 
 test: ## Run tests
 	go test ./... -v
+
+lint: ## Run golangci-lint
+	golangci-lint run ./...
 
 release: ## Build release tarballs for GitHub upload (arm64 + amd64)
 	@mkdir -p bin
