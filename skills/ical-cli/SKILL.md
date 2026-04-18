@@ -266,6 +266,21 @@ ical calendars -o json | jq -r '.[] | "\(.id) \(.title)"'
 **Calendar JSON fields**: `id`, `title`, `type`, `color`, `source`, `readOnly`
 **Event JSON fields**: `id`, `title`, `start_date`, `end_date`, `calendar`, `calendar_id`, `location`, `notes`, `url`, `all_day`, `recurrence`, `alerts`
 
+### Filtering the agenda
+
+```bash
+# Hide recurring events (standups, recurring 1:1s) — focus on one-off meetings
+ical upcoming --days 7 --no-recurring
+
+# Find events involving a specific person (matches attendee name, email, or organizer)
+ical list --from today --to "in 14 days" --attendee alice
+
+# Skip noisy calendars from the listing
+ical today --exclude-calendar "US Holidays" --exclude-calendar Birthdays
+```
+
+`--attendee` is case-insensitive substring matching against attendee names/emails and the organizer. `--no-recurring` drops events whose `recurring` JSON field is true. Both flags are available on `list`, `today`, `upcoming`, and `search`.
+
 ### Backup and restore
 
 ```bash

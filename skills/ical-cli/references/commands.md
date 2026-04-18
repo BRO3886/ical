@@ -78,17 +78,19 @@ ical ls --from "mar 1" --to "mar 31" --all-day
 ical list --from today --to "in 30 days" --exclude-calendar Birthdays -o json
 ```
 
-| Flag                 | Short | Description                               | Default         |
-| -------------------- | ----- | ----------------------------------------- | --------------- |
-| `--from`             | `-f`  | Start date (natural language or ISO 8601) | Today           |
-| `--to`               | `-t`  | End date (natural language or ISO 8601)   | From + 24 hours |
-| `--calendar`         | `-c`  | Filter by calendar name                   | All calendars   |
-| `--calendar-id`      | —     | Filter by calendar ID                     | —               |
-| `--search`           | `-s`  | Search title, location, notes             | —               |
-| `--all-day`          | —     | Show only all-day events                  | false           |
-| `--sort`             | —     | Sort by: start, end, title, calendar      | start           |
-| `--limit`            | `-n`  | Max events to display (0 = unlimited)     | 0               |
-| `--exclude-calendar` | —     | Exclude calendars by name (repeatable)    | —               |
+| Flag                 | Short | Description                                     | Default         |
+| -------------------- | ----- | ----------------------------------------------- | --------------- |
+| `--from`             | `-f`  | Start date (natural language or ISO 8601)       | Today           |
+| `--to`               | `-t`  | End date (natural language or ISO 8601)         | From + 24 hours |
+| `--calendar`         | `-c`  | Filter by calendar name                         | All calendars   |
+| `--calendar-id`      | —     | Filter by calendar ID                           | —               |
+| `--search`           | `-s`  | Search title, location, notes                   | —               |
+| `--all-day`          | —     | Show only all-day events                        | false           |
+| `--sort`             | —     | Sort by: start, end, title, calendar            | start           |
+| `--limit`            | `-n`  | Max events to display (0 = unlimited)           | 0               |
+| `--exclude-calendar` | —     | Exclude calendars by name (repeatable)          | —               |
+| `--attendee`         | `-a`  | Filter by attendee or organizer name/email      | —               |
+| `--no-recurring`     | —     | Hide recurring events                           | false           |
 
 Aliases: `ls`, `events`
 
@@ -105,15 +107,17 @@ ical today -o json
 ical today --exclude-calendar Birthdays
 ```
 
-| Flag                 | Short | Description                            | Default       |
-| -------------------- | ----- | -------------------------------------- | ------------- |
-| `--calendar`         | `-c`  | Filter by calendar name                | All calendars |
-| `--calendar-id`      | —     | Filter by calendar ID                  | —             |
-| `--search`           | `-s`  | Search title, location, notes          | —             |
-| `--all-day`          | —     | Show only all-day events               | false         |
-| `--sort`             | —     | Sort by: start, end, title, calendar   | start         |
-| `--limit`            | `-n`  | Max events to display (0 = unlimited)  | 0             |
-| `--exclude-calendar` | —     | Exclude calendars by name (repeatable) | —             |
+| Flag                 | Short | Description                                | Default       |
+| -------------------- | ----- | ------------------------------------------ | ------------- |
+| `--calendar`         | `-c`  | Filter by calendar name                    | All calendars |
+| `--calendar-id`      | —     | Filter by calendar ID                      | —             |
+| `--search`           | `-s`  | Search title, location, notes              | —             |
+| `--all-day`          | —     | Show only all-day events                   | false         |
+| `--sort`             | —     | Sort by: start, end, title, calendar       | start         |
+| `--limit`            | `-n`  | Max events to display (0 = unlimited)      | 0             |
+| `--exclude-calendar` | —     | Exclude calendars by name (repeatable)     | —             |
+| `--attendee`         | `-a`  | Filter by attendee or organizer name/email | —             |
+| `--no-recurring`     | —     | Hide recurring events                      | false         |
 
 ---
 
@@ -128,16 +132,18 @@ ical upcoming --calendar Work -o json
 ical next --days 3
 ```
 
-| Flag                 | Short | Description                            | Default       |
-| -------------------- | ----- | -------------------------------------- | ------------- |
-| `--days`             | `-d`  | Number of days to look ahead           | 7             |
-| `--calendar`         | `-c`  | Filter by calendar name                | All calendars |
-| `--calendar-id`      | —     | Filter by calendar ID                  | —             |
-| `--search`           | `-s`  | Search title, location, notes          | —             |
-| `--all-day`          | —     | Show only all-day events               | false         |
-| `--sort`             | —     | Sort by: start, end, title, calendar   | start         |
-| `--limit`            | `-n`  | Max events to display (0 = unlimited)  | 0             |
-| `--exclude-calendar` | —     | Exclude calendars by name (repeatable) | —             |
+| Flag                 | Short | Description                                | Default       |
+| -------------------- | ----- | ------------------------------------------ | ------------- |
+| `--days`             | `-d`  | Number of days to look ahead               | 7             |
+| `--calendar`         | `-c`  | Filter by calendar name                    | All calendars |
+| `--calendar-id`      | —     | Filter by calendar ID                      | —             |
+| `--search`           | `-s`  | Search title, location, notes              | —             |
+| `--all-day`          | —     | Show only all-day events                   | false         |
+| `--sort`             | —     | Sort by: start, end, title, calendar       | start         |
+| `--limit`            | `-n`  | Max events to display (0 = unlimited)      | 0             |
+| `--exclude-calendar` | —     | Exclude calendars by name (repeatable)     | —             |
+| `--attendee`         | `-a`  | Filter by attendee or organizer name/email | —             |
+| `--no-recurring`     | —     | Hide recurring events                      | false         |
 
 Aliases: `next`, `soon`
 
@@ -296,12 +302,14 @@ ical search "dentist" --from "jan 1" --to "dec 31" --limit 5
 ical find "lunch" -o json
 ```
 
-| Flag         | Short | Description                 | Default       |
-| ------------ | ----- | --------------------------- | ------------- |
-| `--from`     | `-f`  | Start of search range       | 30 days ago   |
-| `--to`       | `-t`  | End of search range         | 30 days ahead |
-| `--calendar` | `-c`  | Filter by calendar name     | All calendars |
-| `--limit`    | `-n`  | Max results (0 = unlimited) | 0             |
+| Flag             | Short | Description                                | Default       |
+| ---------------- | ----- | ------------------------------------------ | ------------- |
+| `--from`         | `-f`  | Start of search range                      | 30 days ago   |
+| `--to`           | `-t`  | End of search range                        | 30 days ahead |
+| `--calendar`     | `-c`  | Filter by calendar name                    | All calendars |
+| `--attendee`     | `-a`  | Filter by attendee or organizer name/email | —             |
+| `--no-recurring` | —     | Hide recurring events                      | false         |
+| `--limit`        | `-n`  | Max results (0 = unlimited)                | 0             |
 
 Aliases: `find`
 

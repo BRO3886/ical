@@ -144,14 +144,16 @@ ical list -f today -t "in 7 days" -c Work
 
 ### Flags
 
-| Flag                  | Short | Description                        |
-|-----------------------|-------|------------------------------------|
-| `--from`              | `-f`  | Start date (natural language)      |
-| `--to`                | `-t`  | End date (natural language)        |
-| `--calendar`          | `-c`  | Filter by calendar name            |
-| `--exclude-calendar`  |       | Exclude calendar (repeatable)      |
-| `--limit`             | `-n`  | Maximum number of results          |
-| `--sort`              |       | Sort by: `title`, `time`, `calendar` |
+| Flag                  | Short | Description                                    |
+|-----------------------|-------|------------------------------------------------|
+| `--from`              | `-f`  | Start date (natural language)                  |
+| `--to`                | `-t`  | End date (natural language)                    |
+| `--calendar`          | `-c`  | Filter by calendar name                        |
+| `--exclude-calendar`  |       | Exclude calendar (repeatable)                  |
+| `--attendee`          | `-a`  | Filter by attendee or organizer name/email     |
+| `--no-recurring`      |       | Hide recurring events                          |
+| `--limit`             | `-n`  | Maximum number of results                      |
+| `--sort`              |       | Sort by: `title`, `time`, `calendar`           |
 
 Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached to `~/.ical-last-list` so subsequent commands can reference events by number.
 
@@ -175,10 +177,12 @@ ical today -o json
 
 ### Flags
 
-| Flag                  | Short | Description                   |
-|-----------------------|-------|-------------------------------|
-| `--calendar`          | `-c`  | Filter by calendar name       |
-| `--exclude-calendar`  |       | Exclude calendar (repeatable) |
+| Flag                  | Short | Description                                |
+|-----------------------|-------|--------------------------------------------|
+| `--calendar`          | `-c`  | Filter by calendar name                    |
+| `--exclude-calendar`  |       | Exclude calendar (repeatable)              |
+| `--attendee`          | `-a`  | Filter by attendee or organizer name/email |
+| `--no-recurring`      |       | Hide recurring events                      |
 
 ---
 
@@ -194,13 +198,15 @@ ical upcoming -d 14 -c Work --exclude-calendar Birthdays
 
 ### Flags
 
-| Flag                  | Short | Default | Description                        |
-|-----------------------|-------|---------|------------------------------------|
-| `--days`              | `-d`  | `7`     | Number of days to look ahead       |
-| `--calendar`          | `-c`  |         | Filter by calendar name            |
-| `--exclude-calendar`  |       |         | Exclude calendar (repeatable)      |
-| `--limit`             | `-n`  |         | Maximum number of results          |
-| `--sort`              |       |         | Sort by: `title`, `time`, `calendar` |
+| Flag                  | Short | Default | Description                                    |
+|-----------------------|-------|---------|------------------------------------------------|
+| `--days`              | `-d`  | `7`     | Number of days to look ahead                   |
+| `--calendar`          | `-c`  |         | Filter by calendar name                        |
+| `--exclude-calendar`  |       |         | Exclude calendar (repeatable)                  |
+| `--attendee`          | `-a`  |         | Filter by attendee or organizer name/email     |
+| `--no-recurring`      |       |         | Hide recurring events                          |
+| `--limit`             | `-n`  |         | Maximum number of results                      |
+| `--sort`              |       |         | Sort by: `title`, `time`, `calendar`           |
 
 ---
 
@@ -407,14 +413,14 @@ ical search "meeting" -c Work -f "1 month ago" -t "in 1 month"
 
 ### Flags
 
-| Flag                  | Short | Description                        |
-|-----------------------|-------|------------------------------------|
-| `--from`              | `-f`  | Start date (natural language)      |
-| `--to`                | `-t`  | End date (natural language)        |
-| `--calendar`          | `-c`  | Filter by calendar name            |
-| `--exclude-calendar`  |       | Exclude calendar (repeatable)      |
-| `--limit`             | `-n`  | Maximum number of results          |
-| `--sort`              |       | Sort by: `title`, `time`, `calendar` |
+| Flag             | Short | Description                                |
+|------------------|-------|--------------------------------------------|
+| `--from`         | `-f`  | Start date (natural language)              |
+| `--to`           | `-t`  | End date (natural language)                |
+| `--calendar`     | `-c`  | Filter by calendar name                    |
+| `--attendee`     | `-a`  | Filter by attendee or organizer name/email |
+| `--no-recurring` |       | Hide recurring events                      |
+| `--limit`        | `-n`  | Maximum number of results                  |
 
 ---
 
