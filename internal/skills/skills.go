@@ -88,7 +88,7 @@ func Install(embeddedFS fs.FS, target AgentTarget, version string) ([]string, er
 			return fmt.Errorf("failed to create directory for %s: %w", destPath, err)
 		}
 
-		if err := os.WriteFile(destPath, data, 0o644); err != nil {
+		if err := os.WriteFile(destPath, data, 0o600); err != nil {
 			return fmt.Errorf("failed to write %s: %w", destPath, err)
 		}
 
@@ -101,7 +101,7 @@ func Install(embeddedFS fs.FS, target AgentTarget, version string) ([]string, er
 
 	// Write version tracking file
 	versionPath := filepath.Join(destDir, VersionFileName)
-	if err := os.WriteFile(versionPath, []byte(version+"\n"), 0o644); err != nil {
+	if err := os.WriteFile(versionPath, []byte(version+"\n"), 0o600); err != nil {
 		return nil, fmt.Errorf("failed to write version file: %w", err)
 	}
 

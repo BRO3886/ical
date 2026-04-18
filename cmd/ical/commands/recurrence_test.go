@@ -10,15 +10,15 @@ import (
 // and that Validate() catches invalid configurations.
 func TestBuildRecurrenceRule(t *testing.T) {
 	tests := []struct {
-		name           string
-		repeat         string
-		interval       int
-		days           string
-		repeatUntil    string
-		repeatCount    int
-		wantErr        bool
-		wantFrequency  eventkit.RecurrenceFrequency
-		wantInterval   int
+		name          string
+		repeat        string
+		interval      int
+		days          string
+		repeatUntil   string
+		repeatCount   int
+		wantErr       bool
+		wantFrequency eventkit.RecurrenceFrequency
+		wantInterval  int
 	}{
 		{
 			name:          "daily",
@@ -50,33 +50,33 @@ func TestBuildRecurrenceRule(t *testing.T) {
 			wantInterval:  1,
 		},
 		{
-			name:        "with count",
-			repeat:      "daily",
-			interval:    1,
-			repeatCount: 10,
+			name:          "with count",
+			repeat:        "daily",
+			interval:      1,
+			repeatCount:   10,
 			wantFrequency: eventkit.FrequencyDaily,
 			wantInterval:  1,
 		},
 		{
-			name:        "with until",
-			repeat:      "weekly",
-			interval:    1,
-			repeatUntil: "2026-12-31",
+			name:          "with until",
+			repeat:        "weekly",
+			interval:      1,
+			repeatUntil:   "2026-12-31",
 			wantFrequency: eventkit.FrequencyWeekly,
 			wantInterval:  1,
 		},
 		{
-			name:    "invalid repeat type",
-			repeat:  "biweekly",
+			name:     "invalid repeat type",
+			repeat:   "biweekly",
 			interval: 1,
-			wantErr: true,
+			wantErr:  true,
 		},
 		{
-			name:    "invalid repeat days",
-			repeat:  "weekly",
+			name:     "invalid repeat days",
+			repeat:   "weekly",
 			interval: 1,
-			days:    "foo,bar",
-			wantErr: true,
+			days:     "foo,bar",
+			wantErr:  true,
 		},
 		{
 			name:        "invalid repeat until",
@@ -107,9 +107,9 @@ func TestBuildRecurrenceRule(t *testing.T) {
 			wantErr:  true,
 		},
 		{
-			name:     "zero interval defaults to 1",
-			repeat:   "daily",
-			interval: 0,
+			name:          "zero interval defaults to 1",
+			repeat:        "daily",
+			interval:      0,
 			wantFrequency: eventkit.FrequencyDaily,
 			wantInterval:  1,
 		},

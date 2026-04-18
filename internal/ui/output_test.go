@@ -138,10 +138,10 @@ func TestLocalizeTimeInZone(t *testing.T) {
 	// UTC 18:00 on 2026-02-11 (chosen so wall-clock math is clean across all zones).
 	utcTime := time.Date(2026, 2, 11, 18, 0, 0, 0, time.UTC)
 
-	ist := mustLoadLocation("Asia/Kolkata")   // UTC+5:30
+	ist := mustLoadLocation("Asia/Kolkata")     // UTC+5:30
 	est := mustLoadLocation("America/New_York") // UTC-5 in February
 	cst := mustLoadLocation("America/Chicago")  // UTC-6 in February
-	gmt := mustLoadLocation("GMT")             // UTC+0
+	gmt := mustLoadLocation("GMT")              // UTC+0
 
 	t.Run("returns nil for empty tz", func(t *testing.T) {
 		// Reference location doesn't matter when tz is empty.
@@ -246,9 +246,9 @@ func TestEventDateLabel(t *testing.T) {
 	// whatever location the input carries — the caller localizes upstream.
 	utcTime := time.Date(2026, 4, 19, 15, 0, 0, 0, time.UTC)
 
-	bst := mustLoadLocation("Europe/London") // BST in April = UTC+1
+	bst := mustLoadLocation("Europe/London")    // BST in April = UTC+1
 	est := mustLoadLocation("America/New_York") // EDT in April = UTC-4
-	ist := mustLoadLocation("Asia/Kolkata")   // IST = UTC+5:30
+	ist := mustLoadLocation("Asia/Kolkata")     // IST = UTC+5:30
 
 	tests := []struct {
 		name string

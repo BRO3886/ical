@@ -54,7 +54,7 @@ func ReadCache(homeDir string) *CacheEntry {
 // Returns nil if the content is malformed.
 func ParseCache(content string) *CacheEntry {
 	entry := &CacheEntry{}
-	for _, line := range strings.Split(content, "\n") {
+	for line := range strings.SplitSeq(content, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
@@ -92,7 +92,7 @@ func WriteCache(homeDir string, entry *CacheEntry) error {
 		entry.CheckedAt.UTC().Format(time.RFC3339),
 		entry.Latest,
 	)
-	if err := os.WriteFile(CachePath(homeDir), []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(CachePath(homeDir), []byte(content), 0o600); err != nil {
 		return nil // silently fail
 	}
 	return nil
@@ -148,7 +148,7 @@ func CompareVersions(current, latest string) bool {
 	if cur == nil || lat == nil {
 		return false
 	}
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		if lat[i] > cur[i] {
 			return true
 		}
@@ -208,7 +208,7 @@ func Check(homeDir, currentVersion string) *Result {
 	}
 
 	// Write to cache (best-effort)
-	WriteCache(homeDir, &CacheEntry{
+	_ = WriteCache(homeDir, &CacheEntry{
 		CheckedAt: now,
 		Latest:    latest,
 	})

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/charmbracelet/huh"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

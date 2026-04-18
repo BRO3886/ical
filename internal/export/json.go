@@ -10,19 +10,19 @@ import (
 )
 
 type eventExport struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	StartDate   time.Time `json:"start_date"`
-	EndDate     time.Time `json:"end_date"`
-	AllDay      bool      `json:"all_day"`
-	Calendar    string    `json:"calendar"`
-	CalendarID  string    `json:"calendar_id"`
-	Location    string    `json:"location,omitempty"`
-	Notes       string    `json:"notes,omitempty"`
-	URL         string    `json:"url,omitempty"`
-	Status      string    `json:"status"`
-	Recurring   bool      `json:"recurring"`
-	TimeZone    string    `json:"timezone,omitempty"`
+	ID         string    `json:"id"`
+	Title      string    `json:"title"`
+	StartDate  time.Time `json:"start_date"`
+	EndDate    time.Time `json:"end_date"`
+	AllDay     bool      `json:"all_day"`
+	Calendar   string    `json:"calendar"`
+	CalendarID string    `json:"calendar_id"`
+	Location   string    `json:"location,omitempty"`
+	Notes      string    `json:"notes,omitempty"`
+	URL        string    `json:"url,omitempty"`
+	Status     string    `json:"status"`
+	Recurring  bool      `json:"recurring"`
+	TimeZone   string    `json:"timezone,omitempty"`
 }
 
 // JSON exports events as a JSON array.

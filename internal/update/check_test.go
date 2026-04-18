@@ -199,11 +199,11 @@ func TestCompareVersions(t *testing.T) {
 		{"v1.0.0", "v2.0.0", true},
 		{"v0.9.0", "v0.10.0", true},
 		{"v0.10.0", "v0.9.0", false},
-		{"0.4.0", "0.5.0", true},     // no v prefix
-		{"v0.4.0", "0.5.0", true},    // mixed prefix
-		{"dev", "v0.5.0", false},      // invalid current
-		{"v0.4.0", "invalid", false},  // invalid latest
-		{"", "v0.5.0", false},         // empty current
+		{"0.4.0", "0.5.0", true},       // no v prefix
+		{"v0.4.0", "0.5.0", true},      // mixed prefix
+		{"dev", "v0.5.0", false},       // invalid current
+		{"v0.4.0", "invalid", false},   // invalid latest
+		{"", "v0.5.0", false},          // empty current
 		{"v1.2.3-rc1", "v1.2.4", true}, // pre-release suffix
 	}
 

@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
-	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
@@ -393,7 +393,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 			input.Alerts = &empty
 		} else {
 			alerts := make([]calendar.Alert, 0)
-			for _, a := range strings.Split(alertStr, ",") {
+			for a := range strings.SplitSeq(alertStr, ",") {
 				a = strings.TrimSpace(a)
 				if a == "" {
 					continue

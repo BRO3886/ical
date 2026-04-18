@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/fatih/color"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
@@ -29,7 +29,7 @@ func SaveLastList(events []calendar.Event) {
 	for i, e := range events {
 		ids[i] = e.ID
 	}
-	_ = os.WriteFile(lastListPath(), []byte(strings.Join(ids, "\n")+"\n"), 0644)
+	_ = os.WriteFile(lastListPath(), []byte(strings.Join(ids, "\n")+"\n"), 0o600)
 }
 
 // LookupRowNumber returns the full event ID for a 1-based row number
@@ -124,36 +124,36 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 			title = title + " " + color.HiCyanString("↻")
 		}
 
-		t.Append(fmt.Sprintf("%d", i+1), dateStr, timeStr, title, calName, loc, dur)
+		_ = t.Append(fmt.Sprintf("%d", i+1), dateStr, timeStr, title, calName, loc, dur)
 	}
 
-	t.Render()
+	_ = t.Render()
 }
 
 // Events — JSON
 
 type eventJSON struct {
-	ID                 string                        `json:"id"`
-	Title              string                        `json:"title"`
-	StartDate          time.Time                     `json:"start_date"`
-	EndDate            time.Time                     `json:"end_date"`
-	AllDay             bool                          `json:"all_day"`
-	Calendar           string                        `json:"calendar"`
-	CalendarID         string                        `json:"calendar_id"`
-	Location           string                        `json:"location,omitempty"`
-	StructuredLocation *eventkit.StructuredLocation   `json:"structured_location,omitempty"`
-	Notes              string                        `json:"notes,omitempty"`
-	URL                string                        `json:"url,omitempty"`
-	Status             string                        `json:"status"`
-	Availability       string                        `json:"availability"`
-	Organizer          string                        `json:"organizer,omitempty"`
-	Attendees          []calendar.Attendee           `json:"attendees,omitempty"`
-	Recurring          bool                          `json:"recurring"`
-	RecurrenceRules    []eventkit.RecurrenceRule     `json:"recurrence_rules,omitempty"`
-	Alerts             []calendar.Alert              `json:"alerts,omitempty"`
-	TimeZone           string                        `json:"timezone,omitempty"`
-	CreatedAt          time.Time                     `json:"created_at"`
-	ModifiedAt         time.Time                     `json:"modified_at"`
+	ID                 string                       `json:"id"`
+	Title              string                       `json:"title"`
+	StartDate          time.Time                    `json:"start_date"`
+	EndDate            time.Time                    `json:"end_date"`
+	AllDay             bool                         `json:"all_day"`
+	Calendar           string                       `json:"calendar"`
+	CalendarID         string                       `json:"calendar_id"`
+	Location           string                       `json:"location,omitempty"`
+	StructuredLocation *eventkit.StructuredLocation `json:"structured_location,omitempty"`
+	Notes              string                       `json:"notes,omitempty"`
+	URL                string                       `json:"url,omitempty"`
+	Status             string                       `json:"status"`
+	Availability       string                       `json:"availability"`
+	Organizer          string                       `json:"organizer,omitempty"`
+	Attendees          []calendar.Attendee          `json:"attendees,omitempty"`
+	Recurring          bool                         `json:"recurring"`
+	RecurrenceRules    []eventkit.RecurrenceRule    `json:"recurrence_rules,omitempty"`
+	Alerts             []calendar.Alert             `json:"alerts,omitempty"`
+	TimeZone           string                       `json:"timezone,omitempty"`
+	CreatedAt          time.Time                    `json:"created_at"`
+	ModifiedAt         time.Time                    `json:"modified_at"`
 }
 
 func toEventJSON(e calendar.Event) eventJSON {
@@ -241,10 +241,10 @@ func printCalendarsTable(calendars []calendar.Calendar, w io.Writer) {
 		if c.ReadOnly {
 			readOnly = "yes"
 		}
-		t.Append(c.Title, c.Source, c.Type.String(), c.Color, readOnly)
+		_ = t.Append(c.Title, c.Source, c.Type.String(), c.Color, readOnly)
 	}
 
-	t.Render()
+	_ = t.Render()
 }
 
 // Calendars — JSON

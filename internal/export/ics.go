@@ -146,11 +146,11 @@ func ParseICS(r io.Reader) ([]calendar.CreateEventInput, error) {
 	inAlarm := false
 
 	for _, line := range lines {
-		switch {
-		case line == "BEGIN:VEVENT":
+		switch line {
+		case "BEGIN:VEVENT":
 			cur = &icsEvent{}
 			inAlarm = false
-		case line == "END:VEVENT":
+		case "END:VEVENT":
 			if cur == nil {
 				continue
 			}
@@ -160,9 +160,9 @@ func ParseICS(r io.Reader) ([]calendar.CreateEventInput, error) {
 			}
 			inputs = append(inputs, input)
 			cur = nil
-		case line == "BEGIN:VALARM":
+		case "BEGIN:VALARM":
 			inAlarm = true
-		case line == "END:VALARM":
+		case "END:VALARM":
 			inAlarm = false
 		default:
 			if cur == nil {
@@ -208,16 +208,16 @@ func ParseICS(r io.Reader) ([]calendar.CreateEventInput, error) {
 
 // icsEvent holds parsed VEVENT properties before conversion.
 type icsEvent struct {
-	title        string
-	dtstart      string
-	dtend        string
+	title         string
+	dtstart       string
+	dtend         string
 	dtstartAllDay bool
-	dtendAllDay  bool
-	location     string
-	notes        string
-	url          string
-	rrules       []eventkit.RecurrenceRule
-	alerts       []time.Duration
+	dtendAllDay   bool
+	location      string
+	notes         string
+	url           string
+	rrules        []eventkit.RecurrenceRule
+	alerts        []time.Duration
 }
 
 func (e *icsEvent) toInput() (calendar.CreateEventInput, error) {
@@ -284,11 +284,11 @@ func unfoldICS(r io.Reader) []string {
 // splitICSLine splits "KEY:VALUE" or "KEY;PARAMS:VALUE" returning the full key
 // (including params) and the value. Returns false if the line has no colon.
 func splitICSLine(line string) (string, string, bool) {
-	idx := strings.Index(line, ":")
-	if idx < 0 {
+	before, after, ok := strings.Cut(line, ":")
+	if !ok {
 		return "", "", false
 	}
-	return line[:idx], line[idx+1:], true
+	return before, after, true
 }
 
 func unescapeICS(s string) string {
@@ -318,7 +318,7 @@ func parseRRule(val string) (eventkit.RecurrenceRule, error) {
 	rule := eventkit.RecurrenceRule{Interval: 1}
 	hasFreq := false
 
-	for _, part := range strings.Split(val, ";") {
+	for part := range strings.SplitSeq(val, ";") {
 		kv := strings.SplitN(part, "=", 2)
 		if len(kv) != 2 {
 			continue
@@ -347,7 +347,7 @@ func parseRRule(val string) (eventkit.RecurrenceRule, error) {
 			}
 			rule.Interval = n
 		case "BYDAY":
-			for _, dayStr := range strings.Split(value, ",") {
+			for dayStr := range strings.SplitSeq(value, ",") {
 				dow, err := parseBYDAY(dayStr)
 				if err != nil {
 					return rule, err
@@ -355,7 +355,7 @@ func parseRRule(val string) (eventkit.RecurrenceRule, error) {
 				rule.DaysOfTheWeek = append(rule.DaysOfTheWeek, dow)
 			}
 		case "BYMONTHDAY":
-			for _, ds := range strings.Split(value, ",") {
+			for ds := range strings.SplitSeq(value, ",") {
 				n, err := strconv.Atoi(ds)
 				if err != nil {
 					return rule, fmt.Errorf("invalid BYMONTHDAY %q: %w", ds, err)
@@ -484,8 +484,8 @@ func parseTrigger(val string) (time.Duration, error) {
 	}
 
 	// Parse seconds
-	if idx := strings.Index(s, "S"); idx >= 0 {
-		n, err := strconv.Atoi(s[:idx])
+	if before, _, ok := strings.Cut(s, "S"); ok {
+		n, err := strconv.Atoi(before)
 		if err != nil {
 			return 0, fmt.Errorf("invalid trigger seconds %q: %w", val, err)
 		}
