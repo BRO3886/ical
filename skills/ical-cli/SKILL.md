@@ -1,321 +1,176 @@
 ---
-name: ical
-description: Manages macOS Calendar events and calendars from the terminal using the ical CLI. Full CRUD for both events and calendars. Supports natural language dates, recurrence rules, alerts, interactive mode, import/export (JSON/CSV/ICS), and multiple output formats. Use when the user wants to interact with Apple Calendar via command line, automate calendar workflows, or build scripts around macOS Calendar.
-metadata:
-  author: BRO3886
-  version: "0.8.0"
-compatibility: Requires macOS with Calendar.app. Requires Xcode Command Line Tools for building from source.
-permissions:
-  macos:
-    macos_calendar: true
+name: ical-cli
+description: Manages macOS Calendar events and calendars from the terminal via the ical CLI. Full CRUD for events and calendars with natural-language dates, recurrence, alerts, interactive mode, and JSON/CSV/ICS import/export. Use when the user wants to interact with Apple Calendar from the command line, automate calendar workflows, or build scripts around macOS Calendar.
+license: MIT
+compatibility: Requires macOS with Calendar.app access and the ical CLI installed (https://ical.sidv.dev)
+allowed-tools: Bash(ical *)
+argument-hint: "[natural language request]"
 ---
 
-# ical — CLI for macOS Calendar
+# ical — macOS Calendar CLI
 
-A Go CLI that wraps macOS Calendar. Sub-millisecond reads via cgo + EventKit. Single binary, no dependencies at runtime.
+## Current date context
 
-## Installation
+Resolved fresh every time the skill loads. Prefer these over guessing from context.
 
-```bash
-go install github.com/BRO3886/ical/cmd/ical@latest
-```
+- Today: !`date +"%A, %B %-d, %Y"`
+- Today (ISO): !`date +"%Y-%m-%d"`
+- Local time: !`date +"%H:%M %Z"`
+- Tomorrow (ISO): !`date -v+1d +"%Y-%m-%d"`
+- Next Monday (ISO, always forward): !`date -v+1d -v+mon +"%Y-%m-%d"`
+- Next Friday (ISO, always forward): !`date -v+1d -v+fri +"%Y-%m-%d"`
+- End of week (Sunday, ISO): !`date -v+1d -v+sun +"%Y-%m-%d"`
 
-Or build from source:
+ical also accepts natural-language strings directly (`today`, `tomorrow`, `next friday`, `in 3 hours`, `eow`, `mar 15`). When in doubt, pass the user's own phrasing through — the parser handles it.
 
-```bash
-git clone https://github.com/BRO3886/ical && cd ical
-make build    # produces bin/ical
-```
+## When to use this skill
 
-## Quick Start
+| User intent | Command |
+| --- | --- |
+| "What's on my calendar today" | `ical today` |
+| "What's coming up this week" | `ical upcoming --days 7` |
+| "List events between X and Y" | `ical list --from X --to Y` |
+| "Show me event N" | `ical show <row-number>` |
+| "Add / schedule / book a meeting" | `ical add "title" --start X --end Y --calendar C` |
+| "Move / reschedule an event" | `ical update <row-number> --start X --end Y` |
+| "Rename / retitle an event" | `ical update <row-number> --title "new"` |
+| "Change an event's notes / location" | `ical update <row-number> --notes "..." --location "..."` |
+| "Cancel / delete an event" | `ical delete <row-number> --force` |
+| "Find events about X" | `ical search "X" --from today --to "in 30 days"` |
+| "Events involving <person>" | `ical list --from today --to "in 14 days" --attendee <name>` |
+| "Show only one-off events" | `ical upcoming --days 7 --no-recurring` |
+| "List / create / rename / delete calendars" | `ical calendars [create\|update\|delete]` |
+| "Export / back up events" | `ical export --format json --output-file backup.json` |
 
-```bash
-# List all calendars (shows sources, colors, types)
-ical calendars
+This table covers the common intents. If you need a flag that isn't shown above, **don't guess** — either run `ical <command> --help` (or `-h`) to get the authoritative flag list with defaults, or load [references/commands.md](references/commands.md) for the full reference. `--help` is fast, accurate, and safe to run repeatedly; prefer it over guessing a flag name from convention.
 
-# Create a new calendar
-ical calendars create "Projects" --source iCloud --color "#FF6961"
+Load [references/commands.md](references/commands.md) when you need every column of a flag (short form, default, type), or when `--help` alone isn't enough context.
 
-# Show today's agenda
-ical today
+Load [references/dates.md](references/dates.md) when a date string fails to parse, or when the user asks what date formats are supported.
 
-# List events this week
-ical list --from today --to "end of week"
+## Workflow: identify an event before acting on it
 
-# Add an event with natural language dates
-ical add "Team standup" --start "tomorrow at 9am" --end "tomorrow at 9:30am" --calendar Work --alert 15m
+Agents usually can't assume they know the right event ID. The robust pattern:
 
-# Show event details (row number from last listing)
-ical show 2
+1. Run a listing (`ical list`, `ical today`, `ical upcoming`) to find the event.
+2. Note the row number (`#1`, `#2`...) shown in the output.
+3. Act on it by row number: `ical show 2`, `ical update 3 --title "..."`, `ical delete 1 --force`.
 
-# Delete an event (--force skips confirmation prompt, required in scripts/agents)
-ical delete 2 --force
+Row numbers are cached to `~/.ical-last-list` and stay valid until the next listing command runs. If you need a stable reference across sessions, capture the full event ID with `-o json | jq -r '.[0].id'` and use `--id "<id>"` for exact lookup.
 
-# Batch delete multiple events at once
-ical delete 1 2 3 --force
+## Gotchas (read before running)
 
-# Search for events
-ical search "meeting" --from "30 days ago" --to "next month"
+- **`ical delete` prompts for interactive confirmation.** In any non-interactive context, pass `--force`. There is no `--confirm` flag.
+- **`ical update` has no `--force` and never confirms.** Run it directly with the flags you want changed.
+- **Row numbers reset on every listing.** Running `ical today` invalidates the row numbers from a previous `ical list`.
+- **`--id` is exact match only.** No prefix search, no partial match. Pass a full event ID from JSON output.
+- **`--id` and positional event args are mutually exclusive.** Pass one or the other.
+- **`--repeat-days` only applies to `--repeat weekly`.** With any other frequency the CLI errors out. The recurrence engine silently discards the days otherwise.
+- **Timezone abbreviations (EST, CDT, BST, IST...) are rejected** inside date strings. Use `--timezone America/New_York` instead, with IANA names.
+- **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.
+- **Attendees and organizers are read-only** (Apple EventKit limitation). `ical add` does not accept `--attendee`. The `--attendee` flag on list/search is a filter, not an invite.
+- **Subscribed calendars and the Birthdays calendar are read-only.** Event creation against them fails.
+- **Calendar-name matching on `--calendar` and `--exclude-calendar` is case-insensitive and whitespace-trimmed**, so `"  Work "` and `work` both match a calendar named `Work`.
+- **EventKit adjusts some hex colors** during save (e.g. `#FF6961` → `#FF8073`). This is CGColor conversion, not a bug.
+- **`ical` is macOS-only.** No fallback on Linux or Windows.
 
-# Export events to ICS
-ical export --format ics --from today --to "in 30 days" --output-file events.ics
-```
+## Output formats
 
-## Command Reference
+All read commands accept `-o`:
 
-### Event CRUD
+- `table` (default) — bordered, colored, human-oriented, with a `Date` column that prints only on day transitions
+- `json` — ISO 8601 timestamps, full fields, safe for scripts and agents
+- `plain` — one event per line, grep-friendly
 
-| Command      | Aliases         | Description             |
-| ------------ | --------------- | ----------------------- |
-| `ical add`    | `create`, `new` | Create an event         |
-| `ical show`   | `get`, `info`   | Show full event details |
-| `ical update` | `edit`          | Update event properties |
-| `ical delete` | `rm`, `remove`  | Delete one or more events |
+**Event JSON fields**: `id`, `title`, `start_date`, `end_date`, `all_day`, `calendar`, `calendar_id`, `location`, `notes`, `url`, `status`, `availability`, `organizer`, `attendees`, `recurring`, `recurrence_rules`, `alerts`, `timezone`, `created_at`, `modified_at`.
 
-### Event Views
+**Calendar JSON fields**: `id`, `title`, `type`, `color`, `source`, `readOnly`. Note the list key is `title`, not `name`.
 
-| Command        | Aliases        | Description                    |
-| -------------- | -------------- | ------------------------------ |
-| `ical list`     | `ls`, `events` | List events in a date range    |
-| `ical today`    | —              | Show today's events            |
-| `ical upcoming` | `next`, `soon` | Show events in the next N days |
+### JSON output gotchas
 
-### Search & Export
+- Dates are **ISO 8601 UTC** (`2026-04-18T15:00:00Z`), not local time. Convert in jq with `fromdate | strftime("%Y-%m-%d %H:%M")` if you need local wall-clock.
+- Optional fields (`location`, `url`, `notes`, `organizer`, `attendees`, `recurrence_rules`, `timezone`) are **omitted when empty** — use `.location // ""` in jq rather than assuming the key exists.
+- `recurrence_rules` is an **array**. An event with one rule still comes back as `[rule]`. The cheap "is this event repeating" check is the top-level `recurring: true` boolean.
+- Inside a recurrence rule, `frequency` is an **integer enum** (`0=daily`, `1=weekly`, `2=monthly`, `3=yearly`), not a string. Compare against the int.
+- `alerts[].relativeOffset` is a **negative nanosecond duration** for before-event alerts. 15 minutes before = `-900000000000`. Divide by `-1e9` for seconds, or use `((. / -1000000000) / 60)` in jq for minutes.
+- `attendees[].status` is an **integer**, not a string — unlike event-level `status` and `availability` which serialize as strings. Map the int yourself if you need a label.
+- `attendees` has no write path — the array is read-only no matter what you do with `ical add` or `ical update`.
 
-| Command      | Aliases | Description                             |
-| ------------ | ------- | --------------------------------------- |
-| `ical search` | `find`  | Search events by title, location, notes |
-| `ical export` | —       | Export events to JSON, CSV, or ICS      |
-| `ical import` | —       | Import events from JSON or CSV file     |
+## Interactive mode
 
-### Calendar Management
+- `ical add -i` — guided form for title, calendar, dates, location, recurrence, alerts.
+- `ical update <n> -i` — pre-filled form with current values.
+- `ical show` / `ical update` / `ical delete` with zero args — launches a searchable event picker.
 
-| Command                   | Aliases           | Description                          |
-| ------------------------- | ----------------- | ------------------------------------ |
-| `ical calendars`           | `icals`            | List all calendars                   |
-| `ical calendars create`    | `add`, `new`      | Create a new calendar                |
-| `ical calendars update`    | `edit`, `rename`  | Update a calendar (rename, recolor)  |
-| `ical calendars delete`    | `rm`, `remove`    | Delete a calendar and all its events |
+Skip `-i` and zero-arg invocations when running non-interactively — they block on stdin. Agents should always pass explicit flags or a row number.
 
-### Skills & Other
-
-| Command                 | Aliases | Description                                                                    |
-| ----------------------- | ------- | ------------------------------------------------------------------------------ |
-| `ical skills install`   | —       | Install ical skill for Claude Code / Codex / OpenClaw / others (`--dry-run` to preview) |
-| `ical skills uninstall` | —       | Remove ical agent skill                                                        |
-| `ical skills status`    | —       | Show skill installation status                                                 |
-| `ical version`          | —       | Print version and build info                                                   |
-| `ical completion`       | —       | Generate shell completions (bash/zsh/fish)                                     |
-
-For full flag details on every command, see [references/commands.md](references/commands.md).
-
-## Key Concepts
-
-### Row Numbers
-
-Event listings display row numbers (`#1`, `#2`, `#3`...) alongside events. These are cached to `~/.ical-last-list` so you can reference them in subsequent commands:
+## Recurrence
 
 ```bash
-ical list --from today --to "next week"   # Shows #1, #2, #3...
-ical show 2                                # Show details for row #2
-ical update 3 --title "New title"          # Update row #3
-ical delete 1 --force                      # Delete row #1 (skip confirmation)
-ical delete 1                              # Delete row #1 (prompts for confirmation)
-ical delete 1 2 3 --force                  # Batch delete rows #1, #2, #3
-```
-
-Row numbers reset each time you run a list/today/upcoming command. With no arguments, `show`, `update`, and `delete` launch an interactive picker instead.
-
-### Event ID flag (for scripts and agents)
-
-When you have a full event ID (from `-o json` output), use `--id` for exact lookup with no prefix matching:
-
-```bash
-# Get event ID from JSON output
-EVENT_ID=$(ical today -o json | jq -r '.[0].id')
-
-# Use --id for reliable exact lookup
-ical show --id "$EVENT_ID"
-ical update --id "$EVENT_ID" --title "New title"
-ical delete --id "$EVENT_ID" --force
-```
-
-> **Important for scripting**:
-> - `ical delete` prompts for interactive confirmation by default. Always pass `--force` (or `-f`) when running non-interactively. There is no `--confirm` flag.
-> - `ical update` does **not** require confirmation and has **no `--force` flag** — just run it directly with the flags you want to change.
-> - `--id` and a positional argument are mutually exclusive — passing both returns an error.
-
-### Natural Language Dates
-
-Date flags (`--from`, `--to`, `--start`, `--end`, `--due`) accept natural language:
-
-```bash
-ical list --from today --to "next friday"
-ical add "Lunch" --start "tomorrow at noon" --end "tomorrow at 1pm"
-ical search "standup" --from "2 weeks ago"
-ical upcoming --days 14
-```
-
-Supported patterns: `today`, `tomorrow`, `next monday`, `in 3 hours`, `eod`, `eow`, `this week`, `5pm`, `mar 15`, `21 mar`, `21 march 2026`, `2 days ago`, and more. See [references/dates.md](references/dates.md) for the full list.
-
-**Timezone abbreviations (CDT, CST, EST, etc.) cannot be embedded in date strings** — the parser will reject them. For events in a different timezone than the local machine, use the `--timezone` flag:
-
-```bash
-# WRONG — will fail
-ical add "Meeting" --start "2026-06-17 at 2pm CDT"
-
-# CORRECT — use IANA timezone
-ical add "Meeting" --start "2026-06-17 14:00" --timezone "America/Chicago"
-```
-
-The `--timezone` flag accepts IANA names (e.g., `America/Chicago`, `America/New_York`, `Europe/Madrid`). Times display in the machine's local timezone but are stored correctly.
-
-### Interactive Mode
-
-The `add` and `update` commands support `-i` for guided form-based input:
-
-```bash
-ical add -i        # Multi-page form: title, calendar, dates, location, recurrence
-ical update 2 -i   # Pre-filled form with current event values
-```
-
-The `show`, `update`, and `delete` commands accept 0 arguments to launch an interactive event picker:
-
-```bash
-ical show          # Pick from upcoming events
-ical delete        # Pick an event to delete
-```
-
-### Output Formats
-
-All read commands support `-o` / `--output`:
-
-- **table** (default) — formatted table with borders and color
-- **json** — machine-readable JSON (ISO 8601 dates)
-- **plain** — simple text, one item per line
-
-The `NO_COLOR` environment variable and `--no-color` flag are respected.
-
-### Recurrence
-
-Events can repeat with flexible rules:
-
-```bash
-# Daily standup
+# Daily
 ical add "Standup" --start "tomorrow at 9am" --repeat daily
 
-# Every 2 weeks on Mon and Wed
-ical add "Team sync" --start "next monday at 10am" --repeat weekly --repeat-interval 2 --repeat-days mon,wed
+# Every 2 weeks on Mon and Wed (only weekly accepts --repeat-days)
+ical add "Team sync" --start "next monday at 10am" \
+  --repeat weekly --repeat-interval 2 --repeat-days mon,wed
 
-# Monthly for 6 months
+# Monthly for 6 occurrences
 ical add "Review" --start "mar 1 at 2pm" --repeat monthly --repeat-count 6
 
 # Yearly until a date
 ical add "Anniversary" --start "jun 15" --repeat yearly --repeat-until "2030-06-15"
 ```
 
-Use `--repeat none` on update to remove recurrence. Use `--span future` to update/delete this and all future occurrences.
+`ical update <n> --repeat none` removes recurrence. `ical update <n> --span future` changes this and all future occurrences; without it only the single instance is modified.
 
-### Alerts
+## Alerts
 
-Add reminders before an event with the `--alert` flag (repeatable):
-
-```bash
-ical add "Meeting" --start "tomorrow at 2pm" --alert 15m          # 15 minutes before
-ical add "Flight" --start "mar 15 at 8am" --alert 1h --alert 1d   # 1 hour + 1 day before
-```
-
-Supported units: `m` (minutes), `h` (hours), `d` (days).
-
-## Common Workflows
-
-### Daily review
+Repeatable `--alert` flag on `ical add` and `ical update`. Units: `m`, `h`, `d`.
 
 ```bash
-ical today                                 # See today's agenda
-ical upcoming --days 1                     # Same as today
-ical list --from today --to "end of week"  # Rest of the week
+ical add "Flight" --start "mar 15 at 8am" --alert 1h --alert 1d
 ```
 
-### Weekly planning
+Calendars contribute their own default alerts to every new event. There is currently no flag to suppress that inherited default — see ical#16 for the open request. If you need an alert-free event on a calendar with a default, create it on a calendar that has no default, or remove alerts after creation with `ical update <n>` (no `--alert` flag currently clears them either, so pragmatically: pick a quiet calendar).
+
+## Calendar management
 
 ```bash
-ical upcoming --days 7                           # Full week view
-ical add "Planning" --start "monday at 9am" -i  # Add events interactively
+ical calendars                                              # list (alias: cals)
+ical calendars create "Projects" --source iCloud --color "#FF6961"
+ical calendars update "Projects" --name "Side projects"
+ical calendars delete "Projects" --force
 ```
 
-### Scripting with JSON output
+`create` requires `--source`. Valid sources come from existing calendars — inspect `ical calendars -o json | jq -r '.[].source' | sort -u` to discover them on the user's machine.
+
+## Common recipes
 
 ```bash
 # Count today's events
 ical today -o json | jq 'length'
 
-# Get titles of upcoming events
-ical upcoming -o json | jq -r '.[].title'
+# First event of the day
+ical today -o json | jq -r '.[0] | "\(.title) at \(.start_date)"'
 
-# Find events on a specific calendar
-ical list --from today --to "in 30 days" --calendar Work -o json | jq '.[].title'
+# Next event involving a teammate
+ical list --from today --to "in 14 days" --attendee claire -o json | jq '.[0]'
 
-# List calendar names (field is "title", not "name")
-ical calendars -o json | jq -r '.[].title'
+# Rest of the week, skipping recurring noise
+ical list --from today --to "end of week" --no-recurring
 
-# Get calendar IDs and names
-ical calendars -o json | jq -r '.[] | "\(.id) \(.title)"'
+# Bulk delete everything matching a search (careful)
+ical search "temp" --from today --to "in 7 days" -o json \
+  | jq -r '.[].id' \
+  | xargs -I {} ical delete --id {} --force
+
+# Weekly agenda export
+ical export --from today --to "in 7 days" --format ics --output-file week.ics
 ```
 
-**Calendar JSON fields**: `id`, `title`, `type`, `color`, `source`, `readOnly`
-**Event JSON fields**: `id`, `title`, `start_date`, `end_date`, `calendar`, `calendar_id`, `location`, `notes`, `url`, `all_day`, `recurrence`, `alerts`
+## Limits
 
-### Filtering the agenda
-
-```bash
-# Hide recurring events (standups, recurring 1:1s) — focus on one-off meetings
-ical upcoming --days 7 --no-recurring
-
-# Find events involving a specific person (matches attendee name, email, or organizer)
-ical list --from today --to "in 14 days" --attendee alice
-
-# Skip noisy calendars from the listing
-ical today --exclude-calendar "US Holidays" --exclude-calendar Birthdays
-```
-
-`--attendee` is case-insensitive substring matching against attendee names/emails and the organizer. `--no-recurring` drops events whose `recurring` JSON field is true. Both flags are available on `list`, `today`, `upcoming`, and `search`.
-
-### Backup and restore
-
-```bash
-# Export all events from the past year
-ical export --from "12 months ago" --to "in 12 months" --format json --output-file backup.json
-
-# Export as ICS for other calendar apps
-ical export --from today --to "in 6 months" --format ics --output-file events.ics
-
-# Import from backup
-ical import backup.json --calendar "Restored"
-```
-
-## Public Go API
-
-For programmatic access to macOS Calendar, use [`go-eventkit`](https://github.com/BRO3886/go-eventkit) directly:
-
-```go
-import "github.com/BRO3886/go-eventkit/calendar"
-
-client, _ := calendar.New()
-events, _ := client.Events(from, to, calendar.WithCalendarName("Work"))
-event, _ := client.CreateEvent(calendar.CreateEventInput{
-    Title:        "Team Meeting",
-    StartDate:    start,
-    EndDate:      end,
-    CalendarName: "Work",
-})
-```
-
-See [go-eventkit docs](https://github.com/BRO3886/go-eventkit) for the full API surface.
-
-## Limitations
-
-- **macOS only** — requires EventKit framework via cgo
-- **No attendee management** — attendees and organizer are read-only (Apple limitation)
-- **Subscribed/birthday calendars are read-only** — cannot create events on these
-- **Event IDs are calendar-scoped** — the UUID prefix before `:` is the calendar ID, not event-specific. Use row numbers or the interactive picker instead of raw IDs
+- Attendee invites are not supported (EventKit is read-only for attendees).
+- No `--no-alert` flag yet — alerts inherit the calendar default.
+- Subscribed and Birthdays calendars are read-only.
+- macOS only.
