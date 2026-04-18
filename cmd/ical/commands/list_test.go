@@ -33,6 +33,34 @@ func TestNormalizeCalendarName(t *testing.T) {
 	}
 }
 
+func TestFilterRecurring(t *testing.T) {
+	events := []calendar.Event{
+		{Title: "A", Recurring: false},
+		{Title: "B", Recurring: true},
+		{Title: "C", Recurring: false},
+		{Title: "D", Recurring: true},
+	}
+
+	got := filterRecurring(events)
+	if len(got) != 2 || got[0].Title != "A" || got[1].Title != "C" {
+		t.Errorf("filterRecurring dropped the wrong events, got %+v", got)
+	}
+
+	if len(filterRecurring(nil)) != 0 {
+		t.Error("filterRecurring(nil) should return empty slice")
+	}
+
+	allRecurring := []calendar.Event{{Title: "X", Recurring: true}}
+	if len(filterRecurring(allRecurring)) != 0 {
+		t.Error("all-recurring input should yield empty output")
+	}
+
+	noneRecurring := []calendar.Event{{Title: "Y", Recurring: false}}
+	if len(filterRecurring(noneRecurring)) != 1 {
+		t.Error("no-recurring input should pass through unchanged")
+	}
+}
+
 func TestFilterExcludedCalendars(t *testing.T) {
 	events := []calendar.Event{
 		{Title: "A", Calendar: "Work"},
