@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
-	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
@@ -80,16 +80,15 @@ var addCmd = &cobra.Command{
 		}
 
 		input := calendar.CreateEventInput{
-			Title:                 title,
-			StartDate:             startTime,
-			EndDate:               endTime,
-			AllDay:                addAllDay,
-			Location:              addLocation,
-			Notes:                 addNotes,
-			URL:                   addURL,
-			Calendar:              addCalendar,
-			TimeZone:              addTimezone,
-			SuppressDefaultAlarms: addNoAlert,
+			Title:     title,
+			StartDate: startTime,
+			EndDate:   endTime,
+			AllDay:    addAllDay,
+			Location:  addLocation,
+			Notes:     addNotes,
+			URL:       addURL,
+			Calendar:  addCalendar,
+			TimeZone:  addTimezone,
 		}
 
 		// Parse alerts
@@ -99,6 +98,13 @@ var addCmd = &cobra.Command{
 				return err
 			}
 			input.Alerts = append(input.Alerts, calendar.Alert{RelativeOffset: -d})
+		}
+
+		// Any explicit --alert suppresses the calendar default; --no-alert
+		// suppresses it explicitly so a user can create a zero-alert event
+		// on a calendar that has a default configured.
+		if addNoAlert || len(input.Alerts) > 0 {
+			input.SuppressDefaultAlarms = true
 		}
 
 		// Parse recurrence
@@ -135,7 +141,7 @@ func init() {
 	addCmd.Flags().StringVarP(&addNotes, "notes", "n", "", "Notes/description")
 	addCmd.Flags().StringVarP(&addURL, "url", "u", "", "URL to attach")
 	addCmd.Flags().StringArrayVar(&addAlerts, "alert", nil, "Alert before event (e.g., 15m, 1h, 1d) — repeatable")
-	addCmd.Flags().BoolVar(&addNoAlert, "no-alert", false, "Don't inherit the calendar's default alarms")
+	addCmd.Flags().BoolVar(&addNoAlert, "no-alert", false, "Create with zero alerts (overrides calendar default)")
 	addCmd.Flags().StringVarP(&addRepeat, "repeat", "r", "", "Recurrence: daily, weekly, monthly, yearly")
 	addCmd.Flags().IntVar(&addRepeatInterval, "repeat-interval", 1, "Recurrence interval")
 	addCmd.Flags().StringVar(&addRepeatUntil, "repeat-until", "", "Recurrence end date")
@@ -273,8 +279,8 @@ func runAddInteractive() error {
 
 	// Page 3: Recurrence
 	var (
-		repeat       string
-		repeatDays   string
+		repeat     string
+		repeatDays string
 	)
 
 	recurrence := huh.NewGroup(

@@ -131,17 +131,18 @@ Repeatable `--alert` flag on `ical add` and `ical update`. Units: `m`, `h`, `d`.
 ical add "Flight" --start "mar 15 at 8am" --alert 1h --alert 1d
 ```
 
-Calendars contribute their own default alerts to every new event. Pass `--no-alert` on `ical add` to opt out:
+Calendars contribute their own default alerts to every new event. Two ways to opt out:
 
 ```bash
-# No alerts at all — useful for mirrored busy blocks and scripted events
-ical add "Busy block" --start "tomorrow 9am" --end "tomorrow 10am" --no-alert
+# Explicit --alert already overrides the calendar default — you get
+# exactly the alerts you list, no calendar defaults mixed in
+ical add "Focus time" --start "tomorrow 2pm" --end "tomorrow 4pm" --alert 15m
 
-# Exactly one explicit alert, ignoring the calendar's default
-ical add "Focus time" --start "tomorrow 2pm" --end "tomorrow 4pm" --no-alert --alert 15m
+# No alerts at all (useful for mirrored busy blocks)
+ical add "Busy block" --start "tomorrow 9am" --end "tomorrow 10am" --no-alert
 ```
 
-`--no-alert` and `--alert` compose — the flag suppresses the calendar default, then any `--alert` values are added on top.
+Rule of thumb: passing **any** `--alert` gives you exactly those alerts. Passing **no** `--alert` and no `--no-alert` inherits the calendar's default alerts. Passing `--no-alert` gives you zero alerts regardless of the calendar.
 
 ## Calendar management
 

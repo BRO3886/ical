@@ -203,7 +203,7 @@ ical add -i   # Interactive mode
 | `--notes`           | `-n`  | Notes/description                                   | —              |
 | `--url`             | `-u`  | URL to attach                                       | —              |
 | `--alert`           | —     | Alert before event (e.g., 15m, 1h, 1d) — repeatable | —              |
-| `--no-alert`        | —     | Don't inherit the calendar's default alarms         | false          |
+| `--no-alert`        | —     | Create with zero alerts (overrides calendar default) | false          |
 | `--repeat`          | `-r`  | Recurrence: daily, weekly, monthly, yearly          | —              |
 | `--repeat-interval` | —     | Recurrence interval                                 | 1              |
 | `--repeat-until`    | —     | Recurrence end date                                 | —              |
