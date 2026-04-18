@@ -131,7 +131,18 @@ Repeatable `--alert` flag on `ical add` and `ical update`. Units: `m`, `h`, `d`.
 ical add "Flight" --start "mar 15 at 8am" --alert 1h --alert 1d
 ```
 
-Calendars contribute their own default alerts to every new event. There is currently no flag to suppress that inherited default — see ical#16 for the open request. If you need an alert-free event on a calendar with a default, create it on a calendar that has no default, or remove alerts after creation with `ical update <n>` (no `--alert` flag currently clears them either, so pragmatically: pick a quiet calendar).
+Calendars contribute their own default alerts to every new event. Two ways to opt out:
+
+```bash
+# Explicit --alert already overrides the calendar default — you get
+# exactly the alerts you list, no calendar defaults mixed in
+ical add "Focus time" --start "tomorrow 2pm" --end "tomorrow 4pm" --alert 15m
+
+# No alerts at all (useful for mirrored busy blocks)
+ical add "Busy block" --start "tomorrow 9am" --end "tomorrow 10am" --no-alert
+```
+
+Rule of thumb: passing **any** `--alert` gives you exactly those alerts. Passing **no** `--alert` and no `--no-alert` inherits the calendar's default alerts. Passing `--no-alert` gives you zero alerts regardless of the calendar.
 
 ## Calendar management
 
@@ -171,6 +182,5 @@ ical export --from today --to "in 7 days" --format ics --output-file week.ics
 ## Limits
 
 - Attendee invites are not supported (EventKit is read-only for attendees).
-- No `--no-alert` flag yet — alerts inherit the calendar default.
 - Subscribed and Birthdays calendars are read-only.
 - macOS only.

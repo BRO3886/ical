@@ -209,6 +209,9 @@ ical add "Company Holiday" -s 2026-03-15 --all-day -c Work
 ical add "Dinner" -s "friday 7pm" -e "friday 9pm" \
   -l "The Restaurant, 123 Main St" --alert 1h --alert 15m
 
+# Suppress the calendar's default alerts (e.g. for mirrored busy blocks)
+ical add "Busy block" -s "tomorrow 9am" -e "tomorrow 10am" --no-alert
+
 # Recurring event
 ical add "Weekly Sync" -s "next monday 10am" -e "next monday 11am" \
   --repeat weekly --repeat-days mon -c Work
