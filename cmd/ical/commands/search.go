@@ -5,16 +5,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
-	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )
 
 var (
-	searchFrom     string
-	searchTo       string
-	searchCalendar string
+	searchFrom        string
+	searchTo          string
+	searchCalendar    string
 	searchLimit       int
 	searchAttendee    string
 	searchNoRecurring bool

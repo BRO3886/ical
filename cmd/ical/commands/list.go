@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
-	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )
 
@@ -161,8 +161,23 @@ func normalizeCalendarName(s string) string {
 	return strings.ToLower(strings.TrimSpace(s))
 }
 
-// filterRecurring returns only the non-recurring events.
+// filterRecurring returns only the non-recurring events. The input slice
+// is returned as-is when nothing needs to be dropped so the common case
+// (no recurring events at all) avoids an allocation.
 func filterRecurring(events []calendar.Event) []calendar.Event {
+	if len(events) == 0 {
+		return events
+	}
+	hasRecurring := false
+	for _, e := range events {
+		if e.Recurring {
+			hasRecurring = true
+			break
+		}
+	}
+	if !hasRecurring {
+		return events
+	}
 	filtered := make([]calendar.Event, 0, len(events))
 	for _, e := range events {
 		if !e.Recurring {
