@@ -84,6 +84,16 @@ All read commands accept `-o`:
 
 **Calendar JSON fields**: `id`, `title`, `type`, `color`, `source`, `readOnly`. Note the list key is `title`, not `name`.
 
+### JSON output gotchas
+
+- Dates are **ISO 8601 UTC** (`2026-04-18T15:00:00Z`), not local time. Convert in jq with `fromdate | strftime("%Y-%m-%d %H:%M")` if you need local wall-clock.
+- Optional fields (`location`, `url`, `notes`, `organizer`, `attendees`, `recurrence_rules`, `timezone`) are **omitted when empty** — use `.location // ""` in jq rather than assuming the key exists.
+- `recurrence_rules` is an **array**. An event with one rule still comes back as `[rule]`. The cheap "is this event repeating" check is the top-level `recurring: true` boolean.
+- Inside a recurrence rule, `frequency` is an **integer enum** (`0=daily`, `1=weekly`, `2=monthly`, `3=yearly`), not a string. Compare against the int.
+- `alerts[].relativeOffset` is a **negative nanosecond duration** for before-event alerts. 15 minutes before = `-900000000000`. Divide by `-1e9` for seconds, or use `((. / -1000000000) / 60)` in jq for minutes.
+- `attendees[].status` is an **integer**, not a string — unlike event-level `status` and `availability` which serialize as strings. Map the int yourself if you need a label.
+- `attendees` has no write path — the array is read-only no matter what you do with `ical add` or `ical update`.
+
 ## Interactive mode
 
 - `ical add -i` — guided form for title, calendar, dates, location, recurrence, alerts.
