@@ -27,6 +27,7 @@ func init() {
 	todayCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	todayCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
 	todayCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
+	todayCmd.Flags().BoolVar(&listNoRecurring, "no-recurring", false, "Hide recurring events")
 
 	rootCmd.AddCommand(todayCmd)
 }

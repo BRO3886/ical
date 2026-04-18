@@ -31,6 +31,7 @@ func init() {
 	upcomingCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	upcomingCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
 	upcomingCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
+	upcomingCmd.Flags().BoolVar(&listNoRecurring, "no-recurring", false, "Hide recurring events")
 
 	rootCmd.AddCommand(upcomingCmd)
 }

@@ -5,18 +5,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
-	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )
 
 var (
-	searchFrom     string
-	searchTo       string
-	searchCalendar string
-	searchLimit    int
-	searchAttendee string
+	searchFrom        string
+	searchTo          string
+	searchCalendar    string
+	searchLimit       int
+	searchAttendee    string
+	searchNoRecurring bool
 )
 
 var searchCmd = &cobra.Command{
@@ -72,6 +73,10 @@ var searchCmd = &cobra.Command{
 			events = filtered
 		}
 
+		if searchNoRecurring {
+			events = filterRecurring(events)
+		}
+
 		if searchLimit > 0 && len(events) > searchLimit {
 			events = events[:searchLimit]
 		}
@@ -87,6 +92,7 @@ func init() {
 	searchCmd.Flags().StringVarP(&searchCalendar, "calendar", "c", "", "Filter by calendar")
 	searchCmd.Flags().IntVarP(&searchLimit, "limit", "n", 0, "Max results")
 	searchCmd.Flags().StringVarP(&searchAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
+	searchCmd.Flags().BoolVar(&searchNoRecurring, "no-recurring", false, "Hide recurring events")
 
 	rootCmd.AddCommand(searchCmd)
 }

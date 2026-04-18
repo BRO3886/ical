@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/ical/internal/ui"
-	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/spf13/cobra"
 )
 
@@ -23,6 +23,7 @@ var (
 	listLimit           int
 	listExcludeCalendar []string
 	listAttendee        string
+	listNoRecurring     bool
 )
 
 var listCmd = &cobra.Command{
@@ -66,6 +67,7 @@ func init() {
 	listCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	listCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
 	listCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
+	listCmd.Flags().BoolVar(&listNoRecurring, "no-recurring", false, "Hide recurring events")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -93,6 +95,10 @@ func listEvents(from, to time.Time) error {
 	}
 
 	events = filterExcludedCalendars(events, listExcludeCalendar)
+
+	if listNoRecurring {
+		events = filterRecurring(events)
+	}
 
 	if listAttendee != "" {
 		filtered := make([]calendar.Event, 0, len(events))
@@ -153,6 +159,32 @@ func sortEvents(events []calendar.Event, sortBy string) {
 // --exclude-calendar matches regardless of accidental padding or casing.
 func normalizeCalendarName(s string) string {
 	return strings.ToLower(strings.TrimSpace(s))
+}
+
+// filterRecurring returns only the non-recurring events. The input slice
+// is returned as-is when nothing needs to be dropped so the common case
+// (no recurring events at all) avoids an allocation.
+func filterRecurring(events []calendar.Event) []calendar.Event {
+	if len(events) == 0 {
+		return events
+	}
+	hasRecurring := false
+	for _, e := range events {
+		if e.Recurring {
+			hasRecurring = true
+			break
+		}
+	}
+	if !hasRecurring {
+		return events
+	}
+	filtered := make([]calendar.Event, 0, len(events))
+	for _, e := range events {
+		if !e.Recurring {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
 }
 
 // filterExcludedCalendars drops events whose calendar name matches any

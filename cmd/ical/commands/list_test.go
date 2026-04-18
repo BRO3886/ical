@@ -33,6 +33,54 @@ func TestNormalizeCalendarName(t *testing.T) {
 	}
 }
 
+func TestFilterRecurring(t *testing.T) {
+	t.Run("drops only recurring entries", func(t *testing.T) {
+		events := []calendar.Event{
+			{Title: "A", Recurring: false},
+			{Title: "B", Recurring: true},
+			{Title: "C", Recurring: false},
+			{Title: "D", Recurring: true},
+		}
+		got := filterRecurring(events)
+		if len(got) != 2 || got[0].Title != "A" || got[1].Title != "C" {
+			t.Errorf("wrong events retained, got %+v", got)
+		}
+	})
+
+	t.Run("nil input returns nil without panicking", func(t *testing.T) {
+		if got := filterRecurring(nil); got != nil {
+			t.Errorf("expected nil, got %+v", got)
+		}
+	})
+
+	t.Run("empty slice returns same empty slice", func(t *testing.T) {
+		in := []calendar.Event{}
+		got := filterRecurring(in)
+		if len(got) != 0 {
+			t.Errorf("expected empty, got %+v", got)
+		}
+	})
+
+	t.Run("all-recurring input yields empty result", func(t *testing.T) {
+		in := []calendar.Event{{Title: "X", Recurring: true}, {Title: "Y", Recurring: true}}
+		if got := filterRecurring(in); len(got) != 0 {
+			t.Errorf("expected empty, got %+v", got)
+		}
+	})
+
+	t.Run("no-recurring input passes through as the same slice", func(t *testing.T) {
+		in := []calendar.Event{{Title: "Y", Recurring: false}, {Title: "Z", Recurring: false}}
+		got := filterRecurring(in)
+		if len(got) != len(in) {
+			t.Fatalf("expected pass-through of %d events, got %d", len(in), len(got))
+		}
+		// Fast path: should return the same backing slice, not a copy.
+		if &got[0] != &in[0] {
+			t.Error("expected pass-through to return the input slice, got a copy")
+		}
+	})
+}
+
 func TestFilterExcludedCalendars(t *testing.T) {
 	events := []calendar.Event{
 		{Title: "A", Calendar: "Work"},
