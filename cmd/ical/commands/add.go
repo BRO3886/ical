@@ -141,7 +141,7 @@ func init() {
 	addCmd.Flags().StringVarP(&addNotes, "notes", "n", "", "Notes/description")
 	addCmd.Flags().StringVarP(&addURL, "url", "u", "", "URL to attach")
 	addCmd.Flags().StringArrayVar(&addAlerts, "alert", nil, "Alert before event (e.g., 15m, 1h, 1d) — repeatable")
-	addCmd.Flags().BoolVar(&addNoAlert, "no-alert", false, "Create with zero alerts (overrides calendar default)")
+	addCmd.Flags().BoolVar(&addNoAlert, "no-alert", false, "Create with zero alerts (overrides calendar default alerts)")
 	addCmd.Flags().StringVarP(&addRepeat, "repeat", "r", "", "Recurrence: daily, weekly, monthly, yearly")
 	addCmd.Flags().IntVar(&addRepeatInterval, "repeat-interval", 1, "Recurrence interval")
 	addCmd.Flags().StringVar(&addRepeatUntil, "repeat-until", "", "Recurrence end date")
@@ -357,6 +357,13 @@ func runAddInteractive() error {
 			}
 			input.Alerts = append(input.Alerts, calendar.Alert{RelativeOffset: -d})
 		}
+	}
+
+	// Matches the non-interactive path: any explicit alert suppresses the
+	// calendar default, and the --no-alert CLI flag (if passed together
+	// with -i) forces zero alerts.
+	if addNoAlert || len(input.Alerts) > 0 {
+		input.SuppressDefaultAlarms = true
 	}
 
 	// Parse recurrence

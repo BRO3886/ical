@@ -274,7 +274,7 @@ ical add -i
 | `--location`      | `-l`  | Event location                             |
 | `--all-day`       |       | Create an all-day event                    |
 | `--alert`         |       | Add alert before event (repeatable)        |
-| `--no-alert`      |       | Create with zero alerts (overrides calendar default) |
+| `--no-alert`      |       | Create with zero alerts (overrides calendar default alerts) |
 | `--timezone`      |       | Timezone (e.g., `America/New_York`)        |
 | `--repeat`        |       | Recurrence: `daily`, `weekly`, `monthly`, `yearly` |
 | `--repeat-days`   |       | Days for weekly recurrence (repeatable)    |
