@@ -174,6 +174,12 @@ ical list -c Work -f today -t "in 7 days"
 # Exclude calendars
 ical upcoming --exclude-calendar Birthdays --exclude-calendar "Holidays in India"
 
+# Filter by attendee or organizer (case-insensitive substring match)
+ical list -f today -t "in 14 days" --attendee alice
+
+# Hide recurring events — focus on one-off meetings
+ical upcoming -d 7 --no-recurring
+
 # Search with date range
 ical search "meeting" -f "1 month ago" -t "in 1 month"
 
