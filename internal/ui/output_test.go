@@ -240,6 +240,44 @@ func TestLocalizeTimeInZone(t *testing.T) {
 	})
 }
 
+func TestEventDateLabel(t *testing.T) {
+	// UTC 15:00 on Sunday 19 Apr 2026. In BST (UTC+1) this is 16:00 Sun;
+	// in UTC-negative zones it still falls on Apr 19. The label must reflect
+	// whatever location the input carries — the caller localizes upstream.
+	utcTime := time.Date(2026, 4, 19, 15, 0, 0, 0, time.UTC)
+
+	bst := mustLoadLocation("Europe/London") // BST in April = UTC+1
+	est := mustLoadLocation("America/New_York") // EDT in April = UTC-4
+	ist := mustLoadLocation("Asia/Kolkata")   // IST = UTC+5:30
+
+	tests := []struct {
+		name string
+		in   time.Time
+		want string
+	}{
+		{"UTC 15:00 viewed in BST stays on Sunday", utcTime.In(bst), "Sun 19 Apr"},
+		{"UTC 15:00 viewed in EDT stays on Sunday", utcTime.In(est), "Sun 19 Apr"},
+		{"UTC 19:30 Sun viewed in IST rolls into Monday",
+			time.Date(2026, 4, 19, 19, 30, 0, 0, time.UTC).In(ist),
+			"Mon 20 Apr"},
+		{"UTC 23:30 Sat viewed in BST rolls into Sunday",
+			time.Date(2026, 4, 18, 23, 30, 0, 0, time.UTC).In(bst),
+			"Sun 19 Apr"},
+		{"UTC 03:30 Sun viewed in EDT stays on Saturday",
+			time.Date(2026, 4, 19, 3, 30, 0, 0, time.UTC).In(est),
+			"Sat 18 Apr"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := eventDateLabel(tt.in)
+			if got != tt.want {
+				t.Errorf("got %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestTruncate(t *testing.T) {
 	tests := []struct {
 		input string

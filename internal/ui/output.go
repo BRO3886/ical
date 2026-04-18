@@ -96,14 +96,21 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 	t := tablewriter.NewTable(w,
 		tablewriter.WithConfig(tablewriter.Config{
 			Header: tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignCenter}},
-			Row:    tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignLeft}},
+			Row: tw.CellConfig{
+				Formatting: tw.CellFormatting{Alignment: tw.AlignLeft},
+				Merging: tw.CellMerging{
+					Mode:          tw.MergeVertical,
+					ByColumnIndex: tw.Mapper[int, bool]{1: true},
+				},
+			},
 		}),
 	)
-	t.Header("#", "Time", "Title", "Calendar", "Location", "Duration")
+	t.Header("#", "Date", "Time", "Title", "Calendar", "Location", "Duration")
 
 	for i, e := range events {
 		start := localizeTime(e.StartDate, e.TimeZone)
 		end := localizeTime(e.EndDate, e.TimeZone)
+		dateStr := eventDateLabel(start)
 		timeStr := dateparser.FormatTimeRange(start, end, e.AllDay)
 		title := truncate(e.Title, 40)
 		loc := truncate(e.Location, 25)
@@ -117,7 +124,7 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 			title = title + " " + color.HiCyanString("↻")
 		}
 
-		t.Append(fmt.Sprintf("%d", i+1), timeStr, title, calName, loc, dur)
+		t.Append(fmt.Sprintf("%d", i+1), dateStr, timeStr, title, calName, loc, dur)
 	}
 
 	t.Render()
@@ -518,6 +525,14 @@ func formatAlertDuration(d time.Duration) string {
 // localizeTime converts a time to the system's local timezone.
 func localizeTime(t time.Time, _ string) time.Time {
 	return t.In(time.Local)
+}
+
+// eventDateLabel returns the date-column label for an event row.
+// The input must already be localized — the label uses whatever
+// location is on t, which is what makes same-instant events group
+// under the viewer's local day rather than UTC.
+func eventDateLabel(t time.Time) string {
+	return t.Format("Mon 02 Jan")
 }
 
 // localizeTimeInZone converts a time to the event's own timezone.

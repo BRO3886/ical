@@ -90,19 +90,7 @@ func listEvents(from, to time.Time) error {
 		events = filtered
 	}
 
-	if len(listExcludeCalendar) > 0 {
-		excluded := make(map[string]bool, len(listExcludeCalendar))
-		for _, c := range listExcludeCalendar {
-			excluded[strings.ToLower(c)] = true
-		}
-		filtered := make([]calendar.Event, 0, len(events))
-		for _, e := range events {
-			if !excluded[strings.ToLower(e.Calendar)] {
-				filtered = append(filtered, e)
-			}
-		}
-		events = filtered
-	}
+	events = filterExcludedCalendars(events, listExcludeCalendar)
 
 	sortEvents(events, listSort)
 
@@ -147,6 +135,40 @@ func sortEvents(events []calendar.Event, sortBy string) {
 			return events[i].StartDate.Before(events[j].StartDate)
 		})
 	}
+}
+
+// normalizeCalendarName trims surrounding whitespace and lowercases so
+// --exclude-calendar matches regardless of accidental padding or casing.
+func normalizeCalendarName(s string) string {
+	return strings.ToLower(strings.TrimSpace(s))
+}
+
+// filterExcludedCalendars drops events whose calendar name matches any
+// of the user-supplied names after normalization. Exclude entries that
+// normalize to the empty string are ignored so a whitespace-only flag
+// value cannot silently filter events with an empty Calendar field.
+func filterExcludedCalendars(events []calendar.Event, exclude []string) []calendar.Event {
+	if len(exclude) == 0 {
+		return events
+	}
+	excluded := make(map[string]bool, len(exclude))
+	for _, c := range exclude {
+		normalized := normalizeCalendarName(c)
+		if normalized == "" {
+			continue
+		}
+		excluded[normalized] = true
+	}
+	if len(excluded) == 0 {
+		return events
+	}
+	filtered := make([]calendar.Event, 0, len(events))
+	for _, e := range events {
+		if !excluded[normalizeCalendarName(e.Calendar)] {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
 }
 
 func startOfDay(t time.Time) time.Time {
