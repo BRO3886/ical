@@ -23,6 +23,7 @@ var (
 	addNotes          string
 	addURL            string
 	addAlerts         []string
+	addNoAlert        bool
 	addRepeat         string
 	addRepeatInterval int
 	addRepeatUntil    string
@@ -79,15 +80,16 @@ var addCmd = &cobra.Command{
 		}
 
 		input := calendar.CreateEventInput{
-			Title:     title,
-			StartDate: startTime,
-			EndDate:   endTime,
-			AllDay:    addAllDay,
-			Location:  addLocation,
-			Notes:     addNotes,
-			URL:       addURL,
-			Calendar:  addCalendar,
-			TimeZone:  addTimezone,
+			Title:                 title,
+			StartDate:             startTime,
+			EndDate:               endTime,
+			AllDay:                addAllDay,
+			Location:              addLocation,
+			Notes:                 addNotes,
+			URL:                   addURL,
+			Calendar:              addCalendar,
+			TimeZone:              addTimezone,
+			SuppressDefaultAlarms: addNoAlert,
 		}
 
 		// Parse alerts
@@ -133,6 +135,7 @@ func init() {
 	addCmd.Flags().StringVarP(&addNotes, "notes", "n", "", "Notes/description")
 	addCmd.Flags().StringVarP(&addURL, "url", "u", "", "URL to attach")
 	addCmd.Flags().StringArrayVar(&addAlerts, "alert", nil, "Alert before event (e.g., 15m, 1h, 1d) — repeatable")
+	addCmd.Flags().BoolVar(&addNoAlert, "no-alert", false, "Don't inherit the calendar's default alarms")
 	addCmd.Flags().StringVarP(&addRepeat, "repeat", "r", "", "Recurrence: daily, weekly, monthly, yearly")
 	addCmd.Flags().IntVar(&addRepeatInterval, "repeat-interval", 1, "Recurrence interval")
 	addCmd.Flags().StringVar(&addRepeatUntil, "repeat-until", "", "Recurrence end date")
