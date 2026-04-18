@@ -30,6 +30,7 @@ func init() {
 	upcomingCmd.Flags().StringVar(&listSort, "sort", "start", "Sort by: start, end, title, calendar")
 	upcomingCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	upcomingCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
+	upcomingCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
 
 	rootCmd.AddCommand(upcomingCmd)
 }
