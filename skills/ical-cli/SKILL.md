@@ -42,9 +42,11 @@ ical also accepts natural-language strings directly (`today`, `tomorrow`, `next 
 | "List / create / rename / delete calendars" | `ical calendars [create\|update\|delete]` |
 | "Export / back up events" | `ical export --format json --output-file backup.json` |
 
-For full flags on every command, read [references/commands.md](references/commands.md). Load it when the user asks about flags you don't already see covered in the table above, or when you need every column of a flag (short form, default, etc.).
+This table covers the common intents. If you need a flag that isn't shown above, **don't guess** — either run `ical <command> --help` (or `-h`) to get the authoritative flag list with defaults, or load [references/commands.md](references/commands.md) for the full reference. `--help` is fast, accurate, and safe to run repeatedly; prefer it over guessing a flag name from convention.
 
-For the full date-language grammar and known edge cases, read [references/dates.md](references/dates.md). Load it when a date string from the user fails to parse, or when the user asks what formats are supported.
+Load [references/commands.md](references/commands.md) when you need every column of a flag (short form, default, type), or when `--help` alone isn't enough context.
+
+Load [references/dates.md](references/dates.md) when a date string fails to parse, or when the user asks what date formats are supported.
 
 ## Workflow: identify an event before acting on it
 
