@@ -1,0 +1,27 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  golangci:
+    name: golangci-lint
+    # macos required: go-eventkit uses cgo + Objective-C to link Apple frameworks (EventKit, Foundation, AppKit, CoreLocation)
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.11
