@@ -206,6 +206,9 @@ ical add "Team Standup" -s "tomorrow 9am" -e "tomorrow 9:30am" -c Work
 ical add "Company Holiday" -s 2026-03-15 --all-day -c Work
 
 # With location and alerts
+# Passing any --alert gives the event exactly those alerts — the calendar's
+# default alerts are not merged in. Omit --alert to inherit the default,
+# or pass --no-alert for zero alerts.
 ical add "Dinner" -s "friday 7pm" -e "friday 9pm" \
   -l "The Restaurant, 123 Main St" --alert 1h --alert 15m
 
