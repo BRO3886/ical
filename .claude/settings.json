@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [ -n \"$f\" ] && [ \"${f##*.}\" = \"go\" ] && \"$HOME/go/bin/goimports\" -w \"$f\"; } 2>/dev/null || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "out=$(go vet ./... 2>&1) && exit 0; jq -n --arg r \"$out\" '{decision:\"block\",reason:(\"go vet failed:\\n\"+$r)}'",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}
