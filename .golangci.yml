@@ -6,6 +6,7 @@ run:
 linters:
   default: standard
   enable:
+    - gosec
     - misspell
     - unconvert
     - unparam
@@ -20,6 +21,7 @@ linters:
       - path: _test\.go
         linters:
           - errcheck
+          - gosec
           - unparam
 
 formatters:
