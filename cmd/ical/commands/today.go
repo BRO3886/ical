@@ -26,7 +26,7 @@ func init() {
 	todayCmd.Flags().StringVar(&listSort, "sort", "start", "Sort by: start, end, title, calendar")
 	todayCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	todayCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
-	todayCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee name or email")
+	todayCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
 
 	rootCmd.AddCommand(todayCmd)
 }

@@ -65,7 +65,7 @@ func init() {
 	listCmd.Flags().StringVar(&listSort, "sort", "start", "Sort by: start, end, title, calendar")
 	listCmd.Flags().IntVarP(&listLimit, "limit", "n", 0, "Max events to display")
 	listCmd.Flags().StringArrayVar(&listExcludeCalendar, "exclude-calendar", nil, "Exclude calendars by name (repeatable)")
-	listCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee name or email")
+	listCmd.Flags().StringVarP(&listAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -107,10 +107,9 @@ func listEvents(from, to time.Time) error {
 	}
 
 	if listAttendee != "" {
-		query := strings.ToLower(listAttendee)
 		filtered := make([]calendar.Event, 0, len(events))
 		for _, e := range events {
-			if attendeeMatches(e, query) {
+			if attendeeMatches(e, listAttendee) {
 				filtered = append(filtered, e)
 			}
 		}
@@ -177,18 +176,22 @@ func endOfDayIfMidnight(t time.Time) time.Time {
 }
 
 // attendeeMatches returns true if any attendee name/email or the organizer
-// matches the query (case-insensitive substring). The query must already be
-// lowercased by the caller.
+// contains the query as a case-insensitive substring. Whitespace around the
+// query is trimmed so shell-quoted inputs like " alice" still match.
 func attendeeMatches(e calendar.Event, query string) bool {
+	q := strings.ToLower(strings.TrimSpace(query))
+	if q == "" {
+		return false
+	}
 	for _, att := range e.Attendees {
-		if strings.Contains(strings.ToLower(att.Name), query) {
+		if strings.Contains(strings.ToLower(att.Name), q) {
 			return true
 		}
-		if strings.Contains(strings.ToLower(att.Email), query) {
+		if strings.Contains(strings.ToLower(att.Email), q) {
 			return true
 		}
 	}
-	if e.Organizer != "" && strings.Contains(strings.ToLower(e.Organizer), query) {
+	if e.Organizer != "" && strings.Contains(strings.ToLower(e.Organizer), q) {
 		return true
 	}
 	return false

@@ -87,8 +87,29 @@ func TestAttendeeMatches(t *testing.T) {
 					{Name: "sarah smith", Email: "sarah@example.com"},
 				},
 			},
-			query: "sarah",
+			query: "SARAH",
 			want:  true,
+		},
+		{
+			name: "padded query is trimmed before matching",
+			event: calendar.Event{
+				Attendees: []calendar.Attendee{
+					{Name: "Sarah Smith", Email: "sarah@example.com"},
+				},
+			},
+			query: "  sarah  ",
+			want:  true,
+		},
+		{
+			name: "whitespace-only query does not match anything",
+			event: calendar.Event{
+				Attendees: []calendar.Attendee{
+					{Name: "Sarah Smith", Email: "sarah@example.com"},
+				},
+				Organizer: "Bob Jones",
+			},
+			query: "   ",
+			want:  false,
 		},
 	}
 

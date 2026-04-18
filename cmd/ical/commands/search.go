@@ -63,10 +63,9 @@ var searchCmd = &cobra.Command{
 		}
 
 		if searchAttendee != "" {
-			attendeeQuery := strings.ToLower(searchAttendee)
 			filtered := make([]calendar.Event, 0, len(events))
 			for _, e := range events {
-				if attendeeMatches(e, attendeeQuery) {
+				if attendeeMatches(e, searchAttendee) {
 					filtered = append(filtered, e)
 				}
 			}
