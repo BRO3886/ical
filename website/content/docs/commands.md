@@ -148,19 +148,22 @@ ical list -f today -t "in 7 days" -c Work
 |-----------------------|-------|------------------------------------------------|
 | `--from`              | `-f`  | Start date (natural language)                  |
 | `--to`                | `-t`  | End date (natural language)                    |
-| `--calendar`          | `-c`  | Filter by calendar name                        |
+| `--calendar`          | `-c`  | Filter by calendar name (repeatable)           |
 | `--exclude-calendar`  |       | Exclude calendar (repeatable)                  |
 | `--attendee`          | `-a`  | Filter by attendee or organizer name/email     |
 | `--no-recurring`      |       | Hide recurring events                          |
 | `--limit`             | `-n`  | Maximum number of results                      |
 | `--sort`              |       | Sort by: `title`, `time`, `calendar`           |
 
-Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached to `~/.ical-last-list` so subsequent commands can reference events by number.
+Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached to `~/.ical-last-list` so subsequent commands can reference events by number. When events span multiple years, the date column includes the year for disambiguation.
 
 ```bash
 # List, then act on event #2
 ical list -f today -t "next friday"
 ical show 2
+
+# Filter by multiple calendars
+ical list -f today -t "in 7 days" -c Work -c Personal
 ```
 
 ---
@@ -179,7 +182,7 @@ ical today -o json
 
 | Flag                  | Short | Description                                |
 |-----------------------|-------|--------------------------------------------|
-| `--calendar`          | `-c`  | Filter by calendar name                    |
+| `--calendar`          | `-c`  | Filter by calendar name (repeatable)       |
 | `--exclude-calendar`  |       | Exclude calendar (repeatable)              |
 | `--attendee`          | `-a`  | Filter by attendee or organizer name/email |
 | `--no-recurring`      |       | Hide recurring events                      |
@@ -201,7 +204,7 @@ ical upcoming -d 14 -c Work --exclude-calendar Birthdays
 | Flag                  | Short | Default | Description                                    |
 |-----------------------|-------|---------|------------------------------------------------|
 | `--days`              | `-d`  | `7`     | Number of days to look ahead                   |
-| `--calendar`          | `-c`  |         | Filter by calendar name                        |
+| `--calendar`          | `-c`  |         | Filter by calendar name (repeatable)           |
 | `--exclude-calendar`  |       |         | Exclude calendar (repeatable)                  |
 | `--attendee`          | `-a`  |         | Filter by attendee or organizer name/email     |
 | `--no-recurring`      |       |         | Hide recurring events                          |
@@ -423,7 +426,7 @@ ical search "meeting" -c Work -f "1 month ago" -t "in 1 month"
 |------------------|-------|--------------------------------------------|
 | `--from`         | `-f`  | Start date (natural language)              |
 | `--to`           | `-t`  | End date (natural language)                |
-| `--calendar`     | `-c`  | Filter by calendar name                    |
+| `--calendar`     | `-c`  | Filter by calendar name (repeatable)       |
 | `--attendee`     | `-a`  | Filter by attendee or organizer name/email |
 | `--no-recurring` |       | Hide recurring events                      |
 | `--limit`        | `-n`  | Maximum number of results                  |
@@ -452,7 +455,7 @@ ical export --format ics --output-file calendar.ics
 | `--format`       |       | `json`  | Export format: `json`, `csv`, `ics` |
 | `--from`         | `-f`  |         | Start date filter              |
 | `--to`           | `-t`  |         | End date filter                |
-| `--calendar`     | `-c`  |         | Filter by calendar             |
+| `--calendar`     | `-c`  |         | Filter by calendar (repeatable) |
 | `--output-file`  |       |         | Save to file (default: stdout) |
 
 ### Formats

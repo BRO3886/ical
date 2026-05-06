@@ -82,7 +82,7 @@ ical list --from today --to "in 30 days" --exclude-calendar Birthdays -o json
 | -------------------- | ----- | ----------------------------------------------- | --------------- |
 | `--from`             | `-f`  | Start date (natural language or ISO 8601)       | Today           |
 | `--to`               | `-t`  | End date (natural language or ISO 8601)         | From + 24 hours |
-| `--calendar`         | `-c`  | Filter by calendar name                         | All calendars   |
+| `--calendar`         | `-c`  | Filter by calendar name (repeatable)            | All calendars   |
 | `--calendar-id`      | —     | Filter by calendar ID                           | —               |
 | `--search`           | `-s`  | Search title, location, notes                   | —               |
 | `--all-day`          | —     | Show only all-day events                        | false           |
@@ -109,7 +109,7 @@ ical today --exclude-calendar Birthdays
 
 | Flag                 | Short | Description                                | Default       |
 | -------------------- | ----- | ------------------------------------------ | ------------- |
-| `--calendar`         | `-c`  | Filter by calendar name                    | All calendars |
+| `--calendar`         | `-c`  | Filter by calendar name (repeatable)       | All calendars |
 | `--calendar-id`      | —     | Filter by calendar ID                      | —             |
 | `--search`           | `-s`  | Search title, location, notes              | —             |
 | `--all-day`          | —     | Show only all-day events                   | false         |
@@ -135,7 +135,7 @@ ical next --days 3
 | Flag                 | Short | Description                                | Default       |
 | -------------------- | ----- | ------------------------------------------ | ------------- |
 | `--days`             | `-d`  | Number of days to look ahead               | 7             |
-| `--calendar`         | `-c`  | Filter by calendar name                    | All calendars |
+| `--calendar`         | `-c`  | Filter by calendar name (repeatable)       | All calendars |
 | `--calendar-id`      | —     | Filter by calendar ID                      | —             |
 | `--search`           | `-s`  | Search title, location, notes              | —             |
 | `--all-day`          | —     | Show only all-day events                   | false         |
@@ -307,7 +307,7 @@ ical find "lunch" -o json
 | ---------------- | ----- | ------------------------------------------ | ------------- |
 | `--from`         | `-f`  | Start of search range                      | 30 days ago   |
 | `--to`           | `-t`  | End of search range                        | 30 days ahead |
-| `--calendar`     | `-c`  | Filter by calendar name                    | All calendars |
+| `--calendar`     | `-c`  | Filter by calendar name (repeatable)       | All calendars |
 | `--attendee`     | `-a`  | Filter by attendee or organizer name/email | —             |
 | `--no-recurring` | —     | Hide recurring events                      | false         |
 | `--limit`        | `-n`  | Max results (0 = unlimited)                | 0             |
@@ -330,7 +330,7 @@ ical export --calendar Work --from today --to "in 6 months" --format csv
 | --------------- | ----- | ------------------------------- | ------------- |
 | `--from`        | `-f`  | Start date                      | 30 days ago   |
 | `--to`          | `-t`  | End date                        | 30 days ahead |
-| `--calendar`    | `-c`  | Filter by calendar name         | All calendars |
+| `--calendar`    | `-c`  | Filter by calendar (repeatable) | All calendars |
 | `--format`      | —     | Format: json, csv, ics          | json          |
 | `--output-file` | —     | Write to file instead of stdout | stdout        |
 

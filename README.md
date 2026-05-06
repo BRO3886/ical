@@ -171,6 +171,9 @@ ical calendars delete "Projects" -f
 # Filter by calendar
 ical list -c Work -f today -t "in 7 days"
 
+# Filter by multiple calendars
+ical list -c Work -c Personal -f today -t "in 7 days"
+
 # Exclude calendars
 ical upcoming --exclude-calendar Birthdays --exclude-calendar "Holidays in India"
 

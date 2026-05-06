@@ -70,6 +70,7 @@ Row numbers are cached to `~/.ical-last-list` and stay valid until the next list
 - **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.
 - **Attendees and organizers are read-only** (Apple EventKit limitation). `ical add` does not accept `--attendee`. The `--attendee` flag on list/search is a filter, not an invite.
 - **Subscribed calendars and the Birthdays calendar are read-only.** Event creation against them fails.
+- **`--calendar` / `-c` is repeatable.** Pass multiple times to filter by several calendars: `ical list -c Work -c Personal`. Single `-c` is optimized server-side; multiple values filter client-side.
 - **Calendar-name matching on `--calendar` and `--exclude-calendar` is case-insensitive and whitespace-trimmed**, so `"  Work "` and `work` both match a calendar named `Work`.
 - **EventKit adjusts some hex colors** during save (e.g. `#FF6961` → `#FF8073`). This is CGColor conversion, not a bug.
 - **`ical` is macOS-only.** No fallback on Linux or Windows.
@@ -78,7 +79,7 @@ Row numbers are cached to `~/.ical-last-list` and stay valid until the next list
 
 All read commands accept `-o`:
 
-- `table` (default) — bordered, colored, human-oriented, with a `Date` column that prints only on day transitions
+- `table` (default) — bordered, colored, human-oriented, with a `Date` column that prints only on day transitions. When events span multiple years, the year is included in the date column
 - `json` — ISO 8601 timestamps, full fields, safe for scripts and agents
 - `plain` — one event per line, grep-friendly
 
