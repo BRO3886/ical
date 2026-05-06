@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/BRO3886/go-eventkit"
+	"github.com/BRO3886/go-eventkit/calendar"
 )
 
 func TestShortID(t *testing.T) {
@@ -270,9 +271,44 @@ func TestEventDateLabel(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := eventDateLabel(tt.in)
+			got := eventDateLabel(tt.in, false)
 			if got != tt.want {
 				t.Errorf("got %q, want %q", got, tt.want)
+			}
+		})
+	}
+
+	t.Run("showYear includes the year", func(t *testing.T) {
+		got := eventDateLabel(utcTime.In(bst), true)
+		want := "Sun 19 Apr 2026"
+		if got != want {
+			t.Errorf("got %q, want %q", got, want)
+		}
+	})
+}
+
+func TestEventsSpanMultipleYears(t *testing.T) {
+	makeEvent := func(year int, month time.Month, day int) calendar.Event {
+		return calendar.Event{StartDate: time.Date(year, month, day, 10, 0, 0, 0, time.UTC)}
+	}
+
+	tests := []struct {
+		name   string
+		events []calendar.Event
+		want   bool
+	}{
+		{"empty", nil, false},
+		{"single event", []calendar.Event{makeEvent(2026, 5, 1)}, false},
+		{"same year", []calendar.Event{makeEvent(2026, 1, 1), makeEvent(2026, 12, 31)}, false},
+		{"different years", []calendar.Event{makeEvent(2025, 12, 31), makeEvent(2026, 1, 1)}, true},
+		{"three years", []calendar.Event{makeEvent(2024, 6, 1), makeEvent(2025, 6, 1), makeEvent(2026, 6, 1)}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := eventsSpanMultipleYears(tt.events)
+			if got != tt.want {
+				t.Errorf("got %v, want %v", got, tt.want)
 			}
 		})
 	}

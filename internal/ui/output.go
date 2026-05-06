@@ -93,6 +93,8 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 		return
 	}
 
+	showYear := eventsSpanMultipleYears(events)
+
 	t := tablewriter.NewTable(w,
 		tablewriter.WithConfig(tablewriter.Config{
 			Header: tw.CellConfig{Formatting: tw.CellFormatting{Alignment: tw.AlignCenter}},
@@ -110,7 +112,7 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 	for i, e := range events {
 		start := localizeTime(e.StartDate, e.TimeZone)
 		end := localizeTime(e.EndDate, e.TimeZone)
-		dateStr := eventDateLabel(start)
+		dateStr := eventDateLabel(start, showYear)
 		timeStr := dateparser.FormatTimeRange(start, end, e.AllDay)
 		title := truncate(e.Title, 40)
 		loc := truncate(e.Location, 25)
@@ -527,12 +529,24 @@ func localizeTime(t time.Time, _ string) time.Time {
 	return t.In(time.Local)
 }
 
-// eventDateLabel returns the date-column label for an event row.
-// The input must already be localized — the label uses whatever
-// location is on t, which is what makes same-instant events group
-// under the viewer's local day rather than UTC.
-func eventDateLabel(t time.Time) string {
+func eventDateLabel(t time.Time, showYear bool) string {
+	if showYear {
+		return t.Format("Mon 02 Jan 2006")
+	}
 	return t.Format("Mon 02 Jan")
+}
+
+func eventsSpanMultipleYears(events []calendar.Event) bool {
+	if len(events) == 0 {
+		return false
+	}
+	first := events[0].StartDate.Year()
+	for _, e := range events[1:] {
+		if e.StartDate.Year() != first {
+			return true
+		}
+	}
+	return false
 }
 
 // localizeTimeInZone converts a time to the event's own timezone.
