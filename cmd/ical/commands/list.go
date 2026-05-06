@@ -95,9 +95,6 @@ func listEvents(from, to time.Time) error {
 	}
 
 	events = filterExcludedCalendars(events, listExcludeCalendar)
-	if len(listCalendars) > 1 {
-		events = filterIncludedCalendars(events, listCalendars)
-	}
 
 	if listNoRecurring {
 		events = filterRecurring(events)
@@ -125,10 +122,11 @@ func listEvents(from, to time.Time) error {
 
 func buildListOptions() []calendar.ListOption {
 	var opts []calendar.ListOption
-	if len(listCalendars) == 1 {
-		if n := normalizeCalendarName(listCalendars[0]); n != "" {
-			opts = append(opts, calendar.WithCalendar(n))
-		}
+	normalized := normalizeCalendarNames(listCalendars)
+	if len(normalized) == 1 {
+		opts = append(opts, calendar.WithCalendar(normalized[0]))
+	} else if len(normalized) > 1 {
+		opts = append(opts, calendar.WithCalendars(normalized))
 	}
 	if listCalendarID != "" {
 		opts = append(opts, calendar.WithCalendarID(listCalendarID))
@@ -218,6 +216,16 @@ func filterExcludedCalendars(events []calendar.Event, exclude []string) []calend
 		}
 	}
 	return filtered
+}
+
+func normalizeCalendarNames(names []string) []string {
+	var out []string
+	for _, n := range names {
+		if norm := normalizeCalendarName(n); norm != "" {
+			out = append(out, norm)
+		}
+	}
+	return out
 }
 
 func filterIncludedCalendars(events []calendar.Event, include []string) []calendar.Event {

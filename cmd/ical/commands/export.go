@@ -49,18 +49,17 @@ var exportCmd = &cobra.Command{
 		}
 
 		var opts []calendar.ListOption
-		if len(exportCalendars) == 1 {
-			if n := normalizeCalendarName(exportCalendars[0]); n != "" {
-				opts = append(opts, calendar.WithCalendar(n))
-			}
+		normalized := normalizeCalendarNames(exportCalendars)
+		if len(normalized) == 1 {
+			opts = append(opts, calendar.WithCalendar(normalized[0]))
+		} else if len(normalized) > 1 {
+			opts = append(opts, calendar.WithCalendars(normalized))
 		}
 
 		events, err := client.Events(from, to, opts...)
 		if err != nil {
 			return fmt.Errorf("failed to fetch events: %w", err)
 		}
-
-		events = filterIncludedCalendars(events, exportCalendars)
 
 		w := os.Stdout
 		if exportOutputFile != "" {

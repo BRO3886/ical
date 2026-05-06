@@ -135,6 +135,37 @@ func TestFilterIncludedCalendars(t *testing.T) {
 	}
 }
 
+func TestNormalizeCalendarNames(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []string
+		want  []string
+	}{
+		{"nil returns nil", nil, nil},
+		{"empty returns nil", []string{}, nil},
+		{"single name", []string{"Work"}, []string{"work"}},
+		{"multiple names", []string{"Work", "Personal"}, []string{"work", "personal"}},
+		{"trims whitespace", []string{"  Work  ", " Personal"}, []string{"work", "personal"}},
+		{"drops whitespace-only entries", []string{"   ", "Work"}, []string{"work"}},
+		{"all whitespace-only returns nil", []string{"   ", "  "}, nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := normalizeCalendarNames(tt.input)
+			if len(got) != len(tt.want) {
+				t.Errorf("got %v, want %v", got, tt.want)
+				return
+			}
+			for i := range got {
+				if got[i] != tt.want[i] {
+					t.Errorf("got[%d] = %q, want %q", i, got[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
+
 func TestFilterExcludedCalendars(t *testing.T) {
 	events := []calendar.Event{
 		{Title: "A", Calendar: "Work"},
