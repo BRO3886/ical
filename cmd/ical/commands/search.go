@@ -63,7 +63,9 @@ var searchCmd = &cobra.Command{
 			return fmt.Errorf("failed to search events: %w", err)
 		}
 
-		events = filterIncludedCalendars(events, searchCalendars)
+		if len(searchCalendars) > 1 {
+			events = filterIncludedCalendars(events, searchCalendars)
+		}
 
 		if searchAttendee != "" {
 			filtered := make([]calendar.Event, 0, len(events))

@@ -95,7 +95,9 @@ func listEvents(from, to time.Time) error {
 	}
 
 	events = filterExcludedCalendars(events, listExcludeCalendar)
-	events = filterIncludedCalendars(events, listCalendars)
+	if len(listCalendars) > 1 {
+		events = filterIncludedCalendars(events, listCalendars)
+	}
 
 	if listNoRecurring {
 		events = filterRecurring(events)
@@ -216,10 +218,6 @@ func filterExcludedCalendars(events []calendar.Event, exclude []string) []calend
 	return filtered
 }
 
-// filterIncludedCalendars keeps only events whose calendar name matches any of
-// the user-supplied names after normalization. An empty include list is a no-op
-// (all events pass through). Include entries that normalize to the empty string
-// are ignored so a whitespace-only flag value cannot accidentally filter everything out.
 func filterIncludedCalendars(events []calendar.Event, include []string) []calendar.Event {
 	if len(include) == 0 {
 		return events
