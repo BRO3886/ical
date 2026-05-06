@@ -81,6 +81,60 @@ func TestFilterRecurring(t *testing.T) {
 	})
 }
 
+func TestFilterIncludedCalendars(t *testing.T) {
+	events := []calendar.Event{
+		{Title: "A", Calendar: "Work"},
+		{Title: "B", Calendar: "Personal"},
+		{Title: "C", Calendar: ""},
+		{Title: "D", Calendar: "  Holidays  "},
+	}
+
+	titles := func(evs []calendar.Event) []string {
+		out := make([]string, len(evs))
+		for i, e := range evs {
+			out[i] = e.Title
+		}
+		return out
+	}
+
+	eq := func(a, b []string) bool {
+		if len(a) != len(b) {
+			return false
+		}
+		for i := range a {
+			if a[i] != b[i] {
+				return false
+			}
+		}
+		return true
+	}
+
+	tests := []struct {
+		name    string
+		include []string
+		want    []string
+	}{
+		{"nil include keeps everything", nil, []string{"A", "B", "C", "D"}},
+		{"empty slice keeps everything", []string{}, []string{"A", "B", "C", "D"}},
+		{"single exact match", []string{"Work"}, []string{"A"}},
+		{"case insensitive match", []string{"personal"}, []string{"B"}},
+		{"padded flag matches padded calendar name", []string{"Holidays"}, []string{"D"}},
+		{"multiple includes", []string{"Work", "Personal"}, []string{"A", "B"}},
+		{"unknown include yields empty result", []string{"Nonexistent"}, []string{}},
+		{"whitespace-only include is a no-op (keeps everything)", []string{"   "}, []string{"A", "B", "C", "D"}},
+		{"whitespace-only mixed with valid include applies only the valid one", []string{"   ", "Work"}, []string{"A"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := titles(filterIncludedCalendars(events, tt.include))
+			if !eq(got, tt.want) {
+				t.Errorf("titles = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestFilterExcludedCalendars(t *testing.T) {
 	events := []calendar.Event{
 		{Title: "A", Calendar: "Work"},

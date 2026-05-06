@@ -15,7 +15,7 @@ import (
 var (
 	listFrom            string
 	listTo              string
-	listCalendar        string
+	listCalendars       []string
 	listCalendarID      string
 	listSearch          string
 	listAllDay          bool
@@ -59,7 +59,7 @@ var listCmd = &cobra.Command{
 func init() {
 	listCmd.Flags().StringVarP(&listFrom, "from", "f", "", "Start date (natural language or ISO 8601)")
 	listCmd.Flags().StringVarP(&listTo, "to", "t", "", "End date (natural language or ISO 8601)")
-	listCmd.Flags().StringVarP(&listCalendar, "calendar", "c", "", "Filter by calendar name")
+	listCmd.Flags().StringArrayVarP(&listCalendars, "calendar", "c", nil, "Filter by calendar name (repeatable)")
 	listCmd.Flags().StringVar(&listCalendarID, "calendar-id", "", "Filter by calendar ID")
 	listCmd.Flags().StringVarP(&listSearch, "search", "s", "", "Search title, location, notes")
 	listCmd.Flags().BoolVar(&listAllDay, "all-day", false, "Show only all-day events")
@@ -95,6 +95,7 @@ func listEvents(from, to time.Time) error {
 	}
 
 	events = filterExcludedCalendars(events, listExcludeCalendar)
+	events = filterIncludedCalendars(events, listCalendars)
 
 	if listNoRecurring {
 		events = filterRecurring(events)
@@ -122,8 +123,8 @@ func listEvents(from, to time.Time) error {
 
 func buildListOptions() []calendar.ListOption {
 	var opts []calendar.ListOption
-	if listCalendar != "" {
-		opts = append(opts, calendar.WithCalendar(listCalendar))
+	if len(listCalendars) == 1 {
+		opts = append(opts, calendar.WithCalendar(listCalendars[0]))
 	}
 	if listCalendarID != "" {
 		opts = append(opts, calendar.WithCalendarID(listCalendarID))
@@ -209,6 +210,34 @@ func filterExcludedCalendars(events []calendar.Event, exclude []string) []calend
 	filtered := make([]calendar.Event, 0, len(events))
 	for _, e := range events {
 		if !excluded[normalizeCalendarName(e.Calendar)] {
+			filtered = append(filtered, e)
+		}
+	}
+	return filtered
+}
+
+// filterIncludedCalendars keeps only events whose calendar name matches any of
+// the user-supplied names after normalization. An empty include list is a no-op
+// (all events pass through). Include entries that normalize to the empty string
+// are ignored so a whitespace-only flag value cannot accidentally filter everything out.
+func filterIncludedCalendars(events []calendar.Event, include []string) []calendar.Event {
+	if len(include) == 0 {
+		return events
+	}
+	included := make(map[string]bool, len(include))
+	for _, c := range include {
+		normalized := normalizeCalendarName(c)
+		if normalized == "" {
+			continue
+		}
+		included[normalized] = true
+	}
+	if len(included) == 0 {
+		return events
+	}
+	filtered := make([]calendar.Event, 0, len(events))
+	for _, e := range events {
+		if included[normalizeCalendarName(e.Calendar)] {
 			filtered = append(filtered, e)
 		}
 	}

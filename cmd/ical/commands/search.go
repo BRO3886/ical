@@ -14,7 +14,7 @@ import (
 var (
 	searchFrom        string
 	searchTo          string
-	searchCalendar    string
+	searchCalendars   []string
 	searchLimit       int
 	searchAttendee    string
 	searchNoRecurring bool
@@ -54,14 +54,16 @@ var searchCmd = &cobra.Command{
 		}
 
 		opts := []calendar.ListOption{calendar.WithSearch(query)}
-		if searchCalendar != "" {
-			opts = append(opts, calendar.WithCalendar(searchCalendar))
+		if len(searchCalendars) == 1 {
+			opts = append(opts, calendar.WithCalendar(searchCalendars[0]))
 		}
 
 		events, err := client.Events(from, to, opts...)
 		if err != nil {
 			return fmt.Errorf("failed to search events: %w", err)
 		}
+
+		events = filterIncludedCalendars(events, searchCalendars)
 
 		if searchAttendee != "" {
 			filtered := make([]calendar.Event, 0, len(events))
@@ -89,7 +91,7 @@ var searchCmd = &cobra.Command{
 func init() {
 	searchCmd.Flags().StringVarP(&searchFrom, "from", "f", "", "Start of search range (default: 30 days ago)")
 	searchCmd.Flags().StringVarP(&searchTo, "to", "t", "", "End of search range (default: 30 days ahead)")
-	searchCmd.Flags().StringVarP(&searchCalendar, "calendar", "c", "", "Filter by calendar")
+	searchCmd.Flags().StringArrayVarP(&searchCalendars, "calendar", "c", nil, "Filter by calendar name (repeatable)")
 	searchCmd.Flags().IntVarP(&searchLimit, "limit", "n", 0, "Max results")
 	searchCmd.Flags().StringVarP(&searchAttendee, "attendee", "a", "", "Filter by attendee or organizer name/email")
 	searchCmd.Flags().BoolVar(&searchNoRecurring, "no-recurring", false, "Hide recurring events")
