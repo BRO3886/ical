@@ -55,7 +55,9 @@ var searchCmd = &cobra.Command{
 
 		opts := []calendar.ListOption{calendar.WithSearch(query)}
 		if len(searchCalendars) == 1 {
-			opts = append(opts, calendar.WithCalendar(searchCalendars[0]))
+			if n := normalizeCalendarName(searchCalendars[0]); n != "" {
+				opts = append(opts, calendar.WithCalendar(n))
+			}
 		}
 
 		events, err := client.Events(from, to, opts...)

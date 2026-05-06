@@ -50,7 +50,9 @@ var exportCmd = &cobra.Command{
 
 		var opts []calendar.ListOption
 		if len(exportCalendars) == 1 {
-			opts = append(opts, calendar.WithCalendar(exportCalendars[0]))
+			if n := normalizeCalendarName(exportCalendars[0]); n != "" {
+				opts = append(opts, calendar.WithCalendar(n))
+			}
 		}
 
 		events, err := client.Events(from, to, opts...)

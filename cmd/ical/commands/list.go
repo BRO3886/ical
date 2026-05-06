@@ -126,7 +126,9 @@ func listEvents(from, to time.Time) error {
 func buildListOptions() []calendar.ListOption {
 	var opts []calendar.ListOption
 	if len(listCalendars) == 1 {
-		opts = append(opts, calendar.WithCalendar(listCalendars[0]))
+		if n := normalizeCalendarName(listCalendars[0]); n != "" {
+			opts = append(opts, calendar.WithCalendar(n))
+		}
 	}
 	if listCalendarID != "" {
 		opts = append(opts, calendar.WithCalendarID(listCalendarID))
