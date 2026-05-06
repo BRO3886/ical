@@ -23,7 +23,7 @@ var upcomingCmd = &cobra.Command{
 
 func init() {
 	upcomingCmd.Flags().IntVarP(&upcomingDays, "days", "d", 7, "Number of days to look ahead")
-	upcomingCmd.Flags().StringVarP(&listCalendar, "calendar", "c", "", "Filter by calendar name")
+	upcomingCmd.Flags().StringArrayVarP(&listCalendars, "calendar", "c", nil, "Filter by calendar name (repeatable)")
 	upcomingCmd.Flags().StringVar(&listCalendarID, "calendar-id", "", "Filter by calendar ID")
 	upcomingCmd.Flags().StringVarP(&listSearch, "search", "s", "", "Search title, location, notes")
 	upcomingCmd.Flags().BoolVar(&listAllDay, "all-day", false, "Show only all-day events")

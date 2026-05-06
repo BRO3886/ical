@@ -19,7 +19,7 @@ var todayCmd = &cobra.Command{
 }
 
 func init() {
-	todayCmd.Flags().StringVarP(&listCalendar, "calendar", "c", "", "Filter by calendar name")
+	todayCmd.Flags().StringArrayVarP(&listCalendars, "calendar", "c", nil, "Filter by calendar name (repeatable)")
 	todayCmd.Flags().StringVar(&listCalendarID, "calendar-id", "", "Filter by calendar ID")
 	todayCmd.Flags().StringVarP(&listSearch, "search", "s", "", "Search title, location, notes")
 	todayCmd.Flags().BoolVar(&listAllDay, "all-day", false, "Show only all-day events")

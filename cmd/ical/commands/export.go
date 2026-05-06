@@ -14,7 +14,7 @@ import (
 var (
 	exportFrom       string
 	exportTo         string
-	exportCalendar   string
+	exportCalendars  []string
 	exportFormatFlag string
 	exportOutputFile string
 )
@@ -49,14 +49,18 @@ var exportCmd = &cobra.Command{
 		}
 
 		var opts []calendar.ListOption
-		if exportCalendar != "" {
-			opts = append(opts, calendar.WithCalendar(exportCalendar))
+		if len(exportCalendars) == 1 {
+			if n := normalizeCalendarName(exportCalendars[0]); n != "" {
+				opts = append(opts, calendar.WithCalendar(n))
+			}
 		}
 
 		events, err := client.Events(from, to, opts...)
 		if err != nil {
 			return fmt.Errorf("failed to fetch events: %w", err)
 		}
+
+		events = filterIncludedCalendars(events, exportCalendars)
 
 		w := os.Stdout
 		if exportOutputFile != "" {
@@ -82,7 +86,7 @@ var exportCmd = &cobra.Command{
 func init() {
 	exportCmd.Flags().StringVarP(&exportFrom, "from", "f", "", "Start date (default: 30 days ago)")
 	exportCmd.Flags().StringVarP(&exportTo, "to", "t", "", "End date (default: 30 days ahead)")
-	exportCmd.Flags().StringVarP(&exportCalendar, "calendar", "c", "", "Filter by calendar")
+	exportCmd.Flags().StringArrayVarP(&exportCalendars, "calendar", "c", nil, "Filter by calendar name (repeatable)")
 	exportCmd.Flags().StringVar(&exportFormatFlag, "format", "json", "Format: json, csv, ics")
 	exportCmd.Flags().StringVar(&exportOutputFile, "output-file", "", "Write to file instead of stdout")
 
