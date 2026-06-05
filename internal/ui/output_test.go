@@ -326,6 +326,14 @@ func TestTruncate(t *testing.T) {
 		{"", 5, ""},
 		{"abc", 3, "abc"},
 		{"abcd", 3, "..."},
+		// Emoji: display width 2, fits within max — must not be corrupted.
+		{"Team lunch 🍕", 40, "Team lunch 🍕"},
+		// 38 A's + emoji has display width 40 but byte length 42.
+		// Old byte-based code would truncate at byte 37, splitting the emoji
+		// and producing invalid UTF-8. Display-width-based code keeps it intact.
+		{"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA🍕", 40, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA🍕"},
+		// Emoji inside a long title that does need truncation.
+		{"🍕 " + "A very long title that exceeds forty characters", 40, "🍕 A very long title that exceeds for..."},
 	}
 
 	for _, tt := range tests {

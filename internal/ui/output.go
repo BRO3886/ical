@@ -13,6 +13,7 @@ import (
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/fatih/color"
+	runewidth "github.com/mattn/go-runewidth"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
 )
@@ -571,10 +572,7 @@ func localizeTimeInZone(t time.Time, tz string, referenceLoc *time.Location) *ti
 }
 
 func truncate(s string, max int) string {
-	if len(s) <= max {
-		return s
-	}
-	return s[:max-3] + "..."
+	return runewidth.Truncate(s, max, "...")
 }
 
 // ShortID returns the first 13 chars of an event ID.
