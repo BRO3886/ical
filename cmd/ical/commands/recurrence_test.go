@@ -2,6 +2,7 @@ package commands
 
 import (
 	"testing"
+	"time"
 
 	"github.com/BRO3886/go-eventkit"
 )
@@ -140,6 +141,57 @@ func TestBuildRecurrenceRule(t *testing.T) {
 			}
 			if rule.Interval != tt.wantInterval {
 				t.Errorf("interval: got %d, want %d", rule.Interval, tt.wantInterval)
+			}
+		})
+	}
+}
+
+// TestRepeatUntilBound verifies that a date-only --repeat-until is snapped to
+// end-of-day so an occurrence later that same day is kept (issue #39), while an
+// explicit time is preserved.
+func TestRepeatUntilBound(t *testing.T) {
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		t.Fatalf("load Asia/Kolkata: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		in   time.Time
+		loc  *time.Location
+		want time.Time
+	}{
+		{
+			name: "date-only midnight local bumped to end of day",
+			in:   time.Date(2026, 8, 14, 0, 0, 0, 0, time.Local),
+			loc:  nil,
+			want: time.Date(2026, 8, 14, 23, 59, 59, 0, time.Local),
+		},
+		{
+			name: "explicit time left untouched",
+			in:   time.Date(2026, 8, 14, 21, 30, 0, 0, time.Local),
+			loc:  nil,
+			want: time.Date(2026, 8, 14, 21, 30, 0, 0, time.Local),
+		},
+		{
+			name: "date-only reinterpreted in event timezone, end of day",
+			in:   time.Date(2026, 8, 14, 0, 0, 0, 0, time.Local),
+			loc:  ist,
+			want: time.Date(2026, 8, 14, 23, 59, 59, 0, ist),
+		},
+		{
+			name: "explicit time reinterpreted in event timezone, not bumped",
+			in:   time.Date(2026, 8, 14, 21, 30, 0, 0, time.Local),
+			loc:  ist,
+			want: time.Date(2026, 8, 14, 21, 30, 0, 0, ist),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := repeatUntilBound(tt.in, tt.loc)
+			if !got.Equal(tt.want) {
+				t.Errorf("got %v, want %v", got, tt.want)
 			}
 		})
 	}

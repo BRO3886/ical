@@ -425,7 +425,14 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 		if err != nil {
 			return rule, fmt.Errorf("invalid --repeat-until: %w", err)
 		}
-		rule = rule.Until(t)
+		var loc *time.Location
+		if addTimezone != "" {
+			loc, err = time.LoadLocation(addTimezone)
+			if err != nil {
+				return rule, fmt.Errorf("invalid timezone %q: %w", addTimezone, err)
+			}
+		}
+		rule = rule.Until(repeatUntilBound(t, loc))
 	}
 
 	if addRepeatCount > 0 {
@@ -437,6 +444,20 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 	}
 
 	return rule, nil
+}
+
+// repeatUntilBound returns the inclusive UNTIL bound for a parsed --repeat-until
+// value. A date-only value parses to midnight; an RRULE UNTIL at 00:00 excludes
+// any occurrence later that same day, so the series ends a day early (issue #39).
+// Snapping a midnight bound to end-of-day keeps an occurrence that falls anywhere
+// on the named calendar day. When the event carries an explicit timezone,
+// end-of-day is computed in that zone so the absolute instant lines up with the
+// occurrence's wall-clock day.
+func repeatUntilBound(t time.Time, loc *time.Location) time.Time {
+	if loc != nil {
+		t = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), 0, loc)
+	}
+	return endOfDayIfMidnight(t)
 }
 
 var weekdayMap = map[string]eventkit.Weekday{
