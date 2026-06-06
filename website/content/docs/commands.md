@@ -281,7 +281,7 @@ ical add -i
 | `--timezone`      |       | Timezone (e.g., `America/New_York`)        |
 | `--repeat`        |       | Recurrence: `daily`, `weekly`, `monthly`, `yearly` |
 | `--repeat-days`   |       | Days for weekly recurrence (repeatable)    |
-| `--repeat-until`  |       | Recurrence end date                        |
+| `--repeat-until`  |       | Recurrence end date (a bare date includes the whole day) |
 | `--interactive`   | `-i`  | Use guided interactive form                |
 
 ### Examples
@@ -393,7 +393,7 @@ ical delete --id "577B8983-DF44:abc" --force
 |------------|-------|-----------------------------------------------|
 | `--id`     |       | Full event ID — exact match, no prefix search |
 | `--force`  | `-f`  | Skip confirmation prompt                      |
-| `--span`   |       | Apply to: `this` or `future` occurrences      |
+| `--span`   |       | For recurring: `this`, `future`, or `all` (whole series) |
 
 ### Batch Delete
 

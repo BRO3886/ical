@@ -262,8 +262,11 @@ ical delete 3 -f
 # Batch delete multiple events
 ical delete 1 2 3 --force
 
-# Delete future occurrences
+# Delete this and future occurrences
 ical delete 2 --span future
+
+# Delete the entire recurring series
+ical delete 2 --span all
 ```
 
 ## Export & Import
