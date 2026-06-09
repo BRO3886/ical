@@ -151,7 +151,11 @@ Use -i for interactive mode with guided prompts.`,
 				addRepeatUntil = updateRepeatUntil
 				addRepeatCount = updateRepeatCount
 				addRepeatDays = updateRepeatDays
-				rule, err := buildRecurrenceRule()
+				tz := event.TimeZone
+				if cmd.Flags().Changed("timezone") {
+					tz = updateTimezone
+				}
+				rule, err := buildRecurrenceRule(tz)
 				if err != nil {
 					return err
 				}

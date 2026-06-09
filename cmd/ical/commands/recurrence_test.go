@@ -125,7 +125,7 @@ func TestBuildRecurrenceRule(t *testing.T) {
 			addRepeatUntil = tt.repeatUntil
 			addRepeatCount = tt.repeatCount
 
-			rule, err := buildRecurrenceRule()
+			rule, err := buildRecurrenceRule("")
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")
@@ -194,6 +194,36 @@ func TestRepeatUntilBound(t *testing.T) {
 				t.Errorf("got %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+// TestBuildRecurrenceRuleUntilTimezone verifies that the timezone passed to
+// buildRecurrenceRule reaches the date-only --repeat-until bound, so the
+// end-of-day instant is computed in the event's zone. This is the path the
+// update command relies on (it tracks the zone in a different global than add).
+func TestBuildRecurrenceRuleUntilTimezone(t *testing.T) {
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		t.Fatalf("load Asia/Kolkata: %v", err)
+	}
+
+	addRepeat = "weekly"
+	addRepeatInterval = 1
+	addRepeatDays = ""
+	addRepeatUntil = "2026-08-14"
+	addRepeatCount = 0
+
+	rule, err := buildRecurrenceRule("Asia/Kolkata")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if rule.End == nil || rule.End.EndDate == nil {
+		t.Fatal("expected an UNTIL bound, got none")
+	}
+
+	want := time.Date(2026, 8, 14, 23, 59, 59, 0, ist)
+	if !rule.End.EndDate.Equal(want) {
+		t.Errorf("UNTIL bound: got %v, want %v", rule.End.EndDate, want)
 	}
 }
 

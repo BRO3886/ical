@@ -109,7 +109,7 @@ var addCmd = &cobra.Command{
 
 		// Parse recurrence
 		if addRepeat != "" {
-			rule, err := buildRecurrenceRule()
+			rule, err := buildRecurrenceRule(addTimezone)
 			if err != nil {
 				return err
 			}
@@ -373,7 +373,7 @@ func runAddInteractive() error {
 		addRepeatDays = repeatDays
 		addRepeatUntil = ""
 		addRepeatCount = 0
-		rule, err := buildRecurrenceRule()
+		rule, err := buildRecurrenceRule(tz)
 		if err != nil {
 			return err
 		}
@@ -390,7 +390,12 @@ func runAddInteractive() error {
 	return nil
 }
 
-func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
+// buildRecurrenceRule builds the recurrence rule from the addRepeat* globals.
+// timezone is the event's IANA zone (may be empty) and is used only to compute
+// the end-of-day --repeat-until bound in the right zone; callers must pass it
+// explicitly since this is shared by add and update, which track the zone in
+// different globals.
+func buildRecurrenceRule(timezone string) (eventkit.RecurrenceRule, error) {
 	interval := addRepeatInterval
 	if interval < 1 {
 		interval = 1
@@ -426,10 +431,10 @@ func buildRecurrenceRule() (eventkit.RecurrenceRule, error) {
 			return rule, fmt.Errorf("invalid --repeat-until: %w", err)
 		}
 		var loc *time.Location
-		if addTimezone != "" {
-			loc, err = time.LoadLocation(addTimezone)
+		if timezone != "" {
+			loc, err = time.LoadLocation(timezone)
 			if err != nil {
-				return rule, fmt.Errorf("invalid timezone %q: %w", addTimezone, err)
+				return rule, fmt.Errorf("invalid timezone %q: %w", timezone, err)
 			}
 		}
 		rule = rule.Until(repeatUntilBound(t, loc))
