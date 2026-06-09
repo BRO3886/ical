@@ -2,6 +2,7 @@ package commands
 
 import (
 	"testing"
+	"time"
 
 	"github.com/BRO3886/go-eventkit"
 )
@@ -124,7 +125,7 @@ func TestBuildRecurrenceRule(t *testing.T) {
 			addRepeatUntil = tt.repeatUntil
 			addRepeatCount = tt.repeatCount
 
-			rule, err := buildRecurrenceRule()
+			rule, err := buildRecurrenceRule("")
 			if tt.wantErr {
 				if err == nil {
 					t.Errorf("expected error, got nil")
@@ -142,6 +143,87 @@ func TestBuildRecurrenceRule(t *testing.T) {
 				t.Errorf("interval: got %d, want %d", rule.Interval, tt.wantInterval)
 			}
 		})
+	}
+}
+
+// TestRepeatUntilBound verifies that a date-only --repeat-until is snapped to
+// end-of-day so an occurrence later that same day is kept (issue #39), while an
+// explicit time is preserved.
+func TestRepeatUntilBound(t *testing.T) {
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		t.Fatalf("load Asia/Kolkata: %v", err)
+	}
+
+	tests := []struct {
+		name string
+		in   time.Time
+		loc  *time.Location
+		want time.Time
+	}{
+		{
+			name: "date-only midnight local bumped to end of day",
+			in:   time.Date(2026, 8, 14, 0, 0, 0, 0, time.Local),
+			loc:  nil,
+			want: time.Date(2026, 8, 14, 23, 59, 59, 0, time.Local),
+		},
+		{
+			name: "explicit time left untouched",
+			in:   time.Date(2026, 8, 14, 21, 30, 0, 0, time.Local),
+			loc:  nil,
+			want: time.Date(2026, 8, 14, 21, 30, 0, 0, time.Local),
+		},
+		{
+			name: "date-only reinterpreted in event timezone, end of day",
+			in:   time.Date(2026, 8, 14, 0, 0, 0, 0, time.Local),
+			loc:  ist,
+			want: time.Date(2026, 8, 14, 23, 59, 59, 0, ist),
+		},
+		{
+			name: "explicit time reinterpreted in event timezone, not bumped",
+			in:   time.Date(2026, 8, 14, 21, 30, 0, 0, time.Local),
+			loc:  ist,
+			want: time.Date(2026, 8, 14, 21, 30, 0, 0, ist),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := repeatUntilBound(tt.in, tt.loc)
+			if !got.Equal(tt.want) {
+				t.Errorf("got %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestBuildRecurrenceRuleUntilTimezone verifies that the timezone passed to
+// buildRecurrenceRule reaches the date-only --repeat-until bound, so the
+// end-of-day instant is computed in the event's zone. This is the path the
+// update command relies on (it tracks the zone in a different global than add).
+func TestBuildRecurrenceRuleUntilTimezone(t *testing.T) {
+	ist, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		t.Fatalf("load Asia/Kolkata: %v", err)
+	}
+
+	addRepeat = "weekly"
+	addRepeatInterval = 1
+	addRepeatDays = ""
+	addRepeatUntil = "2026-08-14"
+	addRepeatCount = 0
+
+	rule, err := buildRecurrenceRule("Asia/Kolkata")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if rule.End == nil || rule.End.EndDate == nil {
+		t.Fatal("expected an UNTIL bound, got none")
+	}
+
+	want := time.Date(2026, 8, 14, 23, 59, 59, 0, ist)
+	if !rule.End.EndDate.Equal(want) {
+		t.Errorf("UNTIL bound: got %v, want %v", rule.End.EndDate, want)
 	}
 }
 

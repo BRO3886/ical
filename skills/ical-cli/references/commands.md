@@ -206,7 +206,7 @@ ical add -i   # Interactive mode
 | `--no-alert`        | —     | Create with zero alerts (overrides calendar default alerts) | false          |
 | `--repeat`          | `-r`  | Recurrence: daily, weekly, monthly, yearly          | —              |
 | `--repeat-interval` | —     | Recurrence interval                                 | 1              |
-| `--repeat-until`    | —     | Recurrence end date                                 | —              |
+| `--repeat-until`    | —     | Recurrence end date (a bare date includes the whole day) | —              |
 | `--repeat-count`    | —     | Number of occurrences                               | 0              |
 | `--repeat-days`     | —     | Days for weekly recurrence (e.g., mon,wed,fri)      | —              |
 | `--timezone`        | —     | IANA timezone (e.g., America/New_York)              | —              |
@@ -271,6 +271,7 @@ ical rm 2 --force                                  # Alias
 ical delete 1 2 3 --force                          # Batch delete multiple events
 ical delete                                        # Interactive picker
 ical delete 3 --span future                        # Delete this and future occurrences
+ical delete 3 --span all --force                   # Delete the entire recurring series
 ical delete --id "577B8983-DF44:ABC123" --force   # Exact event ID (agents: use this)
 ```
 
@@ -278,7 +279,7 @@ ical delete --id "577B8983-DF44:ABC123" --force   # Exact event ID (agents: use 
 | --------- | ----- | -------------------------------------------- | ------- |
 | `--id`    | —     | Full event ID (exact match, no prefix search) | —       |
 | `--force` | `-f`  | Skip confirmation prompt                     | false   |
-| `--span`  | —     | For recurring: "this" or "future"            | this    |
+| `--span`  | —     | For recurring: "this", "future", or "all" (whole series) | this    |
 | `--from`  | —     | Start date for event picker                  | Today   |
 | `--to`    | —     | End date for event picker                    | —       |
 | `--days`  | `-d`  | Number of days to show in picker             | 7       |

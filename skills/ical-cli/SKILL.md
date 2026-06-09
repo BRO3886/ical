@@ -124,6 +124,8 @@ ical add "Anniversary" --start "jun 15" --repeat yearly --repeat-until "2030-06-
 
 `ical update <n> --repeat none` removes recurrence. `ical update <n> --span future` changes this and all future occurrences; without it only the single instance is modified.
 
+To delete a whole recurring series use `ical delete <n> --span all`. The default `--span this` removes only one occurrence — the rest of the series stays.
+
 ## Alerts
 
 Repeatable `--alert` flag on `ical add` and `ical update`. Units: `m`, `h`, `d`.

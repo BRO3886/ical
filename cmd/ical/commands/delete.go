@@ -34,8 +34,16 @@ Use --from/--to or --days to control the picker's date range.
 
 With one argument, accepts a row number from the last listing or a full/partial event ID.
 With multiple arguments, performs a batch delete using row numbers or event IDs.
-Use --id for exact event ID lookup (no prefix matching, single event only).`,
+Use --id for exact event ID lookup (no prefix matching, single event only).
+
+For recurring events, --span controls scope: this (default, the targeted
+occurrence), future (this and later occurrences), or all (the whole series).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		span, err := spanFromFlag(deleteSpan)
+		if err != nil {
+			return err
+		}
+
 		client, err := calendar.New()
 		if err != nil {
 			return handleClientError(err)
@@ -44,11 +52,6 @@ Use --id for exact event ID lookup (no prefix matching, single event only).`,
 		idFlagSet := cmd.Flags().Changed("id")
 		if idFlagSet && len(args) > 0 {
 			return fmt.Errorf("cannot use both --id and a positional argument")
-		}
-
-		span := calendar.SpanThisEvent
-		if deleteSpan == "future" {
-			span = calendar.SpanFutureEvents
 		}
 
 		// Batch delete: multiple positional args
@@ -98,8 +101,10 @@ Use --id for exact event ID lookup (no prefix matching, single event only).`,
 		}
 
 		green := color.New(color.FgGreen, color.Bold)
-		green.Print("Deleted: ")
-		fmt.Printf("%s\n", event.Title)
+		green.Println(deletedMessage(event.Title, deleteSpan, event.Recurring))
+		if event.Recurring && span == calendar.SpanThisEvent {
+			fmt.Println("Other occurrences remain — use --span all to delete the whole series.")
+		}
 		return nil
 	},
 }
@@ -137,9 +142,11 @@ func runBatchDelete(client *calendar.Client, args []string, span calendar.Span) 
 	// Collect IDs and delete in batch
 	ids := make([]string, len(events))
 	nameByID := make(map[string]string, len(events))
+	recurringByID := make(map[string]bool, len(events))
 	for i, e := range events {
 		ids[i] = e.ID
 		nameByID[e.ID] = e.Title
+		recurringByID[e.ID] = e.Recurring
 	}
 
 	errs := client.DeleteEvents(ids, span)
@@ -153,8 +160,7 @@ func runBatchDelete(client *calendar.Client, args []string, span calendar.Span) 
 			fmt.Printf("%s — %v\n", nameByID[id], err)
 			failed++
 		} else {
-			green.Print("Deleted: ")
-			fmt.Printf("%s\n", nameByID[id])
+			green.Println(deletedMessage(nameByID[id], deleteSpan, recurringByID[id]))
 		}
 	}
 
@@ -164,9 +170,40 @@ func runBatchDelete(client *calendar.Client, args []string, span calendar.Span) 
 	return nil
 }
 
+// spanFromFlag maps the --span flag value to a calendar.Span. "all" deletes the
+// entire series: an event lookup resolves to the first occurrence, so future-span
+// from there removes this and every later occurrence (all = this + future).
+func spanFromFlag(s string) (calendar.Span, error) {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "", "this":
+		return calendar.SpanThisEvent, nil
+	case "future", "all":
+		return calendar.SpanFutureEvents, nil
+	default:
+		return calendar.SpanThisEvent, fmt.Errorf("invalid --span %q (use this, future, or all)", s)
+	}
+}
+
+// deletedMessage returns the confirmation line for a deleted event. Recurring
+// events get span-aware wording so a single-occurrence delete is not mistaken
+// for removing the whole series (issue #40).
+func deletedMessage(title, span string, recurring bool) string {
+	if !recurring {
+		return fmt.Sprintf("Deleted: %s", title)
+	}
+	switch strings.ToLower(strings.TrimSpace(span)) {
+	case "future":
+		return fmt.Sprintf("Deleted recurring series %q (this and future occurrences)", title)
+	case "all":
+		return fmt.Sprintf("Deleted recurring series %q (all occurrences)", title)
+	default:
+		return fmt.Sprintf("Deleted 1 occurrence of recurring series %q", title)
+	}
+}
+
 func init() {
 	deleteCmd.Flags().BoolVarP(&deleteForce, "force", "f", false, "Skip confirmation prompt")
-	deleteCmd.Flags().StringVar(&deleteSpan, "span", "this", "For recurring: this or future")
+	deleteCmd.Flags().StringVar(&deleteSpan, "span", "this", "For recurring events: this, future, or all")
 	deleteCmd.Flags().StringVar(&deleteFrom, "from", "", "Start date for event picker")
 	deleteCmd.Flags().StringVar(&deleteTo, "to", "", "End date for event picker")
 	deleteCmd.Flags().IntVarP(&deleteDays, "days", "d", 7, "Number of days to show in picker")
