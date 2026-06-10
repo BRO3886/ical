@@ -2,11 +2,13 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"sort"
 	"time"
 
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +46,13 @@ full/partial event ID, same as 'ical show'.`,
 			}
 		} else {
 			now := time.Now()
-			events, err := client.Events(now.Add(-12*time.Hour), now.AddDate(0, 0, joinDays))
+			// EventKit's range predicate uses overlap semantics, so any
+			// ongoing event is returned as long as the range starts before it
+			// ends. Start at local midnight anyway so all-day events for
+			// "today" are reliably in range across timezones.
+			y, m, d := now.Date()
+			dayStart := time.Date(y, m, d, 0, 0, 0, 0, time.Local)
+			events, err := client.Events(dayStart, now.AddDate(0, 0, joinDays))
 			if err != nil {
 				return fmt.Errorf("failed to fetch events: %w", err)
 			}
@@ -58,9 +66,14 @@ full/partial event ID, same as 'ical show'.`,
 			fmt.Println(event.ConferenceURL)
 			return nil
 		}
+		if outputFormat == "json" {
+			ui.PrintEventDetail(event, "json")
+			return nil
+		}
 
 		start := event.StartDate.In(time.Local)
-		fmt.Printf("Joining %q (%s)\n%s\n", event.Title, start.Format("Mon 15:04"), event.ConferenceURL)
+		fmt.Fprintf(os.Stderr, "Joining %q (%s)\n", event.Title, start.Format("Mon 15:04"))
+		fmt.Println(event.ConferenceURL)
 		if err := exec.Command("open", event.ConferenceURL).Run(); err != nil {
 			return fmt.Errorf("failed to open conference link: %w", err)
 		}
