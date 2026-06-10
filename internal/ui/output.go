@@ -147,6 +147,7 @@ type eventJSON struct {
 	StructuredLocation *eventkit.StructuredLocation   `json:"structured_location,omitempty"`
 	Notes              string                        `json:"notes,omitempty"`
 	URL                string                        `json:"url,omitempty"`
+	ConferenceURL      string                        `json:"conference_url,omitempty"`
 	Status             string                        `json:"status"`
 	Availability       string                        `json:"availability"`
 	Organizer          string                        `json:"organizer,omitempty"`
@@ -172,6 +173,7 @@ func toEventJSON(e calendar.Event) eventJSON {
 		StructuredLocation: e.StructuredLocation,
 		Notes:              e.Notes,
 		URL:                e.URL,
+		ConferenceURL:      e.ConferenceURL,
 		Status:             e.Status.String(),
 		Availability:       e.Availability.String(),
 		Organizer:          e.Organizer,
@@ -323,6 +325,11 @@ func printEventDetailTable(e *calendar.Event, w io.Writer) {
 		fmt.Fprintln(w, e.URL)
 	}
 
+	if e.ConferenceURL != "" {
+		bold.Fprintf(w, "Conference:   ")
+		fmt.Fprintln(w, color.HiGreenString(e.ConferenceURL))
+	}
+
 	if e.Notes != "" {
 		bold.Fprintf(w, "Notes:        ")
 		fmt.Fprintln(w, e.Notes)
@@ -402,6 +409,9 @@ func printEventDetailPlain(e *calendar.Event, w io.Writer) {
 	}
 	if e.Location != "" {
 		fmt.Fprintf(w, "Location: %s\n", e.Location)
+	}
+	if e.ConferenceURL != "" {
+		fmt.Fprintf(w, "Conference: %s\n", e.ConferenceURL)
 	}
 	if e.Notes != "" {
 		fmt.Fprintf(w, "Notes: %s\n", e.Notes)
