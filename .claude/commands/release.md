@@ -105,6 +105,16 @@ EOF
 
 ## Install / Update
 
+Recommended — Homebrew:
+
+```bash
+brew upgrade ical
+```
+
+First time? `brew tap BRO3886/tap && brew install ical`.
+
+Or via the install script:
+
 ```bash
 curl -fsSL https://ical.sidv.dev/install | bash
 ```
@@ -124,6 +134,6 @@ go install github.com/BRO3886/ical/cmd/ical@v<VERSION>
 2. **Group by feature, not by file** — users care about capabilities, not internal structure
 3. **Include code examples** for new commands or flags — show, don't just tell
 4. **Keep it scannable** — subheadings, bullets, code blocks. No prose walls.
-5. **Always end with install instructions** and full changelog link
+5. **Always end with install instructions** and full changelog link. **Homebrew (`brew upgrade ical`) is the recommended/primary update method** — list it first, with the curl script and `go install` as secondary options
 6. **No internal implementation details** — users don't care about package names or refactors unless they affect the CLI surface
 7. **Mention new env vars and flags** — these are user-facing API

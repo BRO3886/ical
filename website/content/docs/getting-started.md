@@ -15,14 +15,16 @@ ical uses cgo to compile native EventKit bindings directly into the binary. It d
 
 ## Installation
 
-### Homebrew
+### Homebrew (recommended)
 
 ```bash
 brew tap BRO3886/tap
 brew install ical
 ```
 
-### Quick install
+Update later with `brew upgrade ical`.
+
+### Quick install script
 
 ```bash
 curl -fsSL https://ical.sidv.dev/install | bash

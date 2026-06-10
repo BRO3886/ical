@@ -6,14 +6,16 @@ Full CRUD for calendar events, natural language dates, recurrence support, impor
 
 ## Install
 
-### Homebrew
+### Homebrew (recommended)
 
 ```bash
 brew tap BRO3886/tap
 brew install ical
 ```
 
-**Quick install (recommended):**
+Update later with `brew upgrade ical`.
+
+**Quick install script:**
 
 ```bash
 curl -fsSL https://ical.sidv.dev/install | bash
