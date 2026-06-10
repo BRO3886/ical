@@ -77,7 +77,7 @@ func PrintCalendars(calendars []calendar.Calendar, format string) {
 func PrintEventDetail(event *calendar.Event, format string) {
 	switch format {
 	case "json":
-		data, _ := json.MarshalIndent(event, "", "  ")
+		data, _ := json.MarshalIndent(toEventJSON(*event), "", "  ")
 		fmt.Println(string(data))
 	case "plain":
 		printEventDetailPlain(event, os.Stdout)
@@ -148,6 +148,8 @@ type eventJSON struct {
 	Notes              string                        `json:"notes,omitempty"`
 	URL                string                        `json:"url,omitempty"`
 	ConferenceURL      string                        `json:"conference_url,omitempty"`
+	TravelTime         string                        `json:"travel_time,omitempty"`
+	SelfStatus         string                        `json:"self_status,omitempty"`
 	Status             string                        `json:"status"`
 	Availability       string                        `json:"availability"`
 	Organizer          string                        `json:"organizer,omitempty"`
@@ -174,6 +176,8 @@ func toEventJSON(e calendar.Event) eventJSON {
 		Notes:              e.Notes,
 		URL:                e.URL,
 		ConferenceURL:      e.ConferenceURL,
+		TravelTime:         travelTimeJSON(e.TravelTime),
+		SelfStatus:         selfStatusJSON(e.SelfStatus),
 		Status:             e.Status.String(),
 		Availability:       e.Availability.String(),
 		Organizer:          e.Organizer,
@@ -330,6 +334,16 @@ func printEventDetailTable(e *calendar.Event, w io.Writer) {
 		fmt.Fprintln(w, color.HiGreenString(e.ConferenceURL))
 	}
 
+	if e.TravelTime > 0 {
+		bold.Fprintf(w, "Travel Time:  ")
+		fmt.Fprintln(w, formatTravelTime(e.TravelTime))
+	}
+
+	if e.SelfStatus != calendar.ParticipantStatusUnknown {
+		bold.Fprintf(w, "My RSVP:      ")
+		fmt.Fprintln(w, e.SelfStatus.String())
+	}
+
 	if e.Notes != "" {
 		bold.Fprintf(w, "Notes:        ")
 		fmt.Fprintln(w, e.Notes)
@@ -413,10 +427,47 @@ func printEventDetailPlain(e *calendar.Event, w io.Writer) {
 	if e.ConferenceURL != "" {
 		fmt.Fprintf(w, "Conference: %s\n", e.ConferenceURL)
 	}
+	if e.TravelTime > 0 {
+		fmt.Fprintf(w, "Travel Time: %s\n", formatTravelTime(e.TravelTime))
+	}
+	if e.SelfStatus != calendar.ParticipantStatusUnknown {
+		fmt.Fprintf(w, "My RSVP: %s\n", e.SelfStatus.String())
+	}
 	if e.Notes != "" {
 		fmt.Fprintf(w, "Notes: %s\n", e.Notes)
 	}
 	fmt.Fprintf(w, "ID: %s\n", e.ID)
+}
+
+// formatTravelTime renders a travel-time duration compactly (e.g. "30m", "1h30m").
+func formatTravelTime(d time.Duration) string {
+	d = d.Round(time.Minute)
+	h := d / time.Hour
+	m := (d % time.Hour) / time.Minute
+	switch {
+	case h > 0 && m > 0:
+		return fmt.Sprintf("%dh%dm", h, m)
+	case h > 0:
+		return fmt.Sprintf("%dh", h)
+	default:
+		return fmt.Sprintf("%dm", m)
+	}
+}
+
+// travelTimeJSON renders travel time for JSON output, empty when zero.
+func travelTimeJSON(d time.Duration) string {
+	if d <= 0 {
+		return ""
+	}
+	return formatTravelTime(d)
+}
+
+// selfStatusJSON renders the user's RSVP status for JSON output, empty when unknown.
+func selfStatusJSON(s calendar.ParticipantStatus) string {
+	if s == calendar.ParticipantStatusUnknown {
+		return ""
+	}
+	return s.String()
 }
 
 // FormatRecurrenceRule returns a human-readable recurrence description.

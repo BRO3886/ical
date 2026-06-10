@@ -31,6 +31,8 @@ var (
 	addRepeatDays     string
 	addTimezone       string
 	addInteractive    bool
+	addInvite         []string
+	addTravel         string
 )
 
 var addCmd = &cobra.Command{
@@ -116,9 +118,27 @@ var addCmd = &cobra.Command{
 			input.RecurrenceRules = []eventkit.RecurrenceRule{rule}
 		}
 
+		// Parse invitees and travel time.
+		attendees, err := parseAttendees(addInvite)
+		if err != nil {
+			return err
+		}
+		input.Attendees = attendees
+		if addTravel != "" {
+			d, err := dateparser.ParseAlertDuration(addTravel)
+			if err != nil {
+				return fmt.Errorf("invalid --travel duration: %w", err)
+			}
+			input.TravelTime = d
+		}
+
 		client, err := calendar.New()
 		if err != nil {
 			return handleClientError(err)
+		}
+
+		if len(input.Attendees) > 0 && !client.AttendeeWritesSupported() {
+			return fmt.Errorf("inviting attendees is not supported on this macOS version")
 		}
 
 		event, err := client.CreateEvent(input)
@@ -127,8 +147,61 @@ var addCmd = &cobra.Command{
 		}
 
 		ui.PrintCreatedEvent(event)
+		if len(input.Attendees) > 0 {
+			fmt.Printf("Invited %d attendee(s); invitations are sent by the calendar account.\n", len(input.Attendees))
+		}
 		return nil
 	},
+}
+
+// parseAttendees converts --invite values into attendee inputs. Each value is
+// either a bare email ("a@x.com") or a named form ("Alice <a@x.com>"). It
+// returns an error for entries with no usable email address.
+func parseAttendees(invites []string) ([]calendar.AttendeeInput, error) {
+	if len(invites) == 0 {
+		return nil, nil
+	}
+	out := make([]calendar.AttendeeInput, 0, len(invites))
+	for _, raw := range invites {
+		name, email := splitNameEmail(raw)
+		if !looksLikeEmail(email) {
+			return nil, fmt.Errorf("invalid --invite value %q (expected an email or \"Name <email>\"; pass --invite once per person)", raw)
+		}
+		out = append(out, calendar.AttendeeInput{Name: name, Email: email})
+	}
+	return out, nil
+}
+
+// looksLikeEmail does a deliberately permissive check: exactly one "@" with
+// non-empty local and domain parts, a dot in the domain, and no internal
+// whitespace or commas. The comma/space guard catches the common mistake of
+// packing several addresses into one --invite value, which would otherwise be
+// saved as a single malformed attendee.
+func looksLikeEmail(s string) bool {
+	if s == "" || strings.ContainsAny(s, " \t,;") {
+		return false
+	}
+	at := strings.IndexByte(s, '@')
+	if at <= 0 || at != strings.LastIndexByte(s, '@') {
+		return false
+	}
+	domain := s[at+1:]
+	return len(domain) >= 3 && strings.Contains(domain, ".") &&
+		!strings.HasPrefix(domain, ".") && !strings.HasSuffix(domain, ".")
+}
+
+// splitNameEmail parses "Name <email>" or a bare email. The returned name is
+// empty for the bare form.
+func splitNameEmail(raw string) (name, email string) {
+	s := strings.TrimSpace(raw)
+	if i := strings.LastIndex(s, "<"); i >= 0 {
+		if j := strings.Index(s[i:], ">"); j >= 0 {
+			email = strings.TrimSpace(s[i+1 : i+j])
+			name = strings.TrimSpace(s[:i])
+			return name, email
+		}
+	}
+	return "", s
 }
 
 func init() {
@@ -148,6 +221,8 @@ func init() {
 	addCmd.Flags().IntVar(&addRepeatCount, "repeat-count", 0, "Recurrence occurrence count")
 	addCmd.Flags().StringVar(&addRepeatDays, "repeat-days", "", "Days for weekly recurrence (e.g., mon,wed,fri)")
 	addCmd.Flags().StringVar(&addTimezone, "timezone", "", "IANA timezone (e.g., America/New_York)")
+	addCmd.Flags().StringArrayVar(&addInvite, "invite", nil, "Invite an attendee by email or \"Name <email>\" — repeatable (sends an invitation)")
+	addCmd.Flags().StringVar(&addTravel, "travel", "", "Travel time before the event (e.g., 30m, 1h)")
 	addCmd.Flags().BoolVarP(&addInteractive, "interactive", "i", false, "Interactive mode with guided prompts")
 
 	rootCmd.AddCommand(addCmd)
