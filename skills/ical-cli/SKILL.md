@@ -1,6 +1,6 @@
 ---
 name: ical-cli
-description: Manages macOS Calendar events and calendars from the terminal via the ical CLI. Full CRUD for events and calendars with natural-language dates, recurrence, alerts, interactive mode, and JSON/CSV/ICS import/export. Use when the user wants to interact with Apple Calendar from the command line, automate calendar workflows, or build scripts around macOS Calendar.
+description: Manages macOS Calendar events and calendars from the terminal via the ical CLI. Full CRUD for events and calendars with natural-language dates, recurrence, alerts, attendee invitations, RSVP, free/busy lookup, conference-link joining, and JSON/CSV/ICS import/export. Use when the user wants to interact with Apple Calendar from the command line, invite people to events, check availability, respond to invitations, or automate calendar workflows.
 license: MIT
 compatibility: Requires macOS with Calendar.app access and the ical CLI installed (https://ical.sidv.dev)
 allowed-tools: Bash(ical *) Bash(echo *) Bash(jq *) Bash(xargs ical *)
@@ -40,6 +40,12 @@ ical also accepts natural-language strings directly (`today`, `tomorrow`, `next 
 | "Find events about X" | `ical search "X" --from today --to "in 30 days"` |
 | "Events involving <person>" | `ical list --from today --to "in 14 days" --attendee <name>` |
 | "Show only one-off events" | `ical upcoming --days 7 --no-recurring` |
+| "Invite people to a meeting" | `ical add "title" --start X --calendar C --invite a@x.com --invite "Bob <b@y.com>"` |
+| "Join my next meeting / get the call link" | `ical join` (opens it) or `ical join --print` (just the URL) |
+| "Accept / decline / tentatively accept an invite" | `ical rsvp accepted\|declined\|tentative <row-number>` |
+| "When is <person> free / busy" | `ical free a@x.com --from X --to Y` (needs Exchange/Workspace, NOT iCloud) |
+| "What invitations am I waiting on" | `ical inbox` |
+| "Add travel time before an event" | `ical add "title" --start X --travel 30m` |
 | "List / create / rename / delete calendars" | `ical calendars [create\|update\|delete]` |
 | "Export / back up events" | `ical export --format json --output-file backup.json` |
 
@@ -81,7 +87,12 @@ Row numbers are cached to `~/.ical-last-list` and stay valid until the next list
 - **`--repeat-days` only applies to `--repeat weekly`.** With any other frequency the CLI errors out. The recurrence engine silently discards the days otherwise.
 - **Timezone abbreviations (EST, CDT, BST, IST...) are rejected** inside date strings. Use `--timezone America/New_York` instead, with IANA names.
 - **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.
-- **Attendees and organizers are read-only** (Apple EventKit limitation). `ical add` does not accept `--attendee`. The `--attendee` flag on list/search is a filter, not an invite.
+- **Inviting attendees sends real email.** `ical add --invite a@x.com` adds the person and the calendar account dispatches an invitation on save — there is no dry-run. Only invite addresses the user actually intends to notify. The organizer (the user) is added automatically, so a 1-invitee event shows 2 attendees.
+- **`--invite` is repeatable; one address per flag.** `--invite a@x.com --invite "Bob <b@y.com>"`. Do NOT pack multiple addresses into one value (`--invite "a@x.com,b@y.com"`) — that's rejected. Accepts a bare email or `Name <email>`.
+- **The `--attendee` flag on list/search is a read-only filter, not an invite.** Use `--invite` on `add` to invite.
+- **Free/busy (`ical free`) needs an Exchange or Google Workspace account.** iCloud does not support availability lookups, so `ical free` against an iCloud-only setup reports no supporting account. Querying an iCloud address returns "free for the whole window" (no data), not an error.
+- **`ical rsvp` only works on events that are invitations to you.** RSVPing your own event is a harmless no-op. Status words: `accepted`/`declined`/`tentative` (aliases `yes`/`no`/`maybe`).
+- **`ical inbox` invitations carry no stable ID** — you can't pass them to `rsvp` by reference. Respond via `ical rsvp <status>` (interactive picker) or find the event with `ical list` first and use its row number.
 - **Subscribed calendars and the Birthdays calendar are read-only.** Event creation against them fails.
 - **`--calendar` / `-c` is repeatable.** Pass multiple times to filter by several calendars: `ical list -c Work -c Personal`. Single `-c` is optimized server-side; multiple values filter client-side.
 - **Calendar-name matching on `--calendar` and `--exclude-calendar` is case-insensitive and whitespace-trimmed**, so `"  Work "` and `work` both match a calendar named `Work`.
@@ -96,7 +107,7 @@ All read commands accept `-o`:
 - `json` — ISO 8601 timestamps, full fields, safe for scripts and agents
 - `plain` — one event per line, grep-friendly
 
-**Event JSON fields**: `id`, `title`, `start_date`, `end_date`, `all_day`, `calendar`, `calendar_id`, `location`, `notes`, `url`, `status`, `availability`, `organizer`, `attendees`, `recurring`, `recurrence_rules`, `alerts`, `timezone`, `created_at`, `modified_at`.
+**Event JSON fields**: `id`, `title`, `start_date`, `end_date`, `all_day`, `calendar`, `calendar_id`, `location`, `notes`, `url`, `conference_url`, `travel_time`, `self_status`, `status`, `availability`, `organizer`, `attendees`, `recurring`, `recurrence_rules`, `is_detached`, `occurrence_date`, `alerts`, `timezone`, `created_at`, `modified_at`. `conference_url` is the detected meeting link; `travel_time` is a compact string (`"30m"`); `self_status` is your RSVP (`accepted`/`declined`/`tentative`) on invitations. `show -o json` and `list -o json` use the same field names.
 
 **Calendar JSON fields**: `id`, `title`, `type`, `color`, `source`, `readOnly`. Note the list key is `title`, not `name`.
 
@@ -108,7 +119,7 @@ All read commands accept `-o`:
 - Inside a recurrence rule, `frequency` is an **integer enum** (`0=daily`, `1=weekly`, `2=monthly`, `3=yearly`), not a string. Compare against the int.
 - `alerts[].relativeOffset` is a **negative nanosecond duration** for before-event alerts. 15 minutes before = `-900000000000`. Divide by `-1e9` for seconds, or use `((. / -1000000000) / 60)` in jq for minutes.
 - `attendees[].status` is an **integer**, not a string — unlike event-level `status` and `availability` which serialize as strings. Map the int yourself if you need a label.
-- `attendees` has no write path — the array is read-only no matter what you do with `ical add` or `ical update`.
+- `attendees` is populated by `--invite` on `ical add` (not `update`); you cannot *remove* an attendee through the CLI. `self_status` reflects your own RSVP and updates after `ical rsvp`.
 
 ## Interactive mode
 
@@ -196,8 +207,34 @@ ical search "temp" --from today --to "in 7 days" -o json \
 ical export --from today --to "in 7 days" --format ics --output-file week.ics
 ```
 
+## Scheduling: invites, RSVP, availability, conference links
+
+```bash
+# Invite people to a new meeting (sends invitations on save)
+ical add "Design review" --start "tomorrow 3pm" --calendar Work \
+  --invite alice@example.com --invite "Bob <bob@example.com>" --travel 30m
+
+# Respond to an invitation by row number (from a prior listing)
+ical rsvp accepted 3
+ical rsvp tentative            # no row number → interactive picker
+
+# Free/busy across people (Exchange/Google Workspace only — not iCloud)
+ical free alice@example.com bob@example.com --from "monday 9am" --to "monday 6pm"
+
+# Open the conference link of the current or next meeting
+ical join                      # opens it in the browser
+ical join --print              # prints just the URL (pipe-friendly)
+
+# See invitations awaiting a response
+ical inbox
+ical inbox -o json
+```
+
+`ical free` prints each person's busy blocks; an address with no busy periods shows "free for the whole window". `--invite` and `--travel` are NOT available in interactive (`-i`) mode — pass them on the command line.
+
 ## Limits
 
-- Attendee invites are not supported (EventKit is read-only for attendees).
+- Attendee invites send real email; there is no dry-run. You can add attendees but not remove them via the CLI.
+- Free/busy requires an Exchange or Google Workspace account; iCloud does not support it.
 - Subscribed and Birthdays calendars are read-only.
 - macOS only.

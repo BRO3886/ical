@@ -210,7 +210,11 @@ ical add -i   # Interactive mode
 | `--repeat-count`    | —     | Number of occurrences                               | 0              |
 | `--repeat-days`     | —     | Days for weekly recurrence (e.g., mon,wed,fri)      | —              |
 | `--timezone`        | —     | IANA timezone (e.g., America/New_York)              | —              |
+| `--invite`          | —     | Invite an attendee (`email` or `"Name <email>"`) — repeatable; sends an invitation | — |
+| `--travel`          | —     | Travel time before the event (e.g., 30m, 1h)        | —              |
 | `--interactive`     | `-i`  | Interactive mode with guided prompts                | false          |
+
+`--invite` and `--travel` are not available with `-i`. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
 
 Aliases: `create`, `new`
 
@@ -314,6 +318,72 @@ ical find "lunch" -o json
 | `--limit`        | `-n`  | Max results (0 = unlimited)                | 0             |
 
 Aliases: `find`
+
+---
+
+## ical join
+
+Open the video-conference link of the current or next meeting. With no argument, picks the event most likely wanted: one happening now (most recently started wins), otherwise the soonest upcoming event with a link, searched `--days` ahead. With an argument, resolves a row number or event ID like `show`.
+
+```bash
+ical join                 # open the current/next meeting link in the browser
+ical join --print         # print just the URL (pipe-friendly, opens nothing)
+ical join 3               # join the event at row 3 of the last listing
+ical join -d 1            # only look 1 day ahead
+ical join -o json         # full event JSON instead of opening
+```
+
+| Flag      | Short | Description                                      | Default |
+| --------- | ----- | ------------------------------------------------ | ------- |
+| `--print` | `-p`  | Print the conference link instead of opening it  | false   |
+| `--days`  | `-d`  | How many days ahead to look for the next meeting | 7       |
+
+Links are detected for Zoom, Google Meet, Teams, FaceTime, Webex, Jitsi, Whereby, Chime, and GoToMeeting, whether in the event's URL field, location, or notes. An event with no link errors.
+
+---
+
+## ical rsvp
+
+Respond to an event invitation. The first argument is the response; the second optionally selects the event (row number or ID). With no event argument, an interactive picker over the next 90 days is shown. On a server-backed calendar this sends the reply to the organizer.
+
+```bash
+ical rsvp accepted 3       # accept the event at row 3
+ical rsvp declined <id>    # decline by event ID
+ical rsvp tentative        # pick interactively
+```
+
+Response words: `accepted`, `declined`, `tentative` (aliases `yes`/`no`/`maybe`). RSVPing your own (non-invitation) event is a harmless no-op.
+
+---
+
+## ical free
+
+Look up free/busy availability for one or more people over a window. **Requires an Exchange or Google Workspace account** — iCloud does not support availability lookups.
+
+```bash
+ical free alice@example.com
+ical free alice@example.com bob@example.com --from "monday 9am" --to "monday 6pm"
+```
+
+| Flag     | Short | Description                  | Default |
+| -------- | ----- | ---------------------------- | ------- |
+| `--from` | `-f`  | Start of the window          | now     |
+| `--to`   | `-t`  | End of the window            | +24h    |
+
+Prints each person's busy blocks; an address with no busy periods (or one whose server returns nothing, e.g. an iCloud address) shows "free for the whole window".
+
+---
+
+## ical inbox
+
+List event invitations awaiting your response (the Calendar.app notification inbox).
+
+```bash
+ical inbox
+ical inbox -o json
+```
+
+No flags beyond the global `--output`. Invitations carry no stable ID, so respond via `ical rsvp <status>` (interactive picker), or find the event with `ical list` and use its row number.
 
 ---
 

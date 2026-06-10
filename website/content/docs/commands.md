@@ -23,6 +23,10 @@ ical provides commands for managing macOS Calendar events and calendars. Every c
 | `ical update [# or id]`          | Update an event                                   |
 | `ical delete [# or id]`          | Delete an event                                   |
 | `ical search [query]`            | Search events                                     |
+| `ical join [# or id]`            | Open the conference link of the current/next event |
+| `ical rsvp [status] [# or id]`   | Respond to an invitation (accepted/declined/tentative) |
+| `ical free [email...]`           | Free/busy availability lookup (Exchange/Workspace only) |
+| `ical inbox`                      | List pending event invitations                    |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
 | `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw / others) |
@@ -279,10 +283,14 @@ ical add -i
 | `--alert`         |       | Add alert before event (repeatable)        |
 | `--no-alert`      |       | Create with zero alerts (overrides calendar default alerts) |
 | `--timezone`      |       | Timezone (e.g., `America/New_York`)        |
+| `--invite`        |       | Invite an attendee (`email` or `"Name <email>"`) — repeatable; sends an invitation |
+| `--travel`        |       | Travel time before the event (e.g., `30m`, `1h`) |
 | `--repeat`        |       | Recurrence: `daily`, `weekly`, `monthly`, `yearly` |
 | `--repeat-days`   |       | Days for weekly recurrence (repeatable)    |
 | `--repeat-until`  |       | Recurrence end date (a bare date includes the whole day) |
 | `--interactive`   | `-i`  | Use guided interactive form                |
+
+`--invite` and `--travel` are not available in interactive (`-i`) mode. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
 
 ### Examples
 
@@ -430,6 +438,74 @@ ical search "meeting" -c Work -f "1 month ago" -t "in 1 month"
 | `--attendee`     | `-a`  | Filter by attendee or organizer name/email |
 | `--no-recurring` |       | Hide recurring events                      |
 | `--limit`        | `-n`  | Maximum number of results                  |
+
+---
+
+## ical join
+
+Open the video-conference link of the current or next meeting. With no argument, ical picks the event you most likely want to join: one happening now (most recently started wins), otherwise the soonest upcoming event with a link. With an argument, it resolves a row number or event ID like `show`.
+
+```bash
+ical join              # open the current/next meeting link in the browser
+ical join --print      # print just the URL (pipe-friendly)
+ical join 3            # join the event at row 3 of the last listing
+```
+
+### Flags
+
+| Flag      | Short | Description                                      |
+|-----------|-------|--------------------------------------------------|
+| `--print` | `-p`  | Print the conference link instead of opening it  |
+| `--days`  | `-d`  | How many days ahead to look for the next meeting |
+
+Links are detected for Zoom, Google Meet, Teams, FaceTime, Webex, Jitsi, Whereby, Chime, and GoToMeeting, whether in the event's URL field, location, or notes.
+
+---
+
+## ical rsvp
+
+Respond to an event invitation. The first argument is your response; the second optionally selects the event by row number or ID. With no event argument, an interactive picker is shown. On a server-backed calendar this sends the reply to the organizer.
+
+```bash
+ical rsvp accepted 3       # accept the event at row 3
+ical rsvp declined <id>    # decline by event ID
+ical rsvp tentative        # pick interactively
+```
+
+Response words: `accepted`, `declined`, `tentative` (aliases `yes`/`no`/`maybe`).
+
+---
+
+## ical free
+
+Look up free/busy availability for one or more people over a time range. **Requires an Exchange or Google Workspace account — iCloud does not support availability lookups.**
+
+```bash
+ical free alice@example.com
+ical free alice@example.com bob@example.com --from "monday 9am" --to "monday 6pm"
+```
+
+### Flags
+
+| Flag     | Short | Description         |
+|----------|-------|---------------------|
+| `--from` | `-f`  | Start of the window (default: now) |
+| `--to`   | `-t`  | End of the window (default: +24h)  |
+
+Each person's busy blocks are printed; an address with no busy periods shows "free for the whole window".
+
+---
+
+## ical inbox
+
+List event invitations awaiting your response (the Calendar notification inbox).
+
+```bash
+ical inbox
+ical inbox -o json
+```
+
+Invitations carry no stable ID — respond with `ical rsvp <status>` (interactive picker) or find the event with `ical list` and use its row number.
 
 ---
 
