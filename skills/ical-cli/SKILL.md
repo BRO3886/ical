@@ -3,7 +3,7 @@ name: ical-cli
 description: Manages macOS Calendar events and calendars from the terminal via the ical CLI. Full CRUD for events and calendars with natural-language dates, recurrence, alerts, interactive mode, and JSON/CSV/ICS import/export. Use when the user wants to interact with Apple Calendar from the command line, automate calendar workflows, or build scripts around macOS Calendar.
 license: MIT
 compatibility: Requires macOS with Calendar.app access and the ical CLI installed (https://ical.sidv.dev)
-allowed-tools: Bash(ical *)
+allowed-tools: Bash(ical *) Bash(echo *) Bash(jq *) Bash(xargs ical *)
 argument-hint: "[natural language request]"
 ---
 
@@ -36,6 +36,7 @@ ical also accepts natural-language strings directly (`today`, `tomorrow`, `next 
 | "Rename / retitle an event" | `ical update <row-number> --title "new"` |
 | "Change an event's notes / location" | `ical update <row-number> --notes "..." --location "..."` |
 | "Cancel / delete an event" | `ical delete <row-number> --force` |
+| "Delete these events" | `ical delete <n1> <n2> <n3> --force` (batch, one invocation) |
 | "Find events about X" | `ical search "X" --from today --to "in 30 days"` |
 | "Events involving <person>" | `ical list --from today --to "in 14 days" --attendee <name>` |
 | "Show only one-off events" | `ical upcoming --days 7 --no-recurring` |
@@ -47,6 +48,18 @@ This table covers the common intents. If you need a flag that isn't shown above,
 Load [references/commands.md](references/commands.md) when you need every column of a flag (short form, default, type), or when `--help` alone isn't enough context.
 
 Load [references/dates.md](references/dates.md) when a date string fails to parse, or when the user asks what date formats are supported.
+
+## Batch everything into one tool call
+
+Every `ical` invocation is fast (<200ms), so the expensive part is YOUR round trip, not the command. Two rules:
+
+1. **Multiple events, one command.** `ical delete` accepts multiple row numbers or IDs and batch-deletes them in one EventKit session: `ical delete 1 3 5 --force`. Never loop one event per call.
+2. **Multiple commands, one Bash call.** When answering one question needs several ical reads, chain them with plain `;` and `echo` header markers in a single Bash invocation — never run them as separate tool calls. Avoid `{ }` grouping and `$(...)` substitution: permission allowlists match per `;`-separated segment, and `ical`/`echo`/`jq`/`xargs ical` are pre-approved by this skill.
+
+```bash
+# Daily briefing — one tool call, not two
+echo "== TODAY =="; ical today -o plain; echo "== NEXT 7 DAYS =="; ical upcoming --days 7 -o plain
+```
 
 ## Workflow: identify an event before acting on it
 
@@ -173,10 +186,11 @@ ical list --from today --to "in 14 days" --attendee claire -o json | jq '.[0]'
 # Rest of the week, skipping recurring noise
 ical list --from today --to "end of week" --no-recurring
 
-# Bulk delete everything matching a search (careful)
+# Bulk delete everything matching a search (careful) — xargs passes ALL
+# ids to a single batch `ical delete`, not one process per event
 ical search "temp" --from today --to "in 7 days" -o json \
   | jq -r '.[].id' \
-  | xargs -I {} ical delete --id {} --force
+  | xargs ical delete --force
 
 # Weekly agenda export
 ical export --from today --to "in 7 days" --format ics --output-file week.ics
