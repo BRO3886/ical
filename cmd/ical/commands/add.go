@@ -42,6 +42,9 @@ var addCmd = &cobra.Command{
 	Long:    "Creates a new calendar event. Title can be passed as argument or via --title flag.\nUse -i for interactive mode with guided prompts.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if addInteractive {
+			if len(addInvite) > 0 || addTravel != "" {
+				return fmt.Errorf("--invite and --travel are not supported in interactive mode (-i); pass them on the non-interactive command line")
+			}
 			return runAddInteractive()
 		}
 

@@ -27,6 +27,12 @@ iCloud-only setup will report that no account supports the lookup.
 Defaults to the next 24 hours; use --from/--to to change the window.`,
 	Args: cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		for _, addr := range args {
+			if !looksLikeEmail(addr) {
+				return fmt.Errorf("%q does not look like an email address", addr)
+			}
+		}
+
 		start := time.Now()
 		if freeFrom != "" {
 			t, err := dateparser.ParseDate(freeFrom)

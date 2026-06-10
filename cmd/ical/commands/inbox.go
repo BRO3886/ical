@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -24,6 +25,12 @@ var inboxCmd = &cobra.Command{
 			return fmt.Errorf("failed to fetch invitations: %w", err)
 		}
 
+		if outputFormat == "json" {
+			data, _ := json.Marshal(invitations)
+			fmt.Println(string(data))
+			return nil
+		}
+
 		if len(invitations) == 0 {
 			fmt.Println("No pending invitations.")
 			return nil
@@ -43,7 +50,10 @@ var inboxCmd = &cobra.Command{
 			}
 			fmt.Println()
 		}
-		fmt.Println("\nRespond with: ical rsvp accepted|declined|tentative <id>")
+		// The invitation inbox carries no stable event ID, so there's nothing
+		// to pass to `rsvp` by reference. Point users at the interactive
+		// picker, which is the reliable way to respond.
+		fmt.Println("\nRespond with: ical rsvp accepted   (then pick the event interactively)")
 		return nil
 	},
 }

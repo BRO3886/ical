@@ -39,7 +39,9 @@ to the organizer.`,
 		if len(args) == 2 {
 			event, err = findEventByPrefix(client, args[1])
 		} else {
-			event, err = pickEvent(client, "", "", 7)
+			// Invitations are commonly weeks out, so the picker scans a much
+			// wider window than the self-event commands (show/delete) do.
+			event, err = pickEvent(client, "", "", 90)
 		}
 		if err != nil {
 			return err

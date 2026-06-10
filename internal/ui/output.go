@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/fatih/color"
 	runewidth "github.com/mattn/go-runewidth"
 	"github.com/olekukonko/tablewriter"
@@ -136,30 +136,32 @@ func printEventsTable(events []calendar.Event, w io.Writer) {
 // Events — JSON
 
 type eventJSON struct {
-	ID                 string                        `json:"id"`
-	Title              string                        `json:"title"`
-	StartDate          time.Time                     `json:"start_date"`
-	EndDate            time.Time                     `json:"end_date"`
-	AllDay             bool                          `json:"all_day"`
-	Calendar           string                        `json:"calendar"`
-	CalendarID         string                        `json:"calendar_id"`
-	Location           string                        `json:"location,omitempty"`
-	StructuredLocation *eventkit.StructuredLocation   `json:"structured_location,omitempty"`
-	Notes              string                        `json:"notes,omitempty"`
-	URL                string                        `json:"url,omitempty"`
-	ConferenceURL      string                        `json:"conference_url,omitempty"`
-	TravelTime         string                        `json:"travel_time,omitempty"`
-	SelfStatus         string                        `json:"self_status,omitempty"`
-	Status             string                        `json:"status"`
-	Availability       string                        `json:"availability"`
-	Organizer          string                        `json:"organizer,omitempty"`
-	Attendees          []calendar.Attendee           `json:"attendees,omitempty"`
-	Recurring          bool                          `json:"recurring"`
-	RecurrenceRules    []eventkit.RecurrenceRule     `json:"recurrence_rules,omitempty"`
-	Alerts             []calendar.Alert              `json:"alerts,omitempty"`
-	TimeZone           string                        `json:"timezone,omitempty"`
-	CreatedAt          time.Time                     `json:"created_at"`
-	ModifiedAt         time.Time                     `json:"modified_at"`
+	ID                 string                       `json:"id"`
+	Title              string                       `json:"title"`
+	StartDate          time.Time                    `json:"start_date"`
+	EndDate            time.Time                    `json:"end_date"`
+	AllDay             bool                         `json:"all_day"`
+	Calendar           string                       `json:"calendar"`
+	CalendarID         string                       `json:"calendar_id"`
+	Location           string                       `json:"location,omitempty"`
+	StructuredLocation *eventkit.StructuredLocation `json:"structured_location,omitempty"`
+	Notes              string                       `json:"notes,omitempty"`
+	URL                string                       `json:"url,omitempty"`
+	ConferenceURL      string                       `json:"conference_url,omitempty"`
+	TravelTime         string                       `json:"travel_time,omitempty"`
+	SelfStatus         string                       `json:"self_status,omitempty"`
+	Status             string                       `json:"status"`
+	Availability       string                       `json:"availability"`
+	Organizer          string                       `json:"organizer,omitempty"`
+	Attendees          []calendar.Attendee          `json:"attendees,omitempty"`
+	Recurring          bool                         `json:"recurring"`
+	RecurrenceRules    []eventkit.RecurrenceRule    `json:"recurrence_rules,omitempty"`
+	IsDetached         bool                         `json:"is_detached,omitempty"`
+	OccurrenceDate     *time.Time                   `json:"occurrence_date,omitempty"`
+	Alerts             []calendar.Alert             `json:"alerts,omitempty"`
+	TimeZone           string                       `json:"timezone,omitempty"`
+	CreatedAt          time.Time                    `json:"created_at"`
+	ModifiedAt         time.Time                    `json:"modified_at"`
 }
 
 func toEventJSON(e calendar.Event) eventJSON {
@@ -184,6 +186,8 @@ func toEventJSON(e calendar.Event) eventJSON {
 		Attendees:          e.Attendees,
 		Recurring:          e.Recurring,
 		RecurrenceRules:    e.RecurrenceRules,
+		IsDetached:         e.IsDetached,
+		OccurrenceDate:     e.OccurrenceDate,
 		Alerts:             e.Alerts,
 		TimeZone:           e.TimeZone,
 		CreatedAt:          e.CreatedAt,

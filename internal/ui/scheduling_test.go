@@ -55,3 +55,19 @@ func TestSelfStatusJSON(t *testing.T) {
 		t.Errorf("got %q, want accepted", got)
 	}
 }
+
+// TestToEventJSON_PreservesDetachedFields guards against a regression where
+// routing `show -o json` through eventJSON dropped isDetached/occurrenceDate
+// that the old raw-marshal path emitted (scripts use these to detect modified
+// occurrences of a recurring series).
+func TestToEventJSON_PreservesDetachedFields(t *testing.T) {
+	occ := time.Date(2026, 6, 11, 9, 0, 0, 0, time.UTC)
+	e := calendar.Event{ID: "x", IsDetached: true, OccurrenceDate: &occ}
+	j := toEventJSON(e)
+	if !j.IsDetached {
+		t.Error("IsDetached lost in conversion")
+	}
+	if j.OccurrenceDate == nil || !j.OccurrenceDate.Equal(occ) {
+		t.Errorf("OccurrenceDate lost: %v", j.OccurrenceDate)
+	}
+}
