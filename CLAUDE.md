@@ -24,6 +24,10 @@ ical/
 │       ├── today.go             # Shortcut: today's events
 │       ├── upcoming.go          # Shortcut: next N days
 │       ├── search.go            # Search events
+│       ├── join.go              # Open conference link of current/next event
+│       ├── rsvp.go              # Respond to an invitation (accept/decline/tentative)
+│       ├── free.go              # Free/busy availability lookup
+│       ├── inbox.go             # List pending invitations
 │       ├── export.go            # Export events (JSON/CSV/ICS)
 │       ├── import.go            # Import events (JSON/CSV)
 │       └── skills.go            # AI agent skill management (install/uninstall/status)
@@ -94,6 +98,8 @@ ical/
 - Interactive mode (`-i`): add and update support guided huh forms
 - `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/`, `~/.codex/skills/ical-cli/`, `~/.openclaw/skills/ical-cli/`, or `~/.agents/skills/ical-cli/`
 - **SKILL.md examples must be permission-allowlist compatible** (#43): Claude Code matches each `;`/`&&`-separated segment against `allowed-tools`, but `{ }` brace groups and `$(...)` substitutions are opaque and always prompt. Chain with plain `;`; every binary used in an example must be pre-approved in frontmatter (`Bash(ical *) Bash(echo *) Bash(jq *) Bash(xargs ical *)`). Bulk recipes pass all IDs to one `ical delete` (xargs without `-I`), never one process per event
+- **Scheduling commands rely on private EventKit bridges in go-eventkit (v0.15.0+)**: `join` (conference URL), `rsvp`/`add --invite` (attendee writes + RSVP), `free` (availability), `inbox` (invitations). All gate on `client.<Feature>Supported()` and surface `ErrUnsupportedFeature` if the private selectors are gone. Free/busy needs an Exchange/Google Workspace account — **iCloud sources don't support availability** (`constraintSupportsAvailabilityRequests == NO`), so test `free` against a Workspace address, not the Work (iCloud) calendar. `add --invite` auto-adds the organizer and **sends real invitation email on save** — only smoke-test with own/consented addresses
+- **`show -o json` and `list -o json` both route through `internal/ui.eventJSON`** (snake_case keys, formatted durations). When adding an `Event` field, add it to `eventJSON` + `toEventJSON` or it silently vanishes from `show -o json` (regression caught in #48: `isDetached`/`occurrenceDate` were dropped)
 - Background update check: goroutine in PersistentPreRun, 2s timeout, 24h cache at `~/.cache/ical/update-check`
 - `ICAL_NO_UPDATE_CHECK=1` disables update check; also skipped for json output, piped stdout, dev builds
 

@@ -110,7 +110,8 @@ EventKit returns all times in UTC. ical converts them to local time using the ev
 
 These are Apple-imposed constraints, not bugs:
 
-- **Attendees and organizer are read-only** — EventKit does not allow modifying attendee lists
+- **Attendees can be invited but not removed** — `ical add --invite` adds attendees (and sends invitations); there is no way to remove an attendee or change the organizer through the CLI
+- **Free/busy needs Exchange or Google Workspace** — iCloud accounts do not support availability lookups, so `ical free` cannot resolve iCloud addresses
 - **Subscribed calendars are read-only** — Cannot create or modify events in subscribed calendars
 - **Birthday calendars are read-only** — The Birthdays calendar is auto-generated
 - **macOS only** — EventKit is an Apple framework; ical exits gracefully on other platforms

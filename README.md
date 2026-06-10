@@ -102,6 +102,10 @@ ical delete
 | `ical update [# or id]`          | Update an event (`-i` for interactive)            |
 | `ical delete [# or id...]`       | Delete one or more events (interactive picker if no arg) |
 | `ical search [query]`            | Search events                                     |
+| `ical join [# or id]`            | Open the conference link of the current/next event |
+| `ical rsvp [status] [# or id]`   | Respond to an invitation (accepted/declined/tentative) |
+| `ical free [email...]`           | Free/busy availability lookup (Exchange/Workspace only) |
+| `ical inbox`                      | List pending event invitations                    |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
 | `ical import [file]`             | Import events (JSON/CSV)                          |
 | `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw) |
@@ -268,6 +272,36 @@ ical delete 2 --span future
 # Delete the entire recurring series
 ical delete 2 --span all
 ```
+
+## Invitations & Availability
+
+Invite people to events, respond to invitations, look up free/busy, and join meetings — all from the terminal.
+
+```bash
+# Invite attendees when creating an event (sends invitations on save)
+ical add "Design review" --start "tomorrow 3pm" --calendar Work \
+  --invite alice@example.com --invite "Bob <bob@example.com>"
+
+# Add travel time before an event
+ical add "Client visit" --start "friday 2pm" --travel 45m
+
+# Respond to an invitation
+ical rsvp accepted 3          # accept the event at row 3
+ical rsvp declined <id>       # decline by event ID
+ical rsvp tentative           # no event arg → interactive picker
+
+# Look up when people are free or busy
+ical free alice@example.com bob@example.com --from "monday 9am" --to "monday 6pm"
+
+# List invitations awaiting your response
+ical inbox
+
+# Open the conference link of the current or next meeting
+ical join                     # opens it in the browser
+ical join --print             # just the URL (pipe-friendly)
+```
+
+> **Note:** Inviting attendees makes the calendar account send a real invitation email on save — there is no dry-run. The organizer (you) is added automatically. Free/busy lookup (`ical free`) requires an Exchange or Google Workspace account; **iCloud does not support availability lookups**.
 
 ## Export & Import
 
