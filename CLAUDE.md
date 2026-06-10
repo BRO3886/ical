@@ -93,6 +93,7 @@ ical/
 - Color coding: calendar colors shown, all-day events highlighted
 - Interactive mode (`-i`): add and update support guided huh forms
 - `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/`, `~/.codex/skills/ical-cli/`, `~/.openclaw/skills/ical-cli/`, or `~/.agents/skills/ical-cli/`
+- **SKILL.md examples must be permission-allowlist compatible** (#43): Claude Code matches each `;`/`&&`-separated segment against `allowed-tools`, but `{ }` brace groups and `$(...)` substitutions are opaque and always prompt. Chain with plain `;`; every binary used in an example must be pre-approved in frontmatter (`Bash(ical *) Bash(echo *) Bash(jq *) Bash(xargs ical *)`). Bulk recipes pass all IDs to one `ical delete` (xargs without `-I`), never one process per event
 - Background update check: goroutine in PersistentPreRun, 2s timeout, 24h cache at `~/.cache/ical/update-check`
 - `ICAL_NO_UPDATE_CHECK=1` disables update check; also skipped for json output, piped stdout, dev builds
 
