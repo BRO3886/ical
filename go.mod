@@ -3,7 +3,7 @@ module github.com/BRO3886/ical
 go 1.24.5
 
 require (
-	github.com/BRO3886/go-eventkit v0.7.0
+	github.com/BRO3886/go-eventkit v0.14.0
 	github.com/charmbracelet/huh v0.8.0
 	github.com/fatih/color v1.18.0
 	github.com/mattn/go-runewidth v0.0.19
