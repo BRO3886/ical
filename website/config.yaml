@@ -1,10 +1,10 @@
 baseURL: "https://ical.sidv.dev/"
 languageCode: "en-us"
-title: "ical — CLI for macOS Calendar"
+title: "ical — CLI for Apple Calendar"
 theme: "cal-docs"
 
 params:
-  description: "A native macOS Calendar CLI built with Go and EventKit. 3000x faster than AppleScript. Full CRUD, natural language dates, recurrence, import/export, and multiple output formats."
+  description: "A native Apple Calendar CLI built with Go and EventKit. 3000x faster than AppleScript. Full CRUD, natural language dates, recurrence, import/export, and multiple output formats."
   author: "Siddharth Verma"
   github: "https://github.com/BRO3886/ical"
   ogImage: "/images/og-image.png"
