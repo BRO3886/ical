@@ -4,7 +4,7 @@ COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
 
-.PHONY: all build install test clean completions release help
+.PHONY: all build install test clean completions release indexnow help
 
 all: build
 
@@ -31,6 +31,9 @@ release: ## Build release tarballs for GitHub upload (arm64 + amd64)
 
 clean: ## Remove built binaries
 	rm -rf bin/
+
+indexnow: ## Submit live sitemap URLs to IndexNow (run after a deploy with content changes)
+	sh scripts/indexnow.sh
 
 completions: build ## Generate shell completion scripts
 	mkdir -p completions
