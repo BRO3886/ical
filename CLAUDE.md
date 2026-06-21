@@ -115,6 +115,10 @@ ical/
 - **Install section**: Tabbed UI (Script/Go Install/Download) with copy buttons
 - **Hugo config**: `website/config.yaml` with markdown output format enabled
 
+## IndexNow
+
+Run `make indexnow` after any deploy whose content changed to fast-notify Bing/Microsoft, Yandex, Naver, Seznam, and Yep. The key lives in two places that must stay in sync: `website/static/9243cdd67ce6db495ec7acddec1dec27.txt` (file name stem == file contents) and the `KEY` variable in `scripts/indexnow.sh`. Live submission will return HTTP 403 until the key file is deployed to `ical.sidv.dev` — merge the PR first, then run the script.
+
 ## Build & Release
 ```bash
 go build -o bin/ical ./cmd/ical    # Build (compiles EventKit via cgo)
