@@ -91,7 +91,11 @@ func shouldCheckForUpdate(cmd *cobra.Command) bool {
 }
 
 // printUpdateNotice prints update and skills staleness notices to stderr.
-func printUpdateNotice(_ *cobra.Command) {
+func printUpdateNotice(cmd *cobra.Command) {
+	if !shouldShowPostRunNotices(cmd) {
+		return
+	}
+
 	// Collect update result (non-blocking — if goroutine isn't done, skip)
 	var result *update.Result
 	select {
@@ -116,6 +120,28 @@ func printUpdateNotice(_ *cobra.Command) {
 
 	// Check skills staleness (local only, no HTTP)
 	printSkillsStalenessNotice(homeDir)
+}
+
+// shouldShowPostRunNotices returns false when notices would pollute scripted output.
+func shouldShowPostRunNotices(cmd *cobra.Command) bool {
+	if os.Getenv("ICAL_NO_UPDATE_CHECK") != "" {
+		return false
+	}
+
+	name := cmd.Name()
+	if name == "version" || name == "completion" || name == "skills" {
+		return false
+	}
+
+	if outputFormat == "json" {
+		return false
+	}
+
+	fi, err := os.Stdout.Stat()
+	if err != nil {
+		return false
+	}
+	return fi.Mode()&os.ModeCharDevice != 0
 }
 
 // printSkillsStalenessNotice checks if installed skills are outdated.
