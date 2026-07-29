@@ -149,11 +149,14 @@ latest=v0.5.0
    ```
    Printed to **stderr** so it doesn't interfere with piped output (e.g., `ical ls -o json | jq`).
 
-**Skip conditions — do NOT check when:**
-- `ICAL_NO_UPDATE_CHECK=1` env var is set (for CI/scripts)
+**Skip conditions — do NOT check *and* do NOT print any notice when:**
+- `ICAL_NO_UPDATE_CHECK` env var is set (for CI/scripts)
+- The binary is a dev build
 - `--output json` is used (scripting context)
-- The command is `version` or `completion` (meta commands)
-- Stdout is not a TTY (piped output)
+- The command is in the `version`, `completion`, or `skills` group — matched on the full command path, so `skills status` counts too
+- Stderr is not a TTY (redirected)
+
+Both the check and the notice are gated by the same predicate, so they cannot drift apart. The TTY test is on stderr because that is where notices are written; stdout's file type says nothing about whether a notice would pollute anything.
 
 **Goroutine timeout:** 2 seconds max. If GitHub is slow or unreachable, silently give up. Never delay the user's command.
 

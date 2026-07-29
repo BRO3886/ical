@@ -96,11 +96,23 @@ When `--to` resolves to midnight (00:00:00), ical bumps it to 23:59:59 so that `
 
 ical embeds its own [agent skill](https://agentskills.io) files into the binary via `go:embed`. When a user runs `ical skills install`, the embedded files are written to the appropriate agent's skill directory (`~/.claude/skills/`, `~/.codex/skills/`, `~/.openclaw/skills/`, or `~/.agents/skills/`). This ensures the skill documentation always matches the binary version — no separate download or version mismatch possible.
 
-A `.ical-version` file is written alongside the skill files to track which binary version installed them. When the binary is updated, `ical skills status` detects the mismatch and the background update check prints a staleness notice.
+A `.ical-version` file is written alongside the skill files to track which binary version installed them. When the binary is updated, `ical skills status` reports the mismatch, and any ordinary command prints a staleness notice.
 
-### Background Update Check
+### Post-Run Notices
 
-ical checks for new releases in a background goroutine on each command invocation. The check is non-blocking with a 2-second timeout, caches results to `~/.cache/ical/update-check` with a 24-hour TTL, and prints to stderr so it doesn't interfere with piped output. The check is skipped for JSON output, piped commands, dev builds, and when `ICAL_NO_UPDATE_CHECK=1` is set.
+ical can print two notices after a command finishes: one when a newer release exists, and one when the installed agent skills are older than the binary. Both are written to **stderr**, so they never enter the data on stdout.
+
+A single rule decides whether either notice belongs in a given run. The same rule also decides whether to start the update check at all, so the check and the notice can never disagree about what counts as a scripted context. Notices are skipped when:
+
+- `ICAL_NO_UPDATE_CHECK` is set to any value
+- the binary is a dev build
+- `--output json` is used
+- the command is in the `version`, `completion`, or `skills` group
+- stderr is not a terminal
+
+The last condition is deliberately about **stderr**, not stdout: notices are written to stderr, so that is the stream that decides whether a human is present to read them. `ical list > events.json` still shows notices on your terminal, while `ical list 2> run.log` keeps the log clean.
+
+The update check itself runs in a background goroutine on each command invocation. It is non-blocking with a 2-second timeout and caches results to `~/.cache/ical/update-check` with a 24-hour TTL.
 
 ### UTC to Local Conversion
 

@@ -479,7 +479,7 @@ ical skills status
 
 ## ical version
 
-Print version and build information. Also shows a notice if a newer version is available or if installed skills are outdated.
+Print version and build information. This command never prints an update or skills-staleness notice — its output is exactly one line, safe to parse.
 
 ```bash
 ical version
@@ -512,4 +512,6 @@ These flags are available on all commands:
 
 The `NO_COLOR` environment variable is also respected.
 
-Set `ICAL_NO_UPDATE_CHECK=1` to disable the background update check.
+Set `ICAL_NO_UPDATE_CHECK=1` to silence both post-run notices (update available, skills outdated).
+
+You rarely need it. ical already stays silent whenever output is scripted: with `-o json`, whenever stderr is redirected, and on `version`, `completion`, and `skills` commands. Notices are written to stderr and never enter stdout, so `-o json` output is always valid JSON on its own.
