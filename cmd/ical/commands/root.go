@@ -2,7 +2,9 @@ package commands
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/BRO3886/ical/internal/skills"
 	"github.com/BRO3886/ical/internal/update"
@@ -28,7 +30,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		// Start background update check
-		if shouldCheckForUpdate(cmd) {
+		if shouldShowNotices(currentNoticeConditions(cmd)) {
 			go func() {
 				homeDir, err := os.UserHomeDir()
 				if err != nil {
@@ -42,7 +44,16 @@ var rootCmd = &cobra.Command{
 		}
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		printUpdateNotice(cmd)
+		if !shouldShowNotices(currentNoticeConditions(cmd)) {
+			return
+		}
+
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return
+		}
+
+		printNotices(os.Stderr, versionStr, collectUpdateResult(updateResultCh), homeDir)
 	},
 }
 
@@ -55,108 +66,110 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
-// shouldCheckForUpdate returns false for commands/contexts where the check should be skipped.
-func shouldCheckForUpdate(cmd *cobra.Command) bool {
-	// Skip if env var set
-	if os.Getenv("ICAL_NO_UPDATE_CHECK") != "" {
-		return false
-	}
+// metaCommands never emit post-run notices: their whole output is either
+// machine-consumed (completion) or is itself a version/skills report.
+var metaCommands = map[string]bool{"version": true, "completion": true, "skills": true}
 
-	// Skip for dev builds
-	if versionStr == "" || versionStr == "dev" {
-		return false
-	}
-
-	// Skip for meta commands
-	name := cmd.Name()
-	if name == "version" || name == "completion" || name == "skills" {
-		return false
-	}
-
-	// Skip if --output json (scripting context)
-	if outputFormat == "json" {
-		return false
-	}
-
-	// Skip if stdout is not a TTY (piped output)
-	fi, err := os.Stdout.Stat()
-	if err != nil {
-		return false
-	}
-	if fi.Mode()&os.ModeCharDevice == 0 {
-		return false
-	}
-
-	return true
+// noticeConditions is the full input to shouldShowNotices. Keeping it a plain
+// value lets the rule be driven from a table instead of package globals.
+type noticeConditions struct {
+	commandPath  string
+	outputFormat string
+	version      string
+	suppressed   bool
+	interactive  bool
 }
 
-// printUpdateNotice prints update and skills staleness notices to stderr.
-func printUpdateNotice(cmd *cobra.Command) {
-	if !shouldShowPostRunNotices(cmd) {
-		return
+// currentNoticeConditions samples the process state that shouldShowNotices needs.
+func currentNoticeConditions(cmd *cobra.Command) noticeConditions {
+	return noticeConditions{
+		commandPath:  cmd.CommandPath(),
+		outputFormat: outputFormat,
+		version:      versionStr,
+		suppressed:   os.Getenv("ICAL_NO_UPDATE_CHECK") != "",
+		// Notices are written to stderr, so stderr — not stdout — decides
+		// whether a human is there to read them.
+		interactive: isTerminal(os.Stderr),
+	}
+}
+
+// shouldShowNotices reports whether post-run notices belong in this invocation.
+// It gates both the background update check and the printing of any notice, so
+// the two can never disagree about what counts as a scripted context.
+func shouldShowNotices(c noticeConditions) bool {
+	if c.suppressed {
+		return false
 	}
 
-	// Collect update result (non-blocking — if goroutine isn't done, skip)
-	var result *update.Result
+	if c.version == "" || c.version == "dev" {
+		return false
+	}
+
+	if isMetaCommand(c.commandPath) {
+		return false
+	}
+
+	if c.outputFormat == "json" {
+		return false
+	}
+
+	return c.interactive
+}
+
+// isMetaCommand matches on the whole command path, so nested subcommands such
+// as "ical skills status" are covered by the "skills" entry. Matching on the
+// leaf name alone would silently miss every subcommand of a meta command.
+func isMetaCommand(commandPath string) bool {
+	for _, name := range strings.Fields(commandPath) {
+		if metaCommands[name] {
+			return true
+		}
+	}
+	return false
+}
+
+func isTerminal(f *os.File) bool {
+	fi, err := f.Stat()
+	return err == nil && fi.Mode()&os.ModeCharDevice != 0
+}
+
+// collectUpdateResult reads the background check result without blocking. A nil
+// result means the goroutine is still in flight and this run says nothing.
+func collectUpdateResult(ch <-chan *update.Result) *update.Result {
 	select {
-	case result = <-updateResultCh:
+	case result := <-ch:
+		return result
 	default:
-		// Goroutine still running, don't wait
-		result = nil
+		return nil
 	}
+}
 
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return
-	}
-
-	yellow := color.New(color.FgYellow)
-
+// printNotices writes the update and skills staleness notices.
+func printNotices(w io.Writer, version string, result *update.Result, homeDir string) {
 	if result != nil && result.HasUpdate {
-		fmt.Fprintln(os.Stderr)
-		yellow.Fprintf(os.Stderr, "A new version of ical is available: %s → %s\n", versionStr, result.Latest)
-		fmt.Fprintf(os.Stderr, "Update: curl -fsSL https://ical.sidv.dev/install | bash\n")
+		yellow := color.New(color.FgYellow)
+		fmt.Fprintln(w)
+		yellow.Fprintf(w, "A new version of ical is available: %s → %s\n", version, result.Latest)
+		fmt.Fprintf(w, "Update: curl -fsSL https://ical.sidv.dev/install | bash\n")
 	}
 
 	// Check skills staleness (local only, no HTTP)
-	printSkillsStalenessNotice(homeDir)
-}
-
-// shouldShowPostRunNotices returns false when notices would pollute scripted output.
-func shouldShowPostRunNotices(cmd *cobra.Command) bool {
-	if os.Getenv("ICAL_NO_UPDATE_CHECK") != "" {
-		return false
-	}
-
-	name := cmd.Name()
-	if name == "version" || name == "completion" || name == "skills" {
-		return false
-	}
-
-	if outputFormat == "json" {
-		return false
-	}
-
-	fi, err := os.Stdout.Stat()
-	if err != nil {
-		return false
-	}
-	return fi.Mode()&os.ModeCharDevice != 0
+	printSkillsStalenessNotice(w, version, homeDir)
 }
 
 // printSkillsStalenessNotice checks if installed skills are outdated.
-func printSkillsStalenessNotice(homeDir string) {
-	if versionStr == "" || versionStr == "dev" {
+func printSkillsStalenessNotice(w io.Writer, version, homeDir string) {
+	if version == "" || version == "dev" {
 		return
 	}
 
 	targets := skills.InstalledTargets(skills.DefaultTargets(homeDir))
 	for _, t := range targets {
 		installed := skills.InstalledVersion(t)
-		if installed != "" && installed != versionStr {
+		if installed != "" && installed != version {
 			yellow := color.New(color.FgYellow)
-			fmt.Fprintln(os.Stderr)
-			yellow.Fprintf(os.Stderr, "Installed skills are outdated (%s). Run: ical skills install\n", installed)
+			fmt.Fprintln(w)
+			yellow.Fprintf(w, "Installed skills are outdated (%s). Run: ical skills install\n", installed)
 			return // Only show once
 		}
 	}
