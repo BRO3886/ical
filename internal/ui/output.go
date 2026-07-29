@@ -640,16 +640,6 @@ func truncate(s string, max int) string {
 	return runewidth.Truncate(s, max, "...")
 }
 
-// ShortID returns the first 13 chars of an event ID.
-// This covers two UUID segments (e.g. "577B8983-DF44") which is
-// enough to disambiguate events from the same source.
-func ShortID(id string) string {
-	if len(id) <= 13 {
-		return id
-	}
-	return id[:13]
-}
-
 // PrintCreatedEvent prints summary info for a newly created event.
 func PrintCreatedEvent(e *calendar.Event) {
 	start := localizeTime(e.StartDate, e.TimeZone)
@@ -659,7 +649,7 @@ func PrintCreatedEvent(e *calendar.Event) {
 	fmt.Printf("%s\n", e.Title)
 	fmt.Printf("  Calendar: %s\n", e.Calendar)
 	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
-	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
+	fmt.Printf("  ID:       %s\n", e.ID)
 }
 
 // PrintCreatedCalendar prints summary info for a newly created calendar.
@@ -695,5 +685,5 @@ func PrintUpdatedEvent(e *calendar.Event) {
 	fmt.Printf("%s\n", e.Title)
 	fmt.Printf("  Calendar: %s\n", e.Calendar)
 	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
-	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
+	fmt.Printf("  ID:       %s\n", e.ID)
 }
