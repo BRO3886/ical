@@ -512,6 +512,17 @@ These flags are available on all commands:
 
 The `NO_COLOR` environment variable is also respected.
 
-Set `ICAL_NO_UPDATE_CHECK=1` to silence both post-run notices (update available, skills outdated).
+### Post-run notices
 
-You rarely need it. ical already stays silent whenever output is scripted: with `-o json`, whenever stderr is redirected, and on `version`, `completion`, and `skills` commands. Notices are written to stderr and never enter stdout, so `-o json` output is always valid JSON on its own.
+Two notices can follow a command: a new release is available, or installed skills are older than the binary. Both go to **stderr**, never stdout.
+
+**Do not set `ICAL_NO_UPDATE_CHECK` to keep stdout parseable.** `ical <command> -o json` always emits valid JSON on stdout. Parse stdout directly.
+
+No notice prints when any of these holds:
+
+- `-o json` is used
+- stderr is not a terminal — any pipe or redirect, including `2>&1 | jq`
+- the command is `version`, `completion`, or a `skills` subcommand
+- the binary is a dev build
+
+Set `ICAL_NO_UPDATE_CHECK=1` only if your harness gives ical a pseudo-terminal on stderr and captures it. Otherwise use `2>/dev/null`.

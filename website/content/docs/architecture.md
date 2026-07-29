@@ -100,19 +100,19 @@ A `.ical-version` file is written alongside the skill files to track which binar
 
 ### Post-Run Notices
 
-ical can print two notices after a command finishes: one when a newer release exists, and one when the installed agent skills are older than the binary. Both are written to **stderr**, so they never enter the data on stdout.
+Two notices can follow a command: a newer release exists, or the installed agent skills are older than the binary. Both go to **stderr**, never stdout.
 
-A single rule decides whether either notice belongs in a given run. The same rule also decides whether to start the update check at all, so the check and the notice can never disagree about what counts as a scripted context. Notices are skipped when:
+One predicate gates both notices and the update check itself, so they cannot drift apart. Notices are skipped when:
 
-- `ICAL_NO_UPDATE_CHECK` is set to any value
+- `ICAL_NO_UPDATE_CHECK` is set
 - the binary is a dev build
 - `--output json` is used
 - the command is in the `version`, `completion`, or `skills` group
 - stderr is not a terminal
 
-The last condition is deliberately about **stderr**, not stdout: notices are written to stderr, so that is the stream that decides whether a human is present to read them. `ical list > events.json` still shows notices on your terminal, while `ical list 2> run.log` keeps the log clean.
+The terminal test is on stderr because that is where notices go. `ical list > events.json` keeps its notices; `ical list 2> run.log` does not.
 
-The update check itself runs in a background goroutine on each command invocation. It is non-blocking with a 2-second timeout and caches results to `~/.cache/ical/update-check` with a 24-hour TTL.
+The check runs in a background goroutine: non-blocking, 2-second timeout, cached to `~/.cache/ical/update-check` for 24 hours.
 
 ### UTC to Local Conversion
 
