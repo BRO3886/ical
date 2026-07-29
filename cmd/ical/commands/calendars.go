@@ -116,7 +116,7 @@ Use -i for interactive mode with guided prompts.`,
 			return fmt.Errorf("failed to create calendar: %w", err)
 		}
 
-		ui.PrintCreatedCalendar(cal)
+		ui.PrintCreatedCalendar(cal, outputFormat)
 		return nil
 	},
 }
@@ -209,7 +209,7 @@ func runCalCreateInteractive() error {
 	}
 
 	fmt.Println()
-	ui.PrintCreatedCalendar(cal)
+	ui.PrintCreatedCalendar(cal, outputFormat)
 	return nil
 }
 
@@ -290,7 +290,7 @@ Use -i for interactive mode with guided prompts.`,
 			return fmt.Errorf("failed to update calendar: %w", err)
 		}
 
-		ui.PrintUpdatedCalendar(updated)
+		ui.PrintUpdatedCalendar(updated, outputFormat)
 		return nil
 	},
 }
@@ -372,7 +372,7 @@ func runCalUpdateInteractive(client *calendar.Client, cal *calendar.Calendar) er
 	}
 
 	fmt.Println()
-	ui.PrintUpdatedCalendar(updated)
+	ui.PrintUpdatedCalendar(updated, outputFormat)
 	return nil
 }
 

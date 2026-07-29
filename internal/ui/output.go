@@ -640,60 +640,59 @@ func truncate(s string, max int) string {
 	return runewidth.Truncate(s, max, "...")
 }
 
-// ShortID returns the first 13 chars of an event ID.
-// This covers two UUID segments (e.g. "577B8983-DF44") which is
-// enough to disambiguate events from the same source.
-func ShortID(id string) string {
-	if len(id) <= 13 {
-		return id
-	}
-	return id[:13]
-}
-
 // PrintCreatedEvent prints summary info for a newly created event.
-func PrintCreatedEvent(e *calendar.Event) {
-	start := localizeTime(e.StartDate, e.TimeZone)
-	end := localizeTime(e.EndDate, e.TimeZone)
-	green := color.New(color.FgGreen, color.Bold)
-	green.Print("Created: ")
-	fmt.Printf("%s\n", e.Title)
-	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
-	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
-}
-
-// PrintCreatedCalendar prints summary info for a newly created calendar.
-func PrintCreatedCalendar(c *calendar.Calendar) {
-	green := color.New(color.FgGreen, color.Bold)
-	green.Print("Created: ")
-	fmt.Printf("%s\n", c.Title)
-	fmt.Printf("  Source: %s\n", c.Source)
-	if c.Color != "" {
-		fmt.Printf("  Color:  %s\n", c.Color)
-	}
-	fmt.Printf("  ID:     %s\n", c.ID)
-}
-
-// PrintUpdatedCalendar prints summary info for an updated calendar.
-func PrintUpdatedCalendar(c *calendar.Calendar) {
-	green := color.New(color.FgGreen, color.Bold)
-	green.Print("Updated: ")
-	fmt.Printf("%s\n", c.Title)
-	fmt.Printf("  Source: %s\n", c.Source)
-	if c.Color != "" {
-		fmt.Printf("  Color:  %s\n", c.Color)
-	}
-	fmt.Printf("  ID:     %s\n", c.ID)
+func PrintCreatedEvent(e *calendar.Event, format string) {
+	writeEventResult(os.Stdout, e, format, "Created: ")
 }
 
 // PrintUpdatedEvent prints summary info for an updated event.
-func PrintUpdatedEvent(e *calendar.Event) {
+func PrintUpdatedEvent(e *calendar.Event, format string) {
+	writeEventResult(os.Stdout, e, format, "Updated: ")
+}
+
+// writeEventResult reports a created or updated event. Under -o json it emits
+// the object shape show emits, so a script that creates an event can read the
+// result the same way it reads every other command's output.
+func writeEventResult(w io.Writer, e *calendar.Event, format, label string) {
+	if format == "json" {
+		data, _ := json.MarshalIndent(toEventJSON(*e), "", "  ")
+		fmt.Fprintln(w, string(data))
+		return
+	}
+
 	start := localizeTime(e.StartDate, e.TimeZone)
 	end := localizeTime(e.EndDate, e.TimeZone)
 	green := color.New(color.FgGreen, color.Bold)
-	green.Print("Updated: ")
-	fmt.Printf("%s\n", e.Title)
-	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
-	fmt.Printf("  ID:       %s\n", ShortID(e.ID))
+	green.Fprint(w, label)
+	fmt.Fprintf(w, "%s\n", e.Title)
+	fmt.Fprintf(w, "  Calendar: %s\n", e.Calendar)
+	fmt.Fprintf(w, "  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
+	fmt.Fprintf(w, "  ID:       %s\n", e.ID)
+}
+
+// PrintCreatedCalendar prints summary info for a newly created calendar.
+func PrintCreatedCalendar(c *calendar.Calendar, format string) {
+	writeCalendarResult(os.Stdout, c, format, "Created: ")
+}
+
+// PrintUpdatedCalendar prints summary info for an updated calendar.
+func PrintUpdatedCalendar(c *calendar.Calendar, format string) {
+	writeCalendarResult(os.Stdout, c, format, "Updated: ")
+}
+
+func writeCalendarResult(w io.Writer, c *calendar.Calendar, format, label string) {
+	if format == "json" {
+		data, _ := json.MarshalIndent(c, "", "  ")
+		fmt.Fprintln(w, string(data))
+		return
+	}
+
+	green := color.New(color.FgGreen, color.Bold)
+	green.Fprint(w, label)
+	fmt.Fprintf(w, "%s\n", c.Title)
+	fmt.Fprintf(w, "  Source: %s\n", c.Source)
+	if c.Color != "" {
+		fmt.Fprintf(w, "  Color:  %s\n", c.Color)
+	}
+	fmt.Fprintf(w, "  ID:     %s\n", c.ID)
 }

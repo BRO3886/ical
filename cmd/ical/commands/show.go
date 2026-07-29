@@ -77,14 +77,26 @@ func init() {
 	rootCmd.AddCommand(showCmd)
 }
 
+// eventLookup is the slice of *calendar.Client that findEventByPrefix needs.
+// Narrowing it keeps the resolver testable without a live EventKit store.
+type eventLookup interface {
+	Event(id string) (*calendar.Event, error)
+	Events(start, end time.Time, opts ...calendar.ListOption) ([]calendar.Event, error)
+}
+
 // findEventByPrefix finds an event by row number from the last listing,
 // by exact ID, or by ID prefix matching.
-func findEventByPrefix(client *calendar.Client, input string) (*calendar.Event, error) {
+//
+// Every lookup is checked for a round-trip: EventKit resolves a partial or
+// stale identifier to an arbitrary event instead of reporting no match, so an
+// event whose ID is not the one that was asked for is treated as no match at
+// all. Without that check, delete acts on whichever event EventKit picked.
+func findEventByPrefix(client eventLookup, input string) (*calendar.Event, error) {
 	// Check if input is a row number (e.g. "1", "2") from the last listing
 	if n, err := strconv.Atoi(input); err == nil && n > 0 {
 		if id := ui.LookupRowNumber(n); id != "" {
 			event, err := client.Event(id)
-			if err == nil {
+			if err == nil && event.ID == id {
 				return event, nil
 			}
 			// Event may have been deleted since listing; fall through to search
@@ -93,10 +105,10 @@ func findEventByPrefix(client *calendar.Client, input string) (*calendar.Event, 
 
 	// Try exact match
 	event, err := client.Event(input)
-	if err == nil {
+	if err == nil && event.ID == input {
 		return event, nil
 	}
-	if !errors.Is(err, calendar.ErrNotFound) {
+	if err != nil && !errors.Is(err, calendar.ErrNotFound) {
 		return nil, fmt.Errorf("failed to fetch event: %w", err)
 	}
 

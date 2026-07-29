@@ -174,7 +174,7 @@ Use -i for interactive mode with guided prompts.`,
 			return fmt.Errorf("failed to update event: %w", err)
 		}
 
-		ui.PrintUpdatedEvent(updated)
+		ui.PrintUpdatedEvent(updated, outputFormat)
 		return nil
 	},
 }
@@ -230,7 +230,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 		return fmt.Errorf("no writable calendars found")
 	}
 
-	fmt.Printf("Editing: %s (ID: %s)\n\n", event.Title, ui.ShortID(event.ID))
+	fmt.Printf("Editing: %s (ID: %s)\n\n", event.Title, event.ID)
 
 	// Page 1: Core fields
 	core := huh.NewGroup(
@@ -423,7 +423,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 	}
 
 	fmt.Println()
-	ui.PrintUpdatedEvent(updated)
+	ui.PrintUpdatedEvent(updated, outputFormat)
 	return nil
 }
 

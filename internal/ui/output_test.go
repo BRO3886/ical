@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"bytes"
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -8,27 +11,53 @@ import (
 	"github.com/BRO3886/go-eventkit/calendar"
 )
 
-func TestShortID(t *testing.T) {
-	tests := []struct {
-		input string
-		want  string
-	}{
-		{"abcdefgh-1234-5678", "abcdefgh-1234"},
-		{"short", "short"},
-		{"1234567890123", "1234567890123"},
-		{"", ""},
-		{"1234567", "1234567"},
-		{"12345678901234", "1234567890123"},
-		{"577B8983-DF44-4665-966E-58129A363B3A:20250212", "577B8983-DF44"},
-	}
+// add and update honour -o like every other command: a script that creates an
+// event must be able to parse the result rather than scrape the summary.
+func TestWriteEventResultJSON(t *testing.T) {
+	const id = "00000000-1111-2222-3333-444444444444:AAAAAAAA-0000-0000-0000-00000000000A"
+	event := calendar.Event{ID: id, Title: "Interview - round 2", Calendar: "Work"}
 
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			got := ShortID(tt.input)
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
-			}
-		})
+	var buf bytes.Buffer
+	writeEventResult(&buf, &event, "json", "Created: ")
+
+	var got map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("output is not valid JSON: %v\ngot: %s", err, buf.String())
+	}
+	if got["id"] != id {
+		t.Errorf("id = %v, want %s", got["id"], id)
+	}
+	if strings.Contains(buf.String(), "Created:") {
+		t.Error("JSON output carries the human summary label")
+	}
+}
+
+func TestWriteEventResultTable(t *testing.T) {
+	const id = "00000000-1111-2222-3333-444444444444:AAAAAAAA-0000-0000-0000-00000000000A"
+	event := calendar.Event{ID: id, Title: "Interview - round 2", Calendar: "Work"}
+
+	var buf bytes.Buffer
+	writeEventResult(&buf, &event, "table", "Created: ")
+
+	out := buf.String()
+	if !strings.Contains(out, "Created: ") || !strings.Contains(out, "Interview - round 2") {
+		t.Errorf("summary missing from table output: %q", out)
+	}
+	// The full ID is what --id accepts; a truncated one identifies no event.
+	if !strings.Contains(out, id) {
+		t.Errorf("full ID missing from table output: %q", out)
+	}
+}
+
+func TestWriteCalendarResultJSON(t *testing.T) {
+	cal := calendar.Calendar{ID: "CAL-1", Title: "Work"}
+
+	var buf bytes.Buffer
+	writeCalendarResult(&buf, &cal, "json", "Created: ")
+
+	var got map[string]any
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("output is not valid JSON: %v\ngot: %s", err, buf.String())
 	}
 }
 
