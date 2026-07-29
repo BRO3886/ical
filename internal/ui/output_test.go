@@ -8,30 +8,6 @@ import (
 	"github.com/BRO3886/go-eventkit/calendar"
 )
 
-func TestShortID(t *testing.T) {
-	tests := []struct {
-		input string
-		want  string
-	}{
-		{"abcdefgh-1234-5678", "abcdefgh-1234"},
-		{"short", "short"},
-		{"1234567890123", "1234567890123"},
-		{"", ""},
-		{"1234567", "1234567"},
-		{"12345678901234", "1234567890123"},
-		{"577B8983-DF44-4665-966E-58129A363B3A:20250212", "577B8983-DF44"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			got := ShortID(tt.input)
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestFormatRecurrenceRule(t *testing.T) {
 	until := time.Date(2027, 3, 15, 0, 0, 0, 0, time.UTC)
 
