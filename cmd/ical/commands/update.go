@@ -174,7 +174,7 @@ Use -i for interactive mode with guided prompts.`,
 			return fmt.Errorf("failed to update event: %w", err)
 		}
 
-		ui.PrintUpdatedEvent(updated)
+		ui.PrintUpdatedEvent(updated, outputFormat)
 		return nil
 	},
 }
@@ -423,7 +423,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 	}
 
 	fmt.Println()
-	ui.PrintUpdatedEvent(updated)
+	ui.PrintUpdatedEvent(updated, outputFormat)
 	return nil
 }
 
