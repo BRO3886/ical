@@ -3,6 +3,7 @@ package commands
 import (
 	"time"
 
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/spf13/cobra"
 )
 
@@ -12,8 +13,8 @@ var todayCmd = &cobra.Command{
 	Long:  "Shortcut for 'cal list --from today --to tomorrow'. Shows the day's agenda.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		now := time.Now()
-		from := startOfDay(now)
-		to := startOfDay(now.AddDate(0, 0, 1))
+		from := dateparser.StartOfDay(now)
+		to := dateparser.StartOfDay(now.AddDate(0, 0, 1))
 		return listEvents(from, to)
 	},
 }
