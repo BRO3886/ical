@@ -8,6 +8,7 @@ import (
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/BRO3886/go-eventkit/dateparser"
+	"github.com/BRO3886/go-eventkit/userargs"
 	"github.com/BRO3886/ical/internal/ui"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -97,11 +98,11 @@ var addCmd = &cobra.Command{
 		}
 
 		// Parse alerts
-		for _, a := range addAlerts {
-			d, err := dateparser.ParseAlertDuration(a)
-			if err != nil {
-				return err
-			}
+		offsets, err := userargs.ParseAlertOffsets(addAlerts)
+		if err != nil {
+			return err
+		}
+		for _, d := range offsets {
 			input.Alerts = append(input.Alerts, calendar.Alert{RelativeOffset: -d})
 		}
 
@@ -424,15 +425,17 @@ func runAddInteractive() error {
 
 	// Parse alerts
 	if strings.TrimSpace(alertStr) != "" {
+		var fields []string
 		for _, a := range strings.Split(alertStr, ",") {
-			a = strings.TrimSpace(a)
-			if a == "" {
-				continue
+			if a = strings.TrimSpace(a); a != "" {
+				fields = append(fields, a)
 			}
-			d, err := dateparser.ParseAlertDuration(a)
-			if err != nil {
-				return err
-			}
+		}
+		offsets, err := userargs.ParseAlertOffsets(fields)
+		if err != nil {
+			return err
+		}
+		for _, d := range offsets {
 			input.Alerts = append(input.Alerts, calendar.Alert{RelativeOffset: -d})
 		}
 	}
@@ -540,17 +543,7 @@ func repeatUntilBound(t time.Time, loc *time.Location) time.Time {
 	if loc != nil {
 		t = time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), 0, loc)
 	}
-	return endOfDayIfMidnight(t)
-}
-
-var weekdayMap = map[string]eventkit.Weekday{
-	"sun": eventkit.Sunday, "sunday": eventkit.Sunday,
-	"mon": eventkit.Monday, "monday": eventkit.Monday,
-	"tue": eventkit.Tuesday, "tuesday": eventkit.Tuesday,
-	"wed": eventkit.Wednesday, "wednesday": eventkit.Wednesday,
-	"thu": eventkit.Thursday, "thursday": eventkit.Thursday,
-	"fri": eventkit.Friday, "friday": eventkit.Friday,
-	"sat": eventkit.Saturday, "saturday": eventkit.Saturday,
+	return dateparser.EndOfDayIfMidnight(t)
 }
 
 // buildCalendarOptions builds huh.Option list from writable calendars.
@@ -570,20 +563,19 @@ func buildCalendarOptions(calendars []calendar.Calendar, current string) []huh.O
 	return opts
 }
 
+// parseRepeatDays splits the comma-separated --repeat-days value and defers the
+// per-token weekday lookup to userargs.ParseWeekdays, which accepts the same
+// 3-letter and full names this used to hard-code (plus 2-letter iCalendar
+// codes like "MO").
 func parseRepeatDays(s string) ([]eventkit.Weekday, error) {
 	if s == "" {
 		return nil, nil
 	}
 
 	parts := strings.Split(s, ",")
-	days := make([]eventkit.Weekday, 0, len(parts))
-	for _, p := range parts {
-		p = strings.TrimSpace(strings.ToLower(p))
-		d, ok := weekdayMap[p]
-		if !ok {
-			return nil, fmt.Errorf("unknown day %q (use mon,tue,wed,thu,fri,sat,sun)", p)
-		}
-		days = append(days, d)
+	days, err := userargs.ParseWeekdays(parts)
+	if err != nil {
+		return nil, fmt.Errorf("%w (use mon,tue,wed,thu,fri,sat,sun)", err)
 	}
 	return days, nil
 }
