@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"bytes"
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -8,25 +11,35 @@ import (
 	"github.com/BRO3886/go-eventkit/calendar"
 )
 
-func TestShortID(t *testing.T) {
-	tests := []struct {
-		input string
-		want  string
-	}{
-		{"abcdefgh-1234-5678", "abcdefgh-1234"},
-		{"short", "short"},
-		{"1234567890123", "1234567890123"},
-		{"", ""},
-		{"1234567", "1234567"},
-		{"12345678901234", "1234567890123"},
-		{"577B8983-DF44-4665-966E-58129A363B3A:20250212", "577B8983-DF44"},
+// The prefix before ":" is shared by every event in a source, so a written
+// event must report its whole identifier or `show <id>` can open another one.
+func TestPrintWrittenEventFullID(t *testing.T) {
+	const id = "448B255C-4738-4E0B-9A11-5C1E7E0F2B6D:8F1D2C3B-AAAA-BBBB-CCCC-DDDDEEEEFFFF"
+	e := &calendar.Event{
+		ID:        id,
+		Title:     "Dentist",
+		Calendar:  "Family",
+		StartDate: time.Date(2026, 10, 1, 13, 0, 0, 0, time.UTC),
+		EndDate:   time.Date(2026, 10, 1, 14, 0, 0, 0, time.UTC),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			got := ShortID(tt.input)
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
+	for _, verb := range []string{"Created", "Updated"} {
+		t.Run(verb+"/table", func(t *testing.T) {
+			var buf bytes.Buffer
+			printWrittenEvent(&buf, verb, e, "table")
+			if !strings.Contains(buf.String(), "ID:       "+id+"\n") {
+				t.Errorf("output lacks full ID:\n%s", buf.String())
+			}
+		})
+		t.Run(verb+"/json", func(t *testing.T) {
+			var buf bytes.Buffer
+			printWrittenEvent(&buf, verb, e, "json")
+			var got map[string]any
+			if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+				t.Fatalf("not JSON: %v\n%s", err, buf.String())
+			}
+			if got["id"] != id {
+				t.Errorf("id = %v, want %s", got["id"], id)
 			}
 		})
 	}
