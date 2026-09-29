@@ -84,6 +84,7 @@ Row numbers are cached per session and stay valid until the next listing command
 - **Row numbers reset on every listing.** Running `ical today` invalidates the row numbers from a previous `ical list`.
 - **`--id` is exact match only.** No prefix search, no partial match. Pass a full event ID from JSON output.
 - **`--id` and positional event args are mutually exclusive.** Pass one or the other.
+- **Every occurrence of a recurring series shares one ID** (detached ones add `/RID=…`). A row number targets the occurrence that row showed. With `--id`, add `--occurrence <date>` (or `"<date> <time>"` when a day has several) to `show`/`update`/`delete`; without it, the series' first occurrence is used. `--span this|future|all` sets the scope from there.
 - **`--repeat-days` only applies to `--repeat weekly`.** With any other frequency the CLI errors out. The recurrence engine silently discards the days otherwise.
 - **Timezone abbreviations (EST, CDT, BST, IST...) are rejected** inside date strings. Use `--timezone America/New_York` instead, with IANA names.
 - **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.

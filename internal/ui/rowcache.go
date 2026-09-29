@@ -54,12 +54,40 @@ func lastListPath() string {
 	return rowCachePath(home, rowCacheSessionKey(os.Getenv))
 }
 
-// SaveLastList writes event IDs to this session's cache so row numbers can
+// RowRef is one cached row: the event ID and, for a recurring event, the
+// original start of the occurrence that row showed. Every occurrence of a
+// series shares its ID, so the ID alone always means the first occurrence.
+type RowRef struct {
+	ID         string
+	Occurrence *time.Time
+}
+
+// formatRow renders a row as "ID" or "ID<TAB>occurrence (RFC 3339)".
+func formatRow(e calendar.Event) string {
+	if (e.Recurring || e.IsDetached) && e.OccurrenceDate != nil {
+		return e.ID + "\t" + e.OccurrenceDate.UTC().Format(time.RFC3339Nano)
+	}
+	return e.ID
+}
+
+// parseRow reads a line written by formatRow, or a bare ID from older versions.
+func parseRow(line string) RowRef {
+	id, occ, found := strings.Cut(line, "\t")
+	ref := RowRef{ID: id}
+	if found {
+		if t, err := time.Parse(time.RFC3339Nano, occ); err == nil {
+			ref.Occurrence = &t
+		}
+	}
+	return ref
+}
+
+// SaveLastList writes event rows to this session's cache so row numbers can
 // be used later.
 func SaveLastList(events []calendar.Event) {
 	ids := make([]string, len(events))
 	for i, e := range events {
-		ids[i] = e.ID
+		ids[i] = formatRow(e)
 	}
 	path := lastListPath()
 	_ = os.MkdirAll(filepath.Dir(path), 0o755)
@@ -85,16 +113,16 @@ func pruneRowCaches(dir string) {
 	}
 }
 
-// LookupRowNumber returns the full event ID for a 1-based row number
-// from this session's last listing. Returns "" if not found.
-func LookupRowNumber(n int) string {
+// LookupRow returns the row for a 1-based row number from this session's
+// last listing, and false if there is no such row.
+func LookupRow(n int) (RowRef, bool) {
 	data, err := os.ReadFile(lastListPath())
 	if err != nil {
-		return ""
+		return RowRef{}, false
 	}
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
-	if n < 1 || n > len(lines) {
-		return ""
+	if n < 1 || n > len(lines) || lines[n-1] == "" {
+		return RowRef{}, false
 	}
-	return lines[n-1]
+	return parseRow(lines[n-1]), true
 }

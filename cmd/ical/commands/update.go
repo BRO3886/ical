@@ -32,6 +32,7 @@ var (
 	updateRepeatDays     string
 	updateInteractive    bool
 	updateID             string
+	updateOccurrence     string
 )
 
 var updateCmd = &cobra.Command{
@@ -43,7 +44,12 @@ var updateCmd = &cobra.Command{
 With no arguments, shows an interactive picker to select the event.
 With an argument, accepts a row number from the last listing or a full/partial event ID.
 Use --id for exact event ID lookup (no prefix matching).
-Use -i for interactive mode with guided prompts.`,
+Use -i for interactive mode with guided prompts.
+
+For recurring events, a row number or picker choice targets the occurrence
+it showed. With --id, pass --occurrence <date> to pick one; otherwise the
+series' first occurrence is used. --span controls scope: this (default),
+future (this and later occurrences), or all (the whole series).`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := calendar.New()
@@ -75,6 +81,14 @@ Use -i for interactive mode with guided prompts.`,
 			if event == nil {
 				return nil
 			}
+		}
+		if cmd.Flags().Changed("occurrence") {
+			if event, err = applyOccurrenceFlag(client, event, updateOccurrence); err != nil {
+				return err
+			}
+		}
+		if _, err := spanFromFlag(updateSpan); err != nil {
+			return err
 		}
 
 		if updateInteractive {
@@ -164,12 +178,7 @@ Use -i for interactive mode with guided prompts.`,
 			}
 		}
 
-		span := calendar.SpanThisEvent
-		if updateSpan == "future" {
-			span = calendar.SpanFutureEvents
-		}
-
-		updated, err := client.UpdateEvent(event.ID, input, span)
+		updated, err := updateEvent(client, event, input, updateSpan)
 		if err != nil {
 			return fmt.Errorf("failed to update event: %w", err)
 		}
@@ -190,7 +199,8 @@ func init() {
 	updateCmd.Flags().StringVarP(&updateURL, "url", "u", "", "New URL (empty to clear)")
 	updateCmd.Flags().StringArrayVar(&updateAlerts, "alert", nil, "Replace alerts (repeatable, 'none' to clear)")
 	updateCmd.Flags().StringVar(&updateTimezone, "timezone", "", "New timezone")
-	updateCmd.Flags().StringVar(&updateSpan, "span", "this", "For recurring events: this or future")
+	updateCmd.Flags().StringVar(&updateSpan, "span", "this", "For recurring events: this, future, or all")
+	updateCmd.Flags().StringVar(&updateOccurrence, "occurrence", "", "For recurring events: the occurrence to change, by original date (or date and time)")
 	updateCmd.Flags().StringVarP(&updateRepeat, "repeat", "r", "", "Set/change recurrence (none to remove)")
 	updateCmd.Flags().IntVar(&updateRepeatInterval, "repeat-interval", 1, "Change recurrence interval")
 	updateCmd.Flags().StringVar(&updateRepeatUntil, "repeat-until", "", "Change recurrence end date")
@@ -412,12 +422,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 		}
 	}
 
-	span := calendar.SpanThisEvent
-	if spanVal == "future" {
-		span = calendar.SpanFutureEvents
-	}
-
-	updated, err := client.UpdateEvent(event.ID, input, span)
+	updated, err := updateEvent(client, event, input, spanVal)
 	if err != nil {
 		return fmt.Errorf("failed to update event: %w", err)
 	}
