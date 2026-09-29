@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,35 +16,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
 )
-
-// lastListPath returns the path to the cached event ID list.
-func lastListPath() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".ical-last-list")
-}
-
-// SaveLastList writes event IDs to cache so row numbers can be used later.
-func SaveLastList(events []calendar.Event) {
-	ids := make([]string, len(events))
-	for i, e := range events {
-		ids[i] = e.ID
-	}
-	_ = os.WriteFile(lastListPath(), []byte(strings.Join(ids, "\n")+"\n"), 0644)
-}
-
-// LookupRowNumber returns the full event ID for a 1-based row number
-// from the last listing cache. Returns "" if not found.
-func LookupRowNumber(n int) string {
-	data, err := os.ReadFile(lastListPath())
-	if err != nil {
-		return ""
-	}
-	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
-	if n < 1 || n > len(lines) {
-		return ""
-	}
-	return lines[n-1]
-}
 
 // PrintEvents prints events in the specified format and caches event IDs
 // for row-number-based lookup by show/update/delete.
