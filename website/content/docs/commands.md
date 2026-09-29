@@ -159,7 +159,7 @@ ical list -f today -t "in 7 days" -c Work
 | `--limit`             | `-n`  | Maximum number of results                      |
 | `--sort`              |       | Sort by: `title`, `time`, `calendar`           |
 
-Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached to `~/.ical-last-list` so subsequent commands can reference events by number. When events span multiple years, the date column includes the year for disambiguation.
+Events are displayed with row numbers (`#1`, `#2`, ...) that can be used with `show`, `update`, and `delete`. The row mapping is cached per terminal session (see [Architecture](../architecture/)) so subsequent commands in the same session can reference events by number. When events span multiple years, the date column includes the year for disambiguation.
 
 ```bash
 # List, then act on event #2
