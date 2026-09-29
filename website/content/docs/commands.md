@@ -276,7 +276,7 @@ ical add -i
 | Flag              | Short | Description                                |
 |-------------------|-------|--------------------------------------------|
 | `--start`         | `-s`  | Start time (natural language)              |
-| `--end`           | `-e`  | End time (natural language)                |
+| `--end`           | `-e`  | End time (natural language). With `--all-day`, the last day (inclusive) |
 | `--calendar`      | `-c`  | Calendar to add to                         |
 | `--location`      | `-l`  | Event location                             |
 | `--all-day`       |       | Create an all-day event                    |
@@ -284,7 +284,7 @@ ical add -i
 | `--no-alert`      |       | Create with zero alerts (overrides calendar default alerts) |
 | `--timezone`      |       | Timezone (e.g., `America/New_York`)        |
 | `--invite`        |       | Invite an attendee (`email` or `"Name <email>"`) — repeatable; sends an invitation |
-| `--travel`        |       | Travel time before the event (e.g., `30m`, `1h`) |
+| `--travel`        |       | Travel time before the event (e.g., `30m`, `1h`, `1h10m`) |
 | `--repeat`        |       | Recurrence: `daily`, `weekly`, `monthly`, `yearly` |
 | `--repeat-days`   |       | Days for weekly recurrence (repeatable)    |
 | `--repeat-until`  |       | Recurrence end date (a bare date includes the whole day) |
@@ -297,6 +297,9 @@ ical add -i
 ```bash
 # All-day event
 ical add "Company Holiday" -s 2026-03-15 --all-day -c Work
+
+# Multi-day all-day event: --end is the last day (Fri–Sun)
+ical add "Show Weekend" -s 2026-12-11 -e 2026-12-13 --all-day
 
 # With location and multiple alerts
 # Passing any --alert gives the event exactly those alerts — the calendar's
@@ -354,12 +357,13 @@ ical update --id "577B8983-DF44:abc" --title "New Title"
 | `--id`            |       | Full event ID — exact match, no prefix search |
 | `--title`         |       | New title                                  |
 | `--start`         | `-s`  | New start time (natural language)          |
-| `--end`           | `-e`  | New end time (natural language)            |
+| `--end`           | `-e`  | New end time (natural language). On an all-day event, the last day (inclusive) |
 | `--calendar`      | `-c`  | Move to different calendar                 |
 | `--location`      | `-l`  | New location                               |
 | `--all-day`       |       | Toggle all-day status                      |
 | `--alert`         |       | Replace alerts (repeatable)                |
 | `--timezone`      |       | New timezone                               |
+| `--travel`        |       | Travel time (e.g., `30m`, `1h10m`; `none` to clear) |
 | `--repeat`        |       | New recurrence pattern                     |
 | `--repeat-days`   |       | New recurrence days                        |
 | `--repeat-until`  |       | New recurrence end date                    |

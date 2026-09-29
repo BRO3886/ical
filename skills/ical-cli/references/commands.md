@@ -196,7 +196,7 @@ ical add -i   # Interactive mode
 | ------------------- | ----- | --------------------------------------------------- | -------------- |
 | `--title`           | `-T`  | Event title                                         | —              |
 | `--start`           | `-s`  | Start date/time (required)                          | —              |
-| `--end`             | `-e`  | End date/time                                       | Start + 1 hour |
+| `--end`             | `-e`  | End date/time. With `--all-day`, the last day (inclusive) | Start + 1 hour (all-day: start day) |
 | `--all-day`         | `-a`  | Create as all-day event                             | false          |
 | `--calendar`        | `-c`  | Calendar name                                       | System default |
 | `--location`        | `-l`  | Location string                                     | —              |
@@ -211,7 +211,7 @@ ical add -i   # Interactive mode
 | `--repeat-days`     | —     | Days for weekly recurrence (e.g., mon,wed,fri)      | —              |
 | `--timezone`        | —     | IANA timezone (e.g., America/New_York)              | —              |
 | `--invite`          | —     | Invite an attendee (`email` or `"Name <email>"`) — repeatable; sends an invitation | — |
-| `--travel`          | —     | Travel time before the event (e.g., 30m, 1h)        | —              |
+| `--travel`          | —     | Travel time before the event (e.g., 30m, 1h, 1h10m) | —              |
 | `--interactive`     | `-i`  | Interactive mode with guided prompts                | false          |
 
 `--invite` and `--travel` are not available with `-i`. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
@@ -240,7 +240,7 @@ ical update --id "577B8983-DF44:ABC123" --title "New title"  # Exact ID (agents:
 | `--id`              | —     | Full event ID (exact match, no prefix search) | —       |
 | `--title`           | `-T`  | New title                                    | —       |
 | `--start`           | `-s`  | New start date/time                          | —       |
-| `--end`             | `-e`  | New end date/time                            | —       |
+| `--end`             | `-e`  | New end date/time. On an all-day event, the last day (inclusive) | — |
 | `--all-day`         | `-a`  | Set all-day: "true" or "false"               | —       |
 | `--calendar`        | `-c`  | Move to calendar (by name)                   | —       |
 | `--location`        | `-l`  | New location (empty string to clear)         | —       |
@@ -248,6 +248,7 @@ ical update --id "577B8983-DF44:ABC123" --title "New title"  # Exact ID (agents:
 | `--url`             | `-u`  | New URL (empty string to clear)              | —       |
 | `--alert`           | —     | Replace alerts (repeatable, `none` to clear) | —       |
 | `--timezone`        | —     | New IANA timezone                            | —       |
+| `--travel`          | —     | Travel time (e.g. 30m, 1h10m; `none` to clear) | —     |
 | `--span`            | —     | For recurring: "this" or "future"            | this    |
 | `--repeat`          | `-r`  | Set/change recurrence ("none" to remove)     | —       |
 | `--repeat-interval` | —     | Change recurrence interval                   | 1       |
