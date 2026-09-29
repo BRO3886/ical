@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -92,8 +93,15 @@ func applyOccurrenceFlag(client *calendar.Client, event *calendar.Event, value s
 	if err != nil {
 		return nil, fmt.Errorf("invalid --occurrence: %w", err)
 	}
-	wholeDay := at.Hour() == 0 && at.Minute() == 0 && at.Second() == 0
-	return fetchOccurrence(client, event.ID, at, wholeDay)
+	return fetchOccurrence(client, event.ID, at, !hasTimeOfDay(value))
+}
+
+var timeOfDayPattern = regexp.MustCompile(`(?i)\d:\d|\d\s*[ap]\.?m\b|\bnoon\b|\bmidnight\b`)
+
+// hasTimeOfDay reports whether a date string names a time, as opposed to a
+// bare day. Decided from the text, since a parsed "00:00" looks like a date.
+func hasTimeOfDay(s string) bool {
+	return timeOfDayPattern.MatchString(s)
 }
 
 // updateEvent writes input to event, targeting its occurrence when it has one.
