@@ -81,12 +81,13 @@ ical/
 - `charmbracelet/huh` — interactive forms and select menus (ThemeCatppuccin)
 
 ## Conventions
-- Row numbers (`#1`, `#2`...) in event tables; cached to `~/.ical-last-list` for `show 2`/`update 3`/`delete 1`
+- Row numbers (`#1`, `#2`...) in event tables; cached per session (`internal/ui/rowcache.go`, keyed by `ICAL_SESSION`/`CLAUDE_CODE_SESSION_ID`/`TMUX_PANE`/terminal session vars, falling back to `~/.ical-last-list`) for `show 2`/`update 3`/`delete 1`
 - Event tables show a leading `Date` column with vertical merge — the date prints only on day transitions. Label built from already-localized time so grouping follows the viewer's local day
 - List-command filters live as pure helpers in `cmd/ical/commands/list.go` (`filterExcludedCalendars`, `filterRecurring`, `attendeeMatches`, `normalizeCalendarName`). Add new filters there and unit-test them in `list_test.go` — keep them slice-in / slice-out so they compose
 - `ical add --alert X` implicitly sets `CreateEventInput.SuppressDefaultAlarms` so the saved event has exactly the user's alerts, not the calendar's default merged in. `--no-alert` alone forces zero alerts. Applies in both CLI and interactive (`-i`) paths
 - Event IDs: entire UUID prefix before `:` is shared per calendar — short IDs don't disambiguate. Use row numbers or interactive picker instead
 - show/update/delete accept 0 args (interactive huh picker), row number, or full/partial event ID
+- **Recurring writes must target the occurrence** (`cmd/ical/commands/occurrence.go`): every occurrence shares the series ID (detached ones append `/RID=…`; `seriesID()` strips it), and an ID lookup always yields the first occurrence. Rows cache `ID<TAB>occurrenceDate`; update/delete go through `updateEvent`/`deleteEvent`, which call go-eventkit's `UpdateEventOccurrence`/`DeleteEventOccurrence` unless `--span all`. `--occurrence <date>` picks one with `--id`
 - `--to` dates: `endOfDayIfMidnight()` bumps midnight to 23:59:59 (in list, search, export, pickEvent)
 - All list/show commands support `-o json|table|plain`
 - Date display: human-readable by default, ISO 8601 in JSON

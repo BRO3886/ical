@@ -21,6 +21,8 @@ var (
 	deleteTo    string
 	deleteDays  int
 	deleteID    string
+
+	deleteOccurrence string
 )
 
 var deleteCmd = &cobra.Command{
@@ -37,11 +39,18 @@ With multiple arguments, performs a batch delete using row numbers or event IDs.
 Use --id for exact event ID lookup (no prefix matching, single event only).
 
 For recurring events, --span controls scope: this (default, the targeted
-occurrence), future (this and later occurrences), or all (the whole series).`,
+occurrence), future (this and later occurrences), or all (the whole series).
+A row number or picker choice targets the occurrence it showed. With --id,
+pass --occurrence <date> to pick one; otherwise the series' first occurrence
+is used. A delete that leaves the occurrence in place fails instead of
+reporting success.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		span, err := spanFromFlag(deleteSpan)
 		if err != nil {
 			return err
+		}
+		if cmd.Flags().Changed("occurrence") && len(args) > 1 {
+			return fmt.Errorf("--occurrence applies to a single event")
 		}
 
 		client, err := calendar.New()
@@ -80,6 +89,11 @@ occurrence), future (this and later occurrences), or all (the whole series).`,
 				return nil // user cancelled
 			}
 		}
+		if cmd.Flags().Changed("occurrence") {
+			if event, err = applyOccurrenceFlag(client, event, deleteOccurrence); err != nil {
+				return err
+			}
+		}
 
 		if !deleteForce {
 			red := color.New(color.FgRed, color.Bold)
@@ -96,7 +110,7 @@ occurrence), future (this and later occurrences), or all (the whole series).`,
 			}
 		}
 
-		if err := client.DeleteEvent(event.ID, span); err != nil {
+		if err := deleteEvent(client, event, deleteSpan); err != nil {
 			return fmt.Errorf("failed to delete event: %w", err)
 		}
 
@@ -139,33 +153,40 @@ func runBatchDelete(client *calendar.Client, args []string, span calendar.Span) 
 		}
 	}
 
-	// Collect IDs and delete in batch
-	ids := make([]string, len(events))
-	nameByID := make(map[string]string, len(events))
-	recurringByID := make(map[string]bool, len(events))
-	for i, e := range events {
-		ids[i] = e.ID
-		nameByID[e.ID] = e.Title
-		recurringByID[e.ID] = e.Recurring
+	// Occurrences of recurring series share their series ID, so they are
+	// deleted one at a time by occurrence date. Everything else goes in one
+	// batch call.
+	var ids []string
+	errByEvent := make(map[*calendar.Event]error, len(events))
+	for _, e := range events {
+		if occurrenceTarget(e, deleteSpan) != nil {
+			errByEvent[e] = deleteEvent(client, e, deleteSpan)
+			continue
+		}
+		ids = append(ids, seriesID(e.ID))
 	}
-
 	errs := client.DeleteEvents(ids, span)
+	for _, e := range events {
+		if _, done := errByEvent[e]; !done {
+			errByEvent[e] = errs[seriesID(e.ID)]
+		}
+	}
 
 	green := color.New(color.FgGreen, color.Bold)
 	redC := color.New(color.FgRed, color.Bold)
 	var failed int
-	for _, id := range ids {
-		if err, ok := errs[id]; ok && err != nil {
+	for _, e := range events {
+		if err := errByEvent[e]; err != nil {
 			redC.Print("Failed: ")
-			fmt.Printf("%s — %v\n", nameByID[id], err)
+			fmt.Printf("%s — %v\n", e.Title, err)
 			failed++
 		} else {
-			green.Println(deletedMessage(nameByID[id], deleteSpan, recurringByID[id]))
+			green.Println(deletedMessage(e.Title, deleteSpan, e.Recurring || e.IsDetached))
 		}
 	}
 
 	if failed > 0 {
-		return fmt.Errorf("%d of %d events failed to delete", failed, len(ids))
+		return fmt.Errorf("%d of %d events failed to delete", failed, len(events))
 	}
 	return nil
 }
@@ -208,6 +229,7 @@ func init() {
 	deleteCmd.Flags().StringVar(&deleteTo, "to", "", "End date for event picker")
 	deleteCmd.Flags().IntVarP(&deleteDays, "days", "d", 7, "Number of days to show in picker")
 	deleteCmd.Flags().StringVar(&deleteID, "id", "", "Full event ID (exact match, no prefix search)")
+	deleteCmd.Flags().StringVar(&deleteOccurrence, "occurrence", "", "For recurring events: the occurrence to delete, by original date (or date and time)")
 
 	rootCmd.AddCommand(deleteCmd)
 }
