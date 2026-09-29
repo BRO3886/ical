@@ -17,6 +17,8 @@ var (
 	showTo   string
 	showDays int
 	showID   string
+
+	showOccurrence string
 )
 
 var showCmd = &cobra.Command{
@@ -62,6 +64,11 @@ or a full/partial event ID. Use --id for exact event ID lookup (no prefix matchi
 				return nil // user cancelled
 			}
 		}
+		if cmd.Flags().Changed("occurrence") {
+			if event, err = applyOccurrenceFlag(client, event, showOccurrence); err != nil {
+				return err
+			}
+		}
 
 		ui.PrintEventDetail(event, outputFormat)
 		return nil
@@ -73,6 +80,7 @@ func init() {
 	showCmd.Flags().StringVarP(&showTo, "to", "t", "", "End date for event picker")
 	showCmd.Flags().IntVarP(&showDays, "days", "d", 7, "Number of days to show in picker")
 	showCmd.Flags().StringVar(&showID, "id", "", "Full event ID (exact match, no prefix search)")
+	showCmd.Flags().StringVar(&showOccurrence, "occurrence", "", "For recurring events: the occurrence to show, by original date (or date and time)")
 
 	rootCmd.AddCommand(showCmd)
 }
@@ -107,8 +115,16 @@ func findEventByPrefix(client eventLookup, input string) (*calendar.Event, error
 		return nil, fmt.Errorf("event ID is empty: %w", calendar.ErrNotFound)
 	}
 	if n, err := strconv.Atoi(input); err == nil && n > 0 {
-		if id := ui.LookupRowNumber(n); id != "" {
-			event, err := findEventByID(client, id)
+		if row, ok := ui.LookupRow(n); ok {
+			var event *calendar.Event
+			var err error
+			if row.Occurrence != nil {
+				// A recurring row: resolve the occurrence it showed, not the
+				// series' first occurrence.
+				event, err = fetchOccurrence(client, row.ID, *row.Occurrence, false)
+			} else {
+				event, err = findEventByID(client, row.ID)
+			}
 			if err != nil {
 				return nil, fmt.Errorf("event from row %d is no longer available: %w", n, err)
 			}
