@@ -38,6 +38,27 @@ func TestOccurrenceTarget(t *testing.T) {
 	}
 }
 
+// --occurrence picks a whole day only when the user gave no time, so an
+// explicit "00:00" can still select a midnight occurrence.
+func TestHasTimeOfDay(t *testing.T) {
+	for in, want := range map[string]bool{
+		"2026-12-23":          false,
+		"tomorrow":            false,
+		"next friday":         false,
+		"dec 23":              false,
+		"2026-12-23 00:00":    true,
+		"2026-12-23T09:00:00": true,
+		"tomorrow 9am":        true,
+		"tomorrow at 5 PM":    true,
+		"dec 23 at noon":      true,
+		"midnight":            true,
+	} {
+		if got := hasTimeOfDay(in); got != want {
+			t.Errorf("hasTimeOfDay(%q) = %v, want %v", in, got, want)
+		}
+	}
+}
+
 func TestSeriesID(t *testing.T) {
 	for in, want := range map[string]string{
 		"CAL:EVT":               "CAL:EVT",
