@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -85,6 +86,10 @@ var searchCmd = &cobra.Command{
 		}
 
 		ui.PrintEvents(events, outputFormat)
+		if len(events) == 0 {
+			// stderr, so -o json stays a clean empty array.
+			fmt.Fprintln(os.Stderr, searchEmptyNotice(query, from, to, searchFrom != "" || searchTo != ""))
+		}
 		return nil
 	},
 }

@@ -32,6 +32,7 @@ var (
 	updateRepeatDays     string
 	updateInteractive    bool
 	updateID             string
+	updateTravel         string
 )
 
 var updateCmd = &cobra.Command{
@@ -104,6 +105,27 @@ Use -i for interactive mode with guided prompts.`,
 			b := updateAllDay == "true"
 			input.AllDay = &b
 		}
+		// All-day --end names the last day, the same as `add --all-day`.
+		if input.EndDate != nil && (input.AllDay != nil && *input.AllDay || input.AllDay == nil && event.AllDay) {
+			start := event.StartDate.In(time.Local)
+			if input.StartDate != nil {
+				start = *input.StartDate
+			}
+			end, err := allDayEnd(start, *input.EndDate)
+			if err != nil {
+				return err
+			}
+			input.EndDate = &end
+		}
+		if cmd.Flags().Changed("travel") {
+			var d time.Duration
+			if !strings.EqualFold(updateTravel, "none") {
+				if d, err = parseDuration(updateTravel); err != nil {
+					return fmt.Errorf("invalid --travel duration: %w", err)
+				}
+			}
+			input.TravelTime = &d
+		}
 		if cmd.Flags().Changed("calendar") {
 			input.Calendar = strPtr(updateCalendar)
 		}
@@ -131,7 +153,7 @@ Use -i for interactive mode with guided prompts.`,
 			} else {
 				alerts := make([]calendar.Alert, 0, len(updateAlerts))
 				for _, a := range updateAlerts {
-					d, err := dateparser.ParseAlertDuration(a)
+					d, err := parseDuration(a)
 					if err != nil {
 						return err
 					}
@@ -190,6 +212,7 @@ func init() {
 	updateCmd.Flags().StringVarP(&updateURL, "url", "u", "", "New URL (empty to clear)")
 	updateCmd.Flags().StringArrayVar(&updateAlerts, "alert", nil, "Replace alerts (repeatable, 'none' to clear)")
 	updateCmd.Flags().StringVar(&updateTimezone, "timezone", "", "New timezone")
+	updateCmd.Flags().StringVar(&updateTravel, "travel", "", "Travel time before the event (e.g. 30m, 1h10m; none to clear)")
 	updateCmd.Flags().StringVar(&updateSpan, "span", "this", "For recurring events: this or future")
 	updateCmd.Flags().StringVarP(&updateRepeat, "repeat", "r", "", "Set/change recurrence (none to remove)")
 	updateCmd.Flags().IntVar(&updateRepeatInterval, "repeat-interval", 1, "Change recurrence interval")
@@ -402,7 +425,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 				if a == "" {
 					continue
 				}
-				d, err := dateparser.ParseAlertDuration(a)
+				d, err := parseDuration(a)
 				if err != nil {
 					return err
 				}

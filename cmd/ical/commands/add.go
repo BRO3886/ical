@@ -72,6 +72,14 @@ var addCmd = &cobra.Command{
 				return fmt.Errorf("invalid --end date: %w", err)
 			}
 		}
+		if addAllDay {
+			if addEnd == "" {
+				endTime = startTime
+			}
+			if endTime, err = allDayEnd(startTime, endTime); err != nil {
+				return err
+			}
+		}
 
 		if addTimezone != "" {
 			loc, err := time.LoadLocation(addTimezone)
@@ -98,7 +106,7 @@ var addCmd = &cobra.Command{
 
 		// Parse alerts
 		for _, a := range addAlerts {
-			d, err := dateparser.ParseAlertDuration(a)
+			d, err := parseDuration(a)
 			if err != nil {
 				return err
 			}
@@ -128,7 +136,7 @@ var addCmd = &cobra.Command{
 		}
 		input.Attendees = attendees
 		if addTravel != "" {
-			d, err := dateparser.ParseAlertDuration(addTravel)
+			d, err := parseDuration(addTravel)
 			if err != nil {
 				return fmt.Errorf("invalid --travel duration: %w", err)
 			}
@@ -225,7 +233,7 @@ func init() {
 	addCmd.Flags().StringVar(&addRepeatDays, "repeat-days", "", "Days for weekly recurrence (e.g., mon,wed,fri)")
 	addCmd.Flags().StringVar(&addTimezone, "timezone", "", "IANA timezone (e.g., America/New_York)")
 	addCmd.Flags().StringArrayVar(&addInvite, "invite", nil, "Invite an attendee by email or \"Name <email>\" — repeatable (sends an invitation)")
-	addCmd.Flags().StringVar(&addTravel, "travel", "", "Travel time before the event (e.g., 30m, 1h)")
+	addCmd.Flags().StringVar(&addTravel, "travel", "", "Travel time before the event (e.g., 30m, 1h, 1h10m)")
 	addCmd.Flags().BoolVarP(&addInteractive, "interactive", "i", false, "Interactive mode with guided prompts")
 
 	rootCmd.AddCommand(addCmd)
@@ -395,11 +403,17 @@ func runAddInteractive() error {
 	startTime, _ := dateparser.ParseDate(startStr) // validated above
 
 	endTime := startTime.Add(time.Hour)
-	if allDay {
-		endTime = time.Date(startTime.Year(), startTime.Month(), startTime.Day()+1,
-			0, 0, 0, 0, startTime.Location())
-	} else if strings.TrimSpace(endStr) != "" {
+	if strings.TrimSpace(endStr) != "" {
 		endTime, _ = dateparser.ParseDate(endStr) // validated above
+	}
+	if allDay {
+		if strings.TrimSpace(endStr) == "" {
+			endTime = startTime
+		}
+		var err error
+		if endTime, err = allDayEnd(startTime, endTime); err != nil {
+			return err
+		}
 	}
 
 	if tz != "" {
@@ -429,7 +443,7 @@ func runAddInteractive() error {
 			if a == "" {
 				continue
 			}
-			d, err := dateparser.ParseAlertDuration(a)
+			d, err := parseDuration(a)
 			if err != nil {
 				return err
 			}

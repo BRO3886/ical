@@ -85,6 +85,10 @@ Row numbers are cached to `~/.ical-last-list` and stay valid until the next list
 - **`--id` is exact match only.** No prefix search, no partial match. Pass a full event ID from JSON output.
 - **`--id` and positional event args are mutually exclusive.** Pass one or the other.
 - **`--repeat-days` only applies to `--repeat weekly`.** With any other frequency the CLI errors out. The recurrence engine silently discards the days otherwise.
+- **All-day `--end` is the last day, inclusive**, on both `add` and `update`: `--all-day --start 2026-12-11 --end 2026-12-13` covers Fri–Sun. Omit `--end` for a single day.
+- **All-day events get the calendar's default all-day alert** (iCloud: 9 AM the day before) unless you pass `--alert` or `--no-alert`.
+- **`ical search` defaults to 30 days either side of today.** An empty result prints the searched range on stderr; pass `--from/--to` for anything further out.
+- **JSON times are UTC** (`...Z`) with the event's `timezone` alongside. Convert with an IANA zone, not a fixed offset.
 - **Timezone abbreviations (EST, CDT, BST, IST...) are rejected** inside date strings. Use `--timezone America/New_York` instead, with IANA names.
 - **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.
 - **Inviting attendees sends real email.** `ical add --invite a@x.com` adds the person and the calendar account dispatches an invitation on save — there is no dry-run. Only invite addresses the user actually intends to notify. The organizer (the user) is added automatically, so a 1-invitee event shows 2 attendees.
