@@ -106,16 +106,8 @@ Use -i for interactive mode with guided prompts.`,
 			input.AllDay = &b
 		}
 		// All-day --end names the last day, the same as `add --all-day`.
-		if input.EndDate != nil && (input.AllDay != nil && *input.AllDay || input.AllDay == nil && event.AllDay) {
-			start := event.StartDate.In(time.Local)
-			if input.StartDate != nil {
-				start = *input.StartDate
-			}
-			end, err := allDayEnd(start, *input.EndDate)
-			if err != nil {
-				return err
-			}
-			input.EndDate = &end
+		if err := normalizeUpdateEnd(event, &input); err != nil {
+			return err
 		}
 		if cmd.Flags().Changed("travel") {
 			var d time.Duration
@@ -375,15 +367,19 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 		input.StartDate = &newStart
 	}
 
-	if strings.TrimSpace(endStr) != "" {
-		newEnd, _ := dateparser.ParseDate(endStr) // validated above
-		if !newEnd.Equal(event.EndDate) {
-			input.EndDate = &newEnd
-		}
-	}
-
 	if allDay != event.AllDay {
 		input.AllDay = &allDay
+	}
+
+	if strings.TrimSpace(endStr) != "" {
+		newEnd, _ := dateparser.ParseDate(endStr) // validated above
+		input.EndDate = &newEnd
+		if err := normalizeUpdateEnd(event, &input); err != nil {
+			return err
+		}
+		if input.EndDate.Equal(event.EndDate) {
+			input.EndDate = nil
+		}
 	}
 
 	// Handle clearable fields (- to clear)
