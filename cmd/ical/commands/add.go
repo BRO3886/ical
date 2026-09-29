@@ -149,8 +149,8 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("failed to create event: %w", err)
 		}
 
-		ui.PrintCreatedEvent(event)
-		if len(input.Attendees) > 0 {
+		ui.PrintCreatedEvent(event, outputFormat)
+		if len(input.Attendees) > 0 && outputFormat != "json" {
 			fmt.Printf("Invited %d attendee(s); invitations are sent by the calendar account.\n", len(input.Attendees))
 		}
 		return nil
@@ -464,7 +464,7 @@ func runAddInteractive() error {
 	}
 
 	fmt.Println()
-	ui.PrintCreatedEvent(event)
+	ui.PrintCreatedEvent(event, outputFormat)
 	return nil
 }
 

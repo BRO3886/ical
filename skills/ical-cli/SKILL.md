@@ -86,7 +86,7 @@ Row numbers are cached to `~/.ical-last-list` and stay valid until the next list
 - **`--id` and positional event args are mutually exclusive.** Pass one or the other.
 - **`--repeat-days` only applies to `--repeat weekly`.** With any other frequency the CLI errors out. The recurrence engine silently discards the days otherwise.
 - **Timezone abbreviations (EST, CDT, BST, IST...) are rejected** inside date strings. Use `--timezone America/New_York` instead, with IANA names.
-- **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.
+- **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`. `ical add` and `ical update` print the full ID (and the full event with `-o json`), so capture it from there.
 - **Inviting attendees sends real email.** `ical add --invite a@x.com` adds the person and the calendar account dispatches an invitation on save — there is no dry-run. Only invite addresses the user actually intends to notify. The organizer (the user) is added automatically, so a 1-invitee event shows 2 attendees.
 - **`--invite` is repeatable; one address per flag.** `--invite a@x.com --invite "Bob <b@y.com>"`. Do NOT pack multiple addresses into one value (`--invite "a@x.com,b@y.com"`) — that's rejected. Accepts a bare email or `Name <email>`.
 - **The `--attendee` flag on list/search is a read-only filter, not an invite.** Use `--invite` on `add` to invite.
