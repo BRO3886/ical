@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BRO3886/go-eventkit/calendar"
 	"github.com/BRO3886/go-eventkit/dateparser"
 )
 
@@ -20,6 +21,31 @@ func allDayEnd(start, end time.Time) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("--end %s is before --start %s", end.Format("2006-01-02"), start.Format("2006-01-02"))
 	}
 	return last, nil
+}
+
+// normalizeUpdateEnd applies allDayEnd to an update's new end when the event
+// is (or is becoming) all-day, so `update --end` and `update -i` match `add`.
+func normalizeUpdateEnd(event *calendar.Event, input *calendar.UpdateEventInput) error {
+	if input.EndDate == nil {
+		return nil
+	}
+	allDay := event.AllDay
+	if input.AllDay != nil {
+		allDay = *input.AllDay
+	}
+	if !allDay {
+		return nil
+	}
+	start := event.StartDate.In(time.Local)
+	if input.StartDate != nil {
+		start = *input.StartDate
+	}
+	end, err := allDayEnd(start, *input.EndDate)
+	if err != nil {
+		return err
+	}
+	input.EndDate = &end
+	return nil
 }
 
 var compoundDurationPart = regexp.MustCompile(`(\d+)([dhm])`)
