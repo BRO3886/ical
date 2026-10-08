@@ -186,9 +186,7 @@ Use -i for interactive mode with guided prompts.`,
 		}
 
 		ui.PrintUpdatedEvent(updated)
-		if len(input.Attendees) > 0 {
-			fmt.Printf("Invited %d attendee(s); invitations are sent by the calendar account.\n", len(input.Attendees))
-		}
+		ui.PrintInvitationSummary(len(input.Attendees))
 		return nil
 	},
 }
