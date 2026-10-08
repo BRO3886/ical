@@ -109,7 +109,7 @@ ical delete
 | `ical free [email...]`           | Free/busy availability lookup (Exchange/Workspace only) |
 | `ical inbox`                      | List pending event invitations                    |
 | `ical export`                     | Export events (JSON/CSV/ICS)                      |
-| `ical import [file]`             | Import events (JSON/CSV)                          |
+| `ical import [file]`             | Import events (JSON/CSV/ICS)                      |
 | `ical skills install`             | Install AI agent skill (Claude Code / Codex / OpenClaw) |
 | `ical skills uninstall`           | Remove AI agent skill                             |
 | `ical skills status`              | Show skill installation status                    |
@@ -323,9 +323,23 @@ ical import events.json
 # Import to specific calendar
 ical import events.csv -c Personal
 
+# Import ICS without alerts or calendar default alarms
+ical import calendar.ics -c Personal --no-alert
+
 # Dry run (preview without creating)
 ical import events.json --dry-run
 ```
+
+ICS import resolves `TZID` values such as `America/New_York` with the system
+time zone database. It preserves the event time zone and applies daylight saving
+time for the event date. Times with a `Z` suffix remain UTC. Times without a
+`TZID` or `Z` suffix use the local system time zone. All-day dates remain dates.
+Custom `VTIMEZONE` definitions are not interpreted; unknown zone identifiers
+return an error before any events are created. An embedded definition does not
+override the system rules for a known identifier.
+
+By default, import retains file alarms and permits calendar default alarms.
+`--no-alert` suppresses both types of alarm for JSON, CSV, and ICS imports.
 
 ## Event Selection
 
