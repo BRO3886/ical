@@ -550,10 +550,11 @@ ical export --format ics --output-file calendar.ics
 
 ## ical import
 
-Import events from a JSON or CSV file.
+Import events from a JSON, CSV, or ICS file.
 
 ```bash
 ical import events.json
+ical import calendar.ics --calendar Personal --no-alert
 ical import events.csv -c Personal
 ical import events.json --dry-run
 ```
@@ -564,8 +565,21 @@ ical import events.json --dry-run
 |---------------|-------|----------------------------------------|
 | `--calendar`  | `-c`  | Target calendar for imported events    |
 | `--dry-run`   |       | Preview import without creating events |
+| `--no-alert` | — | Suppress imported alarms and calendar defaults |
+| `--force` | `-f` | Skip confirmation prompt |
 
-The format is auto-detected from the file extension (`.json` or `.csv`).
+The format is auto-detected from the file extension (`.json`, `.csv`, or `.ics`).
+
+ICS import resolves `TZID` values with the system time zone database. UTC values
+with a `Z` suffix remain UTC; floating date-times use the local system zone.
+All-day dates remain dates. During a daylight saving overlap, the first occurrence
+is used; during a gap, the offset before the gap is used, as RFC 5545 requires.
+Custom `VTIMEZONE` definitions are not interpreted and do not override system zones.
+Unknown zone identifiers fail parsing before any events are created.
+
+Without `--no-alert`, imported alarms and calendar defaults can apply.
+`--no-alert` removes imported alarms and suppresses calendar defaults for JSON,
+CSV, and ICS imports.
 
 ---
 

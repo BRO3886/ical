@@ -21,13 +21,17 @@ Update later with `brew upgrade ical`.
 curl -fsSL https://ical.sidv.dev/install | bash
 ```
 
+Update Homebrew installations with `brew upgrade ical`. The update notice detects
+the running binary through its resolved Cellar path. Other installations receive
+the curl installer instruction.
+
 **Via Go:**
 
 ```bash
 go install github.com/BRO3886/ical/cmd/ical@latest
 ```
 
-> Requires Go 1.21+ and Xcode Command Line Tools (`xcode-select --install`).
+> Requires Go 1.24.5+ and Xcode Command Line Tools (`xcode-select --install`).
 
 **Manual download:**
 

@@ -43,11 +43,12 @@ ical/
 │       ├── upcoming.go          # Next N days
 │       ├── search.go            # Search events
 │       ├── export.go            # Export events (JSON/CSV/ICS)
-│       ├── import.go            # Import events (JSON/CSV)
+│       ├── import.go            # Import events (JSON/CSV/ICS)
 │       └── skills.go            # AI agent skill management
 ├── internal/
 │   ├── ui/                      # Output formatting (table/json/plain)
-│   │   └── output.go
+│   │   ├── output.go
+│   │   └── notices.go
 │   ├── export/                  # Import/export logic
 │   │   ├── json.go
 │   │   ├── csv.go
@@ -86,7 +87,9 @@ Instead, ical uses sequential row numbers (`#1`, `#2`, ...) displayed in table o
 
 1. **Interactive picker** — No arguments triggers a searchable list powered by `charmbracelet/huh`
 2. **Row number** — Numeric argument maps to cached row from last listing
-3. **Event ID** — Full or partial `eventIdentifier` for scripting and automation
+3. **Event ID** — `--id` requires an exact full identifier. Positional prefixes must match one event within the one-year-before/after search window.
+
+Create/update summaries print full IDs. Cached rows and picker selections use checked exact lookup; a stale cached row returns an error without selecting another event. go-eventkit v0.16.0 also requires exact IDs for lookup and mutation.
 
 ### End-of-Day Bumping
 
@@ -114,15 +117,33 @@ The terminal test is on stderr because that is where notices go. `ical list > ev
 
 The check runs in a background goroutine: non-blocking, 2-second timeout, cached to `~/.cache/ical/update-check` for 24 hours.
 
+The command layer collects notice data and resolves executable symlinks. A path ending
+in `Cellar/ical/<version>/bin/ical` selects `brew upgrade ical`, including custom
+Homebrew prefixes. Other paths retain the curl installer instruction. Detection does
+not run Homebrew or search PATH. `internal/ui.PrintNotices` only renders the data.
+
+### ICS Import
+
+ICS import resolves `TZID` values with the system time zone database. UTC values
+with a `Z` suffix remain UTC; floating date-times use the local system zone.
+All-day dates remain dates. During a daylight saving overlap, the first occurrence
+is used; during a gap, the offset before the gap is used, as RFC 5545 requires.
+Custom `VTIMEZONE` definitions are not interpreted and do not override system zones.
+Unknown zone identifiers fail parsing before any events are created.
+
+Without `--no-alert`, imported alarms and calendar defaults can apply.
+`--no-alert` removes imported alarms and suppresses calendar defaults for JSON,
+CSV, and ICS imports.
+
 ### UTC to Local Conversion
 
 EventKit returns all times in UTC. ical converts them to local time using the event's timezone (or the system timezone) for display. JSON output preserves ISO 8601 timestamps.
 
 ## Limitations
 
-These are Apple-imposed constraints, not bugs:
+These constraints come from EventKit, account capabilities, or the CLI:
 
-- **Attendees can be invited but not removed** — `ical add --invite` adds attendees (and sends invitations); there is no way to remove an attendee or change the organizer through the CLI
+- **Attendees can be invited but not removed** — `ical add --invite` and `ical update --invite` add attendees (and send invitations); there is no way to remove an attendee or change the organizer through the CLI
 - **Free/busy needs Exchange or Google Workspace** — iCloud accounts do not support availability lookups, so `ical free` cannot resolve iCloud addresses
 - **Subscribed calendars are read-only** — Cannot create or modify events in subscribed calendars
 - **Birthday calendars are read-only** — The Birthdays calendar is auto-generated
