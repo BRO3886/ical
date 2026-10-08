@@ -195,9 +195,11 @@ func ParseICS(r io.Reader) ([]calendar.CreateEventInput, error) {
 				}
 			case key == "DTSTART" || strings.HasPrefix(key, "DTSTART;"):
 				cur.dtstart = val
+				cur.dtstartTZID = icsParameter(key, "TZID")
 				cur.dtstartAllDay = strings.Contains(key, "VALUE=DATE")
 			case key == "DTEND" || strings.HasPrefix(key, "DTEND;"):
 				cur.dtend = val
+				cur.dtendTZID = icsParameter(key, "TZID")
 				cur.dtendAllDay = strings.Contains(key, "VALUE=DATE")
 			}
 		}
@@ -208,16 +210,18 @@ func ParseICS(r io.Reader) ([]calendar.CreateEventInput, error) {
 
 // icsEvent holds parsed VEVENT properties before conversion.
 type icsEvent struct {
-	title        string
-	dtstart      string
-	dtend        string
+	title         string
+	dtstart       string
+	dtend         string
+	dtstartTZID   string
+	dtendTZID     string
 	dtstartAllDay bool
-	dtendAllDay  bool
-	location     string
-	notes        string
-	url          string
-	rrules       []eventkit.RecurrenceRule
-	alerts       []time.Duration
+	dtendAllDay   bool
+	location      string
+	notes         string
+	url           string
+	rrules        []eventkit.RecurrenceRule
+	alerts        []time.Duration
 }
 
 func (e *icsEvent) toInput() (calendar.CreateEventInput, error) {
@@ -226,7 +230,7 @@ func (e *icsEvent) toInput() (calendar.CreateEventInput, error) {
 	}
 
 	allDay := e.dtstartAllDay
-	start, err := parseICSDateTime(e.dtstart, allDay)
+	start, err := parseICSDateTimeInZone(e.dtstart, allDay, e.dtstartTZID)
 	if err != nil {
 		return calendar.CreateEventInput{}, fmt.Errorf("invalid DTSTART %q: %w", e.dtstart, err)
 	}
@@ -234,7 +238,7 @@ func (e *icsEvent) toInput() (calendar.CreateEventInput, error) {
 	// DTEND is optional in ICS; default to start + 1 hour (or +1 day for all-day)
 	var end time.Time
 	if e.dtend != "" {
-		end, err = parseICSDateTime(e.dtend, e.dtendAllDay)
+		end, err = parseICSDateTimeInZone(e.dtend, e.dtendAllDay, e.dtendTZID)
 		if err != nil {
 			return calendar.CreateEventInput{}, fmt.Errorf("invalid DTEND %q: %w", e.dtend, err)
 		}
@@ -253,6 +257,7 @@ func (e *icsEvent) toInput() (calendar.CreateEventInput, error) {
 		Title:           e.title,
 		StartDate:       start,
 		EndDate:         end,
+		TimeZone:        e.dtstartTZID,
 		AllDay:          allDay,
 		Location:        e.location,
 		Notes:           e.notes,
@@ -304,13 +309,59 @@ func unescapeICS(s string) string {
 // For all-day events (VALUE=DATE), format is "20060102".
 // For timed events, format is "20060102T150405Z" (UTC) or "20060102T150405".
 func parseICSDateTime(s string, dateOnly bool) (time.Time, error) {
+	return parseICSDateTimeInZone(s, dateOnly, "")
+}
+
+func icsParameter(key, name string) string {
+	for _, param := range strings.Split(key, ";")[1:] {
+		k, v, ok := strings.Cut(param, "=")
+		if ok && strings.EqualFold(k, name) {
+			return strings.Trim(v, "\"")
+		}
+	}
+	return ""
+}
+
+func parseICSDateTimeInZone(s string, dateOnly bool, tzid string) (time.Time, error) {
 	if dateOnly {
 		return time.Parse("20060102", s)
 	}
 	if strings.HasSuffix(s, "Z") {
 		return time.Parse("20060102T150405Z", s)
 	}
-	return time.Parse("20060102T150405", s)
+	if tzid != "" {
+		loc, err := time.LoadLocation(tzid)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("unsupported TZID %q: %w", tzid, err)
+		}
+		return parseICSLocalTime(s, loc)
+	}
+	return parseICSLocalTime(s, time.Local)
+}
+
+func parseICSLocalTime(s string, loc *time.Location) (time.Time, error) {
+	const layout = "20060102T150405"
+	wall, err := time.Parse(layout, s)
+	if err != nil {
+		return time.Time{}, err
+	}
+	parsed, err := time.ParseInLocation(layout, s, loc)
+	if err != nil {
+		return time.Time{}, err
+	}
+	_, before := parsed.Add(-24 * time.Hour).Zone()
+	_, after := parsed.Add(24 * time.Hour).Zone()
+	// RFC 5545 uses the first occurrence in an overlap and the pre-gap offset.
+	if parsed.Format(layout) != s {
+		return wall.Add(-time.Duration(before) * time.Second).In(loc), nil
+	}
+	for _, offset := range []int{before, after} {
+		candidate := wall.Add(-time.Duration(offset) * time.Second).In(loc)
+		if candidate.Format(layout) == s && candidate.Before(parsed) {
+			parsed = candidate
+		}
+	}
+	return parsed, nil
 }
 
 // parseRRule parses an RRULE value like "FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,WE".

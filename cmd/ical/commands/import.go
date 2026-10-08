@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/BRO3886/ical/internal/export"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/ical/internal/export"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -17,6 +17,7 @@ var (
 	importCalendar string
 	importDryRun   bool
 	importForce    bool
+	importNoAlert  bool
 )
 
 var importCmd = &cobra.Command{
@@ -53,6 +54,12 @@ var importCmd = &cobra.Command{
 		if importCalendar != "" {
 			for i := range inputs {
 				inputs[i].Calendar = importCalendar
+			}
+		}
+		if importNoAlert {
+			for i := range inputs {
+				inputs[i].Alerts = nil
+				inputs[i].SuppressDefaultAlarms = true
 			}
 		}
 
@@ -113,6 +120,7 @@ func init() {
 	importCmd.Flags().StringVarP(&importCalendar, "calendar", "c", "", "Override target calendar for all events")
 	importCmd.Flags().BoolVar(&importDryRun, "dry-run", false, "Preview without creating")
 	importCmd.Flags().BoolVarP(&importForce, "force", "f", false, "Skip confirmation prompt")
+	importCmd.Flags().BoolVar(&importNoAlert, "no-alert", false, "Suppress all alerts, including calendar defaults and imported alarms")
 
 	rootCmd.AddCommand(importCmd)
 }
