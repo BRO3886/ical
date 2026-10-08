@@ -429,7 +429,7 @@ func TestPrintNoticesUpdateAvailable(t *testing.T) {
 	homeDir := installSkill(t, "v0.12.1")
 
 	var buf bytes.Buffer
-	printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir)
+	printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir, "")
 
 	out := buf.String()
 	if !strings.Contains(out, "A new version of ical is available") {
@@ -460,7 +460,7 @@ func TestPrintNoticesSilentWhenNothingToReport(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			printNotices(&buf, "v0.12.1", tt.result, homeDir)
+			printNotices(&buf, "v0.12.1", tt.result, homeDir, "")
 
 			if buf.String() != "" {
 				t.Errorf("output = %q, want empty when nothing is stale and no update exists", buf.String())
@@ -476,7 +476,7 @@ func TestPrintNoticesUpdateAndStalenessTogether(t *testing.T) {
 	homeDir := installSkill(t, "v0.10.1")
 
 	var buf bytes.Buffer
-	printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir)
+	printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir, "")
 
 	out := buf.String()
 	if !strings.Contains(out, "A new version of ical is available") {
@@ -494,9 +494,31 @@ func TestPrintNoticesDevBuildSuppressesStaleness(t *testing.T) {
 	homeDir := installSkill(t, "v0.10.1")
 
 	var buf bytes.Buffer
-	printNotices(&buf, "dev", nil, homeDir)
+	printNotices(&buf, "dev", nil, homeDir, "")
 
 	if buf.String() != "" {
 		t.Errorf("output = %q, want empty for a dev build", buf.String())
+	}
+}
+
+func TestPrintNoticesInstallSource(t *testing.T) {
+	for _, tt := range []struct{ name, executable, want string }{
+		{"Apple Silicon Homebrew", "/opt/homebrew/Cellar/ical/0.12.1/bin/ical", "brew upgrade ical"},
+		{"Intel Homebrew", "/usr/local/Cellar/ical/0.12.1/bin/ical", "brew upgrade ical"},
+		{"custom Homebrew prefix", "/custom/brew/Cellar/ical/0.12.1/bin/ical", "brew upgrade ical"},
+		{"script install", "/usr/local/bin/ical", "curl -fsSL https://ical.sidv.dev/install | bash"},
+		{"unrelated formula", "/opt/homebrew/Cellar/other/0.12.1/bin/ical", "curl -fsSL https://ical.sidv.dev/install | bash"},
+		{"executable lookup failure", "", "curl -fsSL https://ical.sidv.dev/install | bash"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.12.2"}, t.TempDir(), tt.executable)
+			if !strings.Contains(buf.String(), "Update: "+tt.want+"\n") {
+				t.Fatalf("notice = %q, want command %q", buf.String(), tt.want)
+			}
+			if tt.want == "brew upgrade ical" && strings.Contains(buf.String(), "curl") {
+				t.Errorf("Homebrew notice suggests a script install: %q", buf.String())
+			}
+		})
 	}
 }

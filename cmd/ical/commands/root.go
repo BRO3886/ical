@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/BRO3886/ical/internal/skills"
@@ -53,7 +54,11 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		printNotices(os.Stderr, versionStr, collectUpdateResult(updateResultCh), homeDir)
+		executable, _ := os.Executable()
+		if resolved, err := filepath.EvalSymlinks(executable); err == nil {
+			executable = resolved
+		}
+		printNotices(os.Stderr, versionStr, collectUpdateResult(updateResultCh), homeDir, executable)
 	},
 }
 
@@ -145,12 +150,20 @@ func collectUpdateResult(ch <-chan *update.Result) *update.Result {
 }
 
 // printNotices writes the update and skills staleness notices.
-func printNotices(w io.Writer, version string, result *update.Result, homeDir string) {
+func printNotices(w io.Writer, version string, result *update.Result, homeDir, executable string) {
 	if result != nil && result.HasUpdate {
 		yellow := color.New(color.FgYellow)
 		fmt.Fprintln(w)
 		yellow.Fprintf(w, "A new version of ical is available: %s → %s\n", version, result.Latest)
-		fmt.Fprintf(w, "Update: curl -fsSL https://ical.sidv.dev/install | bash\n")
+		command := "curl -fsSL https://ical.sidv.dev/install | bash"
+		parts := strings.Split(filepath.Clean(executable), string(filepath.Separator))
+		if len(parts) >= 5 {
+			tail := parts[len(parts)-5:]
+			if tail[0] == "Cellar" && tail[1] == "ical" && tail[3] == "bin" && tail[4] == "ical" {
+				command = "brew upgrade ical"
+			}
+		}
+		fmt.Fprintf(w, "Update: %s\n", command)
 	}
 
 	// Check skills staleness (local only, no HTTP)
