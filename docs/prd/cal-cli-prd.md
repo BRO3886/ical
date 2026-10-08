@@ -237,6 +237,13 @@ Updates an existing event. Only specified fields are changed.
 | `--repeat-count` | | | Change recurrence count |
 | `--repeat-days` | | | Change recurrence days |
 | `--interactive` | `-i` | `false` | Interactive mode (shows current values) |
+| `--invite` | | | Add an attendee (`email` or `"Name <email>"`); repeatable |
+| `--id` | | | Full event ID; exact lookup |
+
+`--invite` adds guests without replacing existing attendees or recreating the event.
+The calendar account sends real invitations on save. Attendee writes must be supported
+on the current macOS and calendar backend. This flag cannot be combined with `-i`.
+Attendee removal is not supported.
 
 **Interactive mode** (`-i`): Shows current values in `[brackets]`, user presses Enter to keep or types new value.
 
@@ -329,7 +336,7 @@ ical export -o json | jq '.[] | select(.recurring)'
 
 ### `ical import [file]` — Import events
 
-Imports events from JSON or CSV files.
+Imports events from JSON, CSV, or ICS files.
 
 **Flags**:
 
@@ -338,9 +345,21 @@ Imports events from JSON or CSV files.
 | `--calendar` | `-c` | | Override target calendar for all events |
 | `--dry-run` | | `false` | Preview without creating |
 | `--force` | `-f` | `false` | Skip confirmation prompt |
+| `--no-alert` | | `false` | Suppress imported alarms and calendar defaults |
+
+ICS import resolves `TZID` values with the system time zone database. UTC values
+with a `Z` suffix remain UTC; floating date-times use the local system zone.
+All-day dates remain dates. During a daylight saving overlap, the first occurrence
+is used; during a gap, the offset before the gap is used, as RFC 5545 requires.
+Custom `VTIMEZONE` definitions are not interpreted and do not override system zones.
+Unknown zone identifiers fail parsing before any events are created.
+
+Without `--no-alert`, imported alarms and calendar defaults can apply.
+`--no-alert` removes imported alarms and suppresses calendar defaults for JSON,
+CSV, and ICS imports.
 
 **Behavior**:
-- Detects format by file extension (`.json`, `.csv`)
+- Detects format by file extension (`.json`, `.csv`, `.ics`)
 - IDs are NOT reimported (EventKit assigns new IDs)
 - Per-event errors are warnings (import continues)
 - Shows summary: `Created X events, Y errors`
@@ -429,9 +448,9 @@ Time-of-day is critical for calendar events (unlike reminders). When a time is s
 
 ## ID Handling
 
-- **Display**: First 8 chars of `eventIdentifier` in tables
-- **Input**: Prefix matching — any unique prefix resolves to the full event
-- **Ambiguity**: If prefix matches multiple events, error with "did you mean?" listing matches
+- **Display**: Tables use cached row numbers. Create/update summaries print full event IDs.
+- **Input**: `--id` requires an exact full ID. Positional IDs first use exact lookup, then search for a unique prefix within one year before and after now.
+- **Ambiguity**: Multiple prefix matches fail and list full IDs. Stale cached rows fail without selecting another event.
 - **JSON output**: Always full ID
 
 ---

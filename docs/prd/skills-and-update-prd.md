@@ -1,10 +1,10 @@
 # ical — Agent Skills Distribution & Update Check
 
-> **Status: PLANNED**
+> **Status: Implemented.** The problem statement and rollout plan below preserve the original proposal. The notice behavior reflects the current implementation.
 
 ## Problem
 
-The `ical` CLI ships with agent skills (`skills/cal-cli/`) that teach AI coding agents how to use it — but users must manually symlink or copy these files into their agent's skills directory. There's also no way to know when a new version is available.
+The `ical` CLI ships with agent skills (`skills/ical-cli/`) that teach AI coding agents how to use it — but users must manually symlink or copy these files into their agent's skills directory. There's also no way to know when a new version is available.
 
 ## Goals
 
@@ -14,7 +14,7 @@ The `ical` CLI ships with agent skills (`skills/cal-cli/`) that teach AI coding 
 
 ## Non-Goals
 
-- Self-update command (`ical update`) — too many install methods (go install, curl script, manual build) with different binary locations and permissions. Let the install script be the update mechanism.
+- Self-update command (`ical update`) — too many install methods (go install, curl script, manual build) with different binary locations and permissions. Recommend `brew upgrade ical` for Homebrew installations and the install script for other executable paths.
 - Publishing to a skills marketplace (future)
 - MCP server bundling (separate concern)
 - Windows/Linux support (macOS only)
@@ -25,10 +25,10 @@ The `ical` CLI ships with agent skills (`skills/cal-cli/`) that teach AI coding 
 
 ### 1. Embedded Skills (`go:embed`)
 
-Embed the entire `skills/cal-cli/` directory into the binary at build time:
+Embed the entire `skills/ical-cli/` directory into the binary at build time:
 
 ```go
-//go:embed skills/cal-cli
+//go:embed skills/ical-cli
 var embeddedSkills embed.FS
 ```
 
@@ -39,7 +39,7 @@ This means `SKILL.md`, `references/commands.md`, and `references/dates.md` are a
 - (b) Create a dedicated `internal/skills/` package with an `embed.go` that references a copy of the skills dir
 - (c) Use a top-level `embed.go` in the module root and import it from commands
 
-Recommended: **(c)** — a top-level `skills.go` file in the module root (`/skills.go`) that embeds `skills/cal-cli` and exports it. Commands import from there. Keeps the source of truth in one place.
+Recommended: **(c)** — a top-level `skills.go` file in the module root (`/skills.go`) that embeds `skills/ical-cli` and exports it. Commands import from there. Keeps the source of truth in one place.
 
 ### 2. `ical skills` Command
 
@@ -149,11 +149,14 @@ latest=v0.5.0
    ```
    Printed to **stderr** so it doesn't interfere with piped output (e.g., `ical ls -o json | jq`).
 
+The command layer resolves executable symlinks. Paths ending in `Cellar/ical/<version>/bin/ical` get `Update: brew upgrade ical`, including custom Homebrew prefixes. Other paths retain the script instruction shown above. `ui.PrintNotices` renders collected data; filesystem checks and update-command selection stay in the command layer.
+
 **Skip conditions — do NOT check when:**
-- `ICAL_NO_UPDATE_CHECK=1` env var is set (for CI/scripts)
+- `ICAL_NO_UPDATE_CHECK` has any non-empty value (for CI/scripts)
 - `--output json` is used (scripting context)
-- The command is `version` or `completion` (meta commands)
-- Stdout is not a TTY (piped output)
+- The command belongs to `version`, `completion`, or `skills` (including nested commands)
+- The binary version is empty or `dev`
+- Stderr is not a TTY
 
 **Goroutine timeout:** 2 seconds max. If GitHub is slow or unreachable, silently give up. Never delay the user's command.
 
@@ -168,7 +171,7 @@ Update: curl -fsSL https://ical.sidv.dev/install | bash
 Installed skills are outdated (v0.4.0). Run: ical skills install
 ```
 
-The skills staleness check is local-only (no HTTP) — just compare `.ical-version` file content against the binary's version. This runs even when the update check is cached/skipped.
+The skills staleness check is local-only (no HTTP). It compares `.ical-version` with the binary version. It can print when the release result is cached or unavailable, but the same notice gate suppresses both notices and the release check.
 
 ### 4. Post-Install Prompt
 
@@ -214,7 +217,7 @@ ical
 ## Implementation Plan
 
 ### Phase 1: Embedded Skills + `ical skills install`
-1. Create `skills.go` at module root with `go:embed skills/cal-cli`
+1. Create `skills.go` at module root with `go:embed skills/ical-cli`
 2. Add `cmd/ical/commands/skills.go` with `install`, `uninstall`, `status` subcommands
 3. Interactive agent selection with `huh.NewMultiSelect`
 4. Write embedded files to `~/.claude/skills/ical-cli/` and/or `~/.agents/skills/ical-cli/`

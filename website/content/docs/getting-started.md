@@ -8,7 +8,7 @@ weight: 1
 ## Requirements
 
 - **macOS** (any recent version)
-- **Go 1.24+** (for `go install`)
+- **Go 1.24.5+** (for `go install`)
 - Calendar access permission (macOS will prompt on first run)
 
 ical uses cgo to compile native EventKit bindings directly into the binary. It does not work on Linux or Windows.
@@ -38,7 +38,7 @@ Downloads the latest release binary and installs to `/usr/local/bin`.
 go install github.com/BRO3886/ical/cmd/ical@latest
 ```
 
-> Requires Go 1.21+ and Xcode Command Line Tools (`xcode-select --install`).
+> Requires Go 1.24.5+ and Xcode Command Line Tools (`xcode-select --install`).
 
 ### Manual download
 

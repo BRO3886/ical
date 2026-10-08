@@ -98,7 +98,7 @@ ical/
 - Interactive mode (`-i`): add and update support guided huh forms
 - `ical skills install` writes embedded skill files to `~/.claude/skills/ical-cli/`, `~/.codex/skills/ical-cli/`, `~/.openclaw/skills/ical-cli/`, or `~/.agents/skills/ical-cli/`
 - **SKILL.md examples must be permission-allowlist compatible** (#43): Claude Code matches each `;`/`&&`-separated segment against `allowed-tools`, but `{ }` brace groups and `$(...)` substitutions are opaque and always prompt. Chain with plain `;`; every binary used in an example must be pre-approved in frontmatter (`Bash(ical *) Bash(echo *) Bash(jq *) Bash(xargs ical *)`). Bulk recipes pass all IDs to one `ical delete` (xargs without `-I`), never one process per event
-- **Scheduling commands rely on private EventKit bridges in go-eventkit (v0.15.0+)**: `join` (conference URL), `rsvp`/`add --invite` (attendee writes + RSVP), `free` (availability), `inbox` (invitations). All gate on `client.<Feature>Supported()` and surface `ErrUnsupportedFeature` if the private selectors are gone. Free/busy needs an Exchange/Google Workspace account — **iCloud sources don't support availability** (`constraintSupportsAvailabilityRequests == NO`), so test `free` against a Workspace address, not the Work (iCloud) calendar. `add --invite` auto-adds the organizer and **sends real invitation email on save** — only smoke-test with own/consented addresses
+- **Scheduling commands rely on private EventKit bridges in go-eventkit (v0.15.0+)**: `join` (conference URL), `rsvp`/`add --invite`/`update --invite` (attendee writes + RSVP), `free` (availability), `inbox` (invitations). All gate on `client.<Feature>Supported()` and surface `ErrUnsupportedFeature` if the private selectors are gone. Free/busy needs an Exchange/Google Workspace account — **iCloud sources don't support availability** (`constraintSupportsAvailabilityRequests == NO`), so test `free` against a Workspace address, not the Work (iCloud) calendar. `add --invite` auto-adds the organizer and **sends real invitation email on save** — only smoke-test with own/consented addresses
 - **`show -o json` and `list -o json` both route through `internal/ui.eventJSON`** (snake_case keys, formatted durations). When adding an `Event` field, add it to `eventJSON` + `toEventJSON` or it silently vanishes from `show -o json` (regression caught in #48: `isDetached`/`occurrenceDate` were dropped)
 - Background update check: goroutine in PersistentPreRun, 2s timeout, 24h cache at `~/.cache/ical/update-check`
 - **One predicate gates both post-run notices** (update availability + skills staleness): `shouldShowNotices(currentNoticeConditions(cmd))` in `root.go`, called from PersistentPreRun (to start the check) and PersistentPostRun (to print). Never add a second gate — the original bug in #50 was `printSkillsStalenessNotice` printing with no gate at all while the update check was already gated
@@ -143,6 +143,12 @@ make completions                 # bash/zsh/fish
 - `scripts/install.sh` — curl-pipe-bash installer
 - `website/static/install` — served at `ical.sidv.dev/install`
 - Usage: `curl -fsSL https://ical.sidv.dev/install | bash`
+
+## Import, Selection, and Notice Contracts
+
+- Import supports JSON, CSV, and ICS. ICS uses system TZID rules; floating times use the local zone. Custom VTIMEZONE definitions are ignored; unknown zones fail before writes. `import --no-alert` clears imported alarms and suppresses calendar defaults.
+- Exact lookup checks the returned full ID for explicit `--id`, cached rows, and picker selections. Stale cached rows fail without fallback. Create/update summaries print full IDs. Positional prefixes must resolve uniquely in the one-year-before/after search window.
+- The command layer collects `ui.Notices` and detects Homebrew from the symlink-resolved executable (`Cellar/ical/<version>/bin/ical`). `ui.PrintNotices` renders them. Homebrew installs get `brew upgrade ical`; other paths retain the curl instruction.
 
 ## Journal
 Engineering journals live in `journals/` dir. See `.claude/commands/journal.md` for the journaling command.
