@@ -89,7 +89,7 @@ Row numbers are cached to `~/.ical-last-list` and stay valid until the next list
 - **Event IDs are calendar-scoped.** The UUID before `:` is the calendar ID shared by every event in that calendar. Short prefixes cannot disambiguate events within one calendar — prefer row numbers or `--id "<full>"`.
 - **Inviting attendees sends real email.** `ical add --invite a@x.com` adds the person and the calendar account dispatches an invitation on save — there is no dry-run. Only invite addresses the user actually intends to notify. The organizer (the user) is added automatically, so a 1-invitee event shows 2 attendees.
 - **`--invite` is repeatable; one address per flag.** `--invite a@x.com --invite "Bob <b@y.com>"`. Do NOT pack multiple addresses into one value (`--invite "a@x.com,b@y.com"`) — that's rejected. Accepts a bare email or `Name <email>`.
-- **The `--attendee` flag on list/search is a read-only filter, not an invite.** Use `--invite` on `add` to invite.
+- **The `--attendee` flag on list/search is a read-only filter, not an invite.** Use `--invite` on `add` or `update` to invite.
 - **Free/busy (`ical free`) needs an Exchange or Google Workspace account.** iCloud does not support availability lookups, so `ical free` against an iCloud-only setup reports no supporting account. Querying an iCloud address returns "free for the whole window" (no data), not an error.
 - **`ical rsvp` only works on events that are invitations to you.** RSVPing your own event is a harmless no-op. Status words: `accepted`/`declined`/`tentative` (aliases `yes`/`no`/`maybe`).
 - **`ical inbox` invitations carry no stable ID** — you can't pass them to `rsvp` by reference. Respond via `ical rsvp <status>` (interactive picker) or find the event with `ical list` first and use its row number.
@@ -119,7 +119,7 @@ All read commands accept `-o`:
 - Inside a recurrence rule, `frequency` is an **integer enum** (`0=daily`, `1=weekly`, `2=monthly`, `3=yearly`), not a string. Compare against the int.
 - `alerts[].relativeOffset` is a **negative nanosecond duration** for before-event alerts. 15 minutes before = `-900000000000`. Divide by `-1e9` for seconds, or use `((. / -1000000000) / 60)` in jq for minutes.
 - `attendees[].status` is an **integer**, not a string — unlike event-level `status` and `availability` which serialize as strings. Map the int yourself if you need a label.
-- `attendees` is populated by `--invite` on `ical add` (not `update`); you cannot *remove* an attendee through the CLI. `self_status` reflects your own RSVP and updates after `ical rsvp`.
+- `attendees` is populated by `--invite` on `ical add` or `ical update`; you cannot *remove* an attendee through the CLI. `self_status` reflects your own RSVP and updates after `ical rsvp`.
 
 ## Interactive mode
 
@@ -206,6 +206,8 @@ ical search "temp" --from today --to "in 7 days" -o json \
 # Weekly agenda export
 ical export --from today --to "in 7 days" --format ics --output-file week.ics
 ```
+
+To add a guest to an existing event, use `ical update --id "<full-event-id>" --invite "Eva <eva@example.com>"`. Repeat `--invite` for each guest. Existing attendees stay on the event. This sends invitations and cannot be combined with `-i`.
 
 ## Scheduling: invites, RSVP, availability, conference links
 
