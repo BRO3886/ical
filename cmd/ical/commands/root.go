@@ -1,12 +1,12 @@
 package commands
 
 import (
-	"fmt"
-	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/BRO3886/ical/internal/skills"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/ical/internal/update"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -53,7 +53,11 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
-		printNotices(os.Stderr, versionStr, collectUpdateResult(updateResultCh), homeDir)
+		executable, _ := os.Executable()
+		if resolved, err := filepath.EvalSymlinks(executable); err == nil {
+			executable = resolved
+		}
+		ui.PrintNotices(os.Stderr, collectNotices(versionStr, collectUpdateResult(updateResultCh), homeDir, executable))
 	},
 }
 
@@ -144,33 +148,33 @@ func collectUpdateResult(ch <-chan *update.Result) *update.Result {
 	}
 }
 
-// printNotices writes the update and skills staleness notices.
-func printNotices(w io.Writer, version string, result *update.Result, homeDir string) {
+func collectNotices(version string, result *update.Result, homeDir, executable string) ui.Notices {
+	notices := ui.Notices{Version: version}
 	if result != nil && result.HasUpdate {
-		yellow := color.New(color.FgYellow)
-		fmt.Fprintln(w)
-		yellow.Fprintf(w, "A new version of ical is available: %s → %s\n", version, result.Latest)
-		fmt.Fprintf(w, "Update: curl -fsSL https://ical.sidv.dev/install | bash\n")
+		notices.LatestVersion = result.Latest
+		notices.UpdateCommand = updateInstruction(executable)
 	}
-
-	// Check skills staleness (local only, no HTTP)
-	printSkillsStalenessNotice(w, version, homeDir)
-}
-
-// printSkillsStalenessNotice checks if installed skills are outdated.
-func printSkillsStalenessNotice(w io.Writer, version, homeDir string) {
 	if version == "" || version == "dev" {
-		return
+		return notices
 	}
-
 	targets := skills.InstalledTargets(skills.DefaultTargets(homeDir))
-	for _, t := range targets {
-		installed := skills.InstalledVersion(t)
+	for _, target := range targets {
+		installed := skills.InstalledVersion(target)
 		if installed != "" && installed != version {
-			yellow := color.New(color.FgYellow)
-			fmt.Fprintln(w)
-			yellow.Fprintf(w, "Installed skills are outdated (%s). Run: ical skills install\n", installed)
-			return // Only show once
+			notices.StaleSkillsVersion = installed
+			break
 		}
 	}
+	return notices
+}
+
+func updateInstruction(executable string) string {
+	parts := strings.Split(filepath.Clean(executable), string(filepath.Separator))
+	if len(parts) >= 5 {
+		tail := parts[len(parts)-5:]
+		if tail[0] == "Cellar" && tail[1] == "ical" && tail[3] == "bin" && tail[4] == "ical" {
+			return "brew upgrade ical"
+		}
+	}
+	return "curl -fsSL https://ical.sidv.dev/install | bash"
 }

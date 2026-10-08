@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/ical/internal/update"
 	"github.com/fatih/color"
 )
@@ -337,7 +338,7 @@ func TestPrintSkillsStalenessNotice(t *testing.T) {
 			homeDir := installSkill(t, tt.installedVersion)
 
 			var buf bytes.Buffer
-			printSkillsStalenessNotice(&buf, tt.binaryVersion, homeDir)
+			ui.PrintNotices(&buf, collectNotices(tt.binaryVersion, nil, homeDir, ""))
 
 			got := strings.Contains(buf.String(), "Installed skills are outdated")
 			if got != tt.wantNotice {
@@ -355,7 +356,7 @@ func TestPrintSkillsStalenessNoticeEdgeCases(t *testing.T) {
 
 	t.Run("no skills installed stays silent", func(t *testing.T) {
 		var buf bytes.Buffer
-		printSkillsStalenessNotice(&buf, "v0.12.1", t.TempDir())
+		ui.PrintNotices(&buf, collectNotices("v0.12.1", nil, t.TempDir(), ""))
 
 		if buf.String() != "" {
 			t.Errorf("output = %q, want empty when no skill is installed", buf.String())
@@ -364,7 +365,7 @@ func TestPrintSkillsStalenessNoticeEdgeCases(t *testing.T) {
 
 	t.Run("missing home directory stays silent", func(t *testing.T) {
 		var buf bytes.Buffer
-		printSkillsStalenessNotice(&buf, "v0.12.1", filepath.Join(t.TempDir(), "does-not-exist"))
+		ui.PrintNotices(&buf, collectNotices("v0.12.1", nil, filepath.Join(t.TempDir(), "does-not-exist"), ""))
 
 		if buf.String() != "" {
 			t.Errorf("output = %q, want empty for an absent home directory", buf.String())
@@ -376,7 +377,7 @@ func TestPrintSkillsStalenessNoticeEdgeCases(t *testing.T) {
 		installSkillFor(t, homeDir, ".claude", "")
 
 		var buf bytes.Buffer
-		printSkillsStalenessNotice(&buf, "v0.12.1", homeDir)
+		ui.PrintNotices(&buf, collectNotices("v0.12.1", nil, homeDir, ""))
 
 		if buf.String() != "" {
 			t.Errorf("output = %q, want empty when the version file is absent", buf.String())
@@ -388,7 +389,7 @@ func TestPrintSkillsStalenessNoticeEdgeCases(t *testing.T) {
 		installSkillFor(t, homeDir, ".claude", "  v0.12.1  ")
 
 		var buf bytes.Buffer
-		printSkillsStalenessNotice(&buf, "v0.12.1", homeDir)
+		ui.PrintNotices(&buf, collectNotices("v0.12.1", nil, homeDir, ""))
 
 		if buf.String() != "" {
 			t.Errorf("output = %q, want empty — padded version matches the binary", buf.String())
@@ -401,7 +402,7 @@ func TestPrintSkillsStalenessNoticeEdgeCases(t *testing.T) {
 		installSkillFor(t, homeDir, ".codex", "v0.10.1")
 
 		var buf bytes.Buffer
-		printSkillsStalenessNotice(&buf, "v0.12.1", homeDir)
+		ui.PrintNotices(&buf, collectNotices("v0.12.1", nil, homeDir, ""))
 
 		if got := strings.Count(buf.String(), "Installed skills are outdated"); got != 1 {
 			t.Errorf("notice count = %d, want 1 (output = %q)", got, buf.String())
@@ -414,7 +415,7 @@ func TestPrintSkillsStalenessNoticeEdgeCases(t *testing.T) {
 		installSkillFor(t, homeDir, ".codex", "v0.10.1")
 
 		var buf bytes.Buffer
-		printSkillsStalenessNotice(&buf, "v0.12.1", homeDir)
+		ui.PrintNotices(&buf, collectNotices("v0.12.1", nil, homeDir, ""))
 
 		if !strings.Contains(buf.String(), "v0.10.1") {
 			t.Errorf("output = %q, want a notice naming the stale v0.10.1 install", buf.String())
@@ -429,7 +430,7 @@ func TestPrintNoticesUpdateAvailable(t *testing.T) {
 	homeDir := installSkill(t, "v0.12.1")
 
 	var buf bytes.Buffer
-	printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir)
+	ui.PrintNotices(&buf, collectNotices("v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir, ""))
 
 	out := buf.String()
 	if !strings.Contains(out, "A new version of ical is available") {
@@ -460,7 +461,7 @@ func TestPrintNoticesSilentWhenNothingToReport(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var buf bytes.Buffer
-			printNotices(&buf, "v0.12.1", tt.result, homeDir)
+			ui.PrintNotices(&buf, collectNotices("v0.12.1", tt.result, homeDir, ""))
 
 			if buf.String() != "" {
 				t.Errorf("output = %q, want empty when nothing is stale and no update exists", buf.String())
@@ -476,7 +477,7 @@ func TestPrintNoticesUpdateAndStalenessTogether(t *testing.T) {
 	homeDir := installSkill(t, "v0.10.1")
 
 	var buf bytes.Buffer
-	printNotices(&buf, "v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir)
+	ui.PrintNotices(&buf, collectNotices("v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.13.0"}, homeDir, ""))
 
 	out := buf.String()
 	if !strings.Contains(out, "A new version of ical is available") {
@@ -494,9 +495,31 @@ func TestPrintNoticesDevBuildSuppressesStaleness(t *testing.T) {
 	homeDir := installSkill(t, "v0.10.1")
 
 	var buf bytes.Buffer
-	printNotices(&buf, "dev", nil, homeDir)
+	ui.PrintNotices(&buf, collectNotices("dev", nil, homeDir, ""))
 
 	if buf.String() != "" {
 		t.Errorf("output = %q, want empty for a dev build", buf.String())
+	}
+}
+
+func TestPrintNoticesInstallSource(t *testing.T) {
+	for _, tt := range []struct{ name, executable, want string }{
+		{"Apple Silicon Homebrew", "/opt/homebrew/Cellar/ical/0.12.1/bin/ical", "brew upgrade ical"},
+		{"Intel Homebrew", "/usr/local/Cellar/ical/0.12.1/bin/ical", "brew upgrade ical"},
+		{"custom Homebrew prefix", "/custom/brew/Cellar/ical/0.12.1/bin/ical", "brew upgrade ical"},
+		{"script install", "/usr/local/bin/ical", "curl -fsSL https://ical.sidv.dev/install | bash"},
+		{"unrelated formula", "/opt/homebrew/Cellar/other/0.12.1/bin/ical", "curl -fsSL https://ical.sidv.dev/install | bash"},
+		{"executable lookup failure", "", "curl -fsSL https://ical.sidv.dev/install | bash"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			ui.PrintNotices(&buf, collectNotices("v0.12.1", &update.Result{HasUpdate: true, Latest: "v0.12.2"}, t.TempDir(), tt.executable))
+			if !strings.Contains(buf.String(), "Update: "+tt.want+"\n") {
+				t.Fatalf("notice = %q, want command %q", buf.String(), tt.want)
+			}
+			if tt.want == "brew upgrade ical" && strings.Contains(buf.String(), "curl") {
+				t.Errorf("Homebrew notice suggests a script install: %q", buf.String())
+			}
+		})
 	}
 }
