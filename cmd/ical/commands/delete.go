@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
 	"github.com/charmbracelet/huh"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -62,7 +62,7 @@ occurrence), future (this and later occurrences), or all (the whole series).`,
 		// Single event delete
 		var event *calendar.Event
 		if idFlagSet {
-			event, err = client.Event(deleteID)
+			event, err = findEventByID(client, deleteID)
 			if err != nil {
 				return fmt.Errorf("event not found: %w", err)
 			}
@@ -271,7 +271,7 @@ func pickEvent(client *calendar.Client, fromStr, toStr string, days int) (*calen
 		return nil, fmt.Errorf("selection error: %w", err)
 	}
 
-	event, err := client.Event(selectedID)
+	event, err := findEventByID(client, selectedID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch event: %w", err)
 	}

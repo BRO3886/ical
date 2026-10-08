@@ -348,7 +348,8 @@ ical update 2 -i
 ical delete 1
 ```
 
-- **JSON output** (`-o json`): Always includes the full event ID for scripting
+- **Event IDs:** Create and update summaries print the full ID. Use `--id "<full ID>"` for exact lookup in scripts. Positional prefixes must match only one event. Stale cached row numbers return an error.
+- **JSON output** (`-o json`): List and show output include the full event ID for scripting
 
 ## Interactive Mode
 

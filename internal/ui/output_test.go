@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"io"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -115,10 +118,10 @@ func TestLocalizeTimeInZone(t *testing.T) {
 	// UTC 18:00 on 2026-02-11 (chosen so wall-clock math is clean across all zones).
 	utcTime := time.Date(2026, 2, 11, 18, 0, 0, 0, time.UTC)
 
-	ist := mustLoadLocation("Asia/Kolkata")   // UTC+5:30
+	ist := mustLoadLocation("Asia/Kolkata")     // UTC+5:30
 	est := mustLoadLocation("America/New_York") // UTC-5 in February
 	cst := mustLoadLocation("America/Chicago")  // UTC-6 in February
-	gmt := mustLoadLocation("GMT")             // UTC+0
+	gmt := mustLoadLocation("GMT")              // UTC+0
 
 	t.Run("returns nil for empty tz", func(t *testing.T) {
 		// Reference location doesn't matter when tz is empty.
@@ -223,9 +226,9 @@ func TestEventDateLabel(t *testing.T) {
 	// whatever location the input carries — the caller localizes upstream.
 	utcTime := time.Date(2026, 4, 19, 15, 0, 0, 0, time.UTC)
 
-	bst := mustLoadLocation("Europe/London") // BST in April = UTC+1
+	bst := mustLoadLocation("Europe/London")    // BST in April = UTC+1
 	est := mustLoadLocation("America/New_York") // EDT in April = UTC-4
-	ist := mustLoadLocation("Asia/Kolkata")   // IST = UTC+5:30
+	ist := mustLoadLocation("Asia/Kolkata")     // IST = UTC+5:30
 
 	tests := []struct {
 		name string
@@ -317,6 +320,41 @@ func TestTruncate(t *testing.T) {
 			got := truncate(tt.input, tt.max)
 			if got != tt.want {
 				t.Errorf("truncate(%q, %d) = %q, want %q", tt.input, tt.max, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMutationOutputFullID(t *testing.T) {
+	const id = "00000000-1111-2222-3333-444444444444:AAAAAAAA-0000-0000-0000-00000000000A"
+	event := calendar.Event{ID: id, Title: "Fixture", Calendar: "Test"}
+	for _, tt := range []struct {
+		name  string
+		print func(*calendar.Event)
+	}{
+		{"created", PrintCreatedEvent},
+		{"updated", PrintUpdatedEvent},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w, err := os.Pipe()
+			if err != nil {
+				t.Fatalf("opening output pipe: %v", err)
+			}
+			t.Cleanup(func() { r.Close(); w.Close() })
+			stdout := os.Stdout
+			t.Cleanup(func() { os.Stdout = stdout })
+			os.Stdout = w
+			tt.print(&event)
+			os.Stdout = stdout
+			if err := w.Close(); err != nil {
+				t.Fatalf("closing output pipe: %v", err)
+			}
+			data, err := io.ReadAll(r)
+			if err != nil {
+				t.Fatalf("reading output: %v", err)
+			}
+			if !strings.Contains(string(data), "  ID:       "+id+"\n") {
+				t.Errorf("output omitted full ID: %q", data)
 			}
 		})
 	}

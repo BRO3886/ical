@@ -1,33 +1,34 @@
 package commands
 
 import (
+	"errors"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/ical/internal/ui"
 )
 
-// macOS event identifiers are "<store UUID>:<event UUID>", so every event in a
-// store shares a long leading run of characters. Anything derived from that run
-// alone - a truncated ID, a stale cache entry - identifies no single event.
 const (
 	storeUUID = "00000000-1111-2222-3333-444444444444"
 	idA       = storeUUID + ":AAAAAAAA-0000-0000-0000-00000000000A"
 	idB       = storeUUID + ":BBBBBBBB-0000-0000-0000-00000000000B"
 )
 
-// fakeLookup stands in for *calendar.Client. Its lenient field reproduces the
-// EventKit behaviour that makes the round-trip check necessary: an identifier
-// that matches nothing resolves to some unrelated event rather than failing.
 type fakeLookup struct {
-	byID    map[string]calendar.Event
-	all     []calendar.Event
-	lenient *calendar.Event
+	byID        map[string]calendar.Event
+	all         []calendar.Event
+	lenient     *calendar.Event
+	lookupErr   error
+	searchErr   error
+	searchCalls int
 }
 
 func (f *fakeLookup) Event(id string) (*calendar.Event, error) {
+	if f.lookupErr != nil {
+		return nil, f.lookupErr
+	}
 	if e, ok := f.byID[id]; ok {
 		return &e, nil
 	}
@@ -39,7 +40,8 @@ func (f *fakeLookup) Event(id string) (*calendar.Event, error) {
 }
 
 func (f *fakeLookup) Events(start, end time.Time, opts ...calendar.ListOption) ([]calendar.Event, error) {
-	return f.all, nil
+	f.searchCalls++
+	return f.all, f.searchErr
 }
 
 func twoEventStore(lenient *calendar.Event) *fakeLookup {
@@ -52,8 +54,6 @@ func twoEventStore(lenient *calendar.Event) *fakeLookup {
 	}
 }
 
-// A truncated ID names no event. The resolver must say so rather than hand back
-// whatever EventKit resolved it to - delete acts on what this returns.
 func TestFindEventByPrefixRejectsLenientMatch(t *testing.T) {
 	stranger := calendar.Event{ID: storeUUID + ":CCCCCCCC-0000-0000-0000-00000000000C", Title: "Cancel broadband"}
 	client := twoEventStore(&stranger)
@@ -71,8 +71,6 @@ func TestFindEventByPrefixRejectsLenientMatch(t *testing.T) {
 	}
 }
 
-// A stale row number points at an ID that no longer resolves. The lenient
-// lookup must not be allowed to substitute a different event for it.
 func TestFindEventByPrefixRejectsStaleRowNumber(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	ui.SaveLastList([]calendar.Event{{ID: "DEAD0000-0000-0000-0000-000000000000:1"}})
@@ -102,8 +100,6 @@ func TestFindEventByPrefixExactID(t *testing.T) {
 	}
 }
 
-// A prefix that reaches into the event-specific half is unambiguous, so prefix
-// matching still works - the fix narrows the resolver, it does not disable it.
 func TestFindEventByPrefixUniquePrefix(t *testing.T) {
 	client := twoEventStore(nil)
 
@@ -127,5 +123,86 @@ func TestFindEventByPrefixNoMatch(t *testing.T) {
 	}
 	if err == nil || !strings.Contains(err.Error(), "no event found") {
 		t.Errorf("expected a not-found error, got %v", err)
+	}
+}
+
+func TestFindEventByID(t *testing.T) {
+	failure := errors.New("access denied")
+	tests := []struct {
+		name    string
+		input   string
+		client  *fakeLookup
+		wantID  string
+		wantErr error
+	}{
+		{"exact", idA, twoEventStore(nil), idA, nil},
+		{"partial", storeUUID[:13], twoEventStore(&calendar.Event{ID: idB}), "", calendar.ErrNotFound},
+		{"stale", "stale-id", twoEventStore(&calendar.Event{ID: idB}), "", calendar.ErrNotFound},
+		{"unknown", "unknown", twoEventStore(nil), "", calendar.ErrNotFound},
+		{"empty", "", twoEventStore(nil), "", calendar.ErrNotFound},
+		{"lookup failure", idA, &fakeLookup{lookupErr: failure}, "", failure},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			event, err := findEventByID(tt.client, tt.input)
+			if !errors.Is(err, tt.wantErr) {
+				t.Fatalf("error=%v, want %v", err, tt.wantErr)
+			}
+			if tt.wantErr != nil {
+				if event != nil {
+					t.Fatal("failed lookup returned an event")
+				}
+				return
+			}
+			if event == nil || event.ID != tt.wantID {
+				t.Errorf("event=%v, want ID %s", event, tt.wantID)
+			}
+		})
+	}
+}
+
+func TestFindEventByPrefixFailures(t *testing.T) {
+	failure := errors.New("access denied")
+	tests := []struct {
+		name         string
+		input        string
+		client       *fakeLookup
+		cachedID     string
+		wantErr      error
+		wantSearches int
+	}{
+		{"empty", "", twoEventStore(nil), "", calendar.ErrNotFound, 0},
+		{"lookup failure", idA, &fakeLookup{lookupErr: failure}, "", failure, 0},
+		{"search failure", "prefix", &fakeLookup{searchErr: failure}, "", failure, 1},
+		{"stale row", "1", twoEventStore(&calendar.Event{ID: idB}), "stale-id", calendar.ErrNotFound, 0},
+		{"row lookup failure", "1", &fakeLookup{lookupErr: failure}, idA, failure, 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("HOME", t.TempDir())
+			if tt.cachedID != "" {
+				ui.SaveLastList([]calendar.Event{{ID: tt.cachedID}})
+			}
+			event, err := findEventByPrefix(tt.client, tt.input)
+			if event != nil || !errors.Is(err, tt.wantErr) {
+				t.Errorf("event=%v error=%v, want nil and %v", event, err, tt.wantErr)
+			}
+			if tt.client.searchCalls != tt.wantSearches {
+				t.Errorf("search calls=%d, want %d", tt.client.searchCalls, tt.wantSearches)
+			}
+		})
+	}
+}
+
+func TestFindEventByPrefixCachedRow(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	ui.SaveLastList([]calendar.Event{{ID: idA}})
+	client := twoEventStore(nil)
+	event, err := findEventByPrefix(client, "1")
+	if err != nil || event == nil || event.ID != idA {
+		t.Fatalf("cached row event=%v error=%v", event, err)
+	}
+	if client.searchCalls != 0 {
+		t.Error("cached row searched prefixes")
 	}
 }

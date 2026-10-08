@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
-	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +58,7 @@ Use -i for interactive mode with guided prompts.`,
 
 		var event *calendar.Event
 		if idFlagSet {
-			event, err = client.Event(updateID)
+			event, err = findEventByID(client, updateID)
 			if err != nil {
 				return fmt.Errorf("event not found: %w", err)
 			}
