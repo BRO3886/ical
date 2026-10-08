@@ -331,6 +331,9 @@ The `-i` flag launches a guided form where you fill in each field step by step. 
 Update an existing event.
 
 ```bash
+# Add guests to an existing event
+ical update 2 --invite "Eva <eva@example.com>" --invite bob@example.com
+
 # Interactive picker + guided form
 ical update -i
 
@@ -351,6 +354,7 @@ ical update --id "577B8983-DF44:abc" --title "New Title"
 
 | Flag              | Short | Description                                |
 |-------------------|-------|--------------------------------------------|
+| `--invite` | | Add an attendee; repeatable; sends an invitation |
 | `--id`            |       | Full event ID — exact match, no prefix search |
 | `--title`         |       | New title                                  |
 | `--start`         | `-s`  | New start time (natural language)          |
@@ -368,6 +372,8 @@ ical update --id "577B8983-DF44:abc" --title "New Title"
 
 > `update` applies changes immediately — there is no confirmation prompt and no `--force` flag.
 > `--id` and a positional argument are mutually exclusive.
+
+`--invite` adds guests and preserves existing attendees. The calendar account sends invitations on save. Unsupported macOS or calendar backends return an error. This flag cannot be combined with `-i`. Attendee removal is not supported.
 
 ---
 

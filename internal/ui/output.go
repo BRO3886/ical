@@ -652,6 +652,14 @@ func PrintCreatedEvent(e *calendar.Event) {
 	fmt.Printf("  ID:       %s\n", e.ID)
 }
 
+// PrintInvitationSummary prints a notice when attendees were requested.
+func PrintInvitationSummary(count int) {
+	if count <= 0 {
+		return
+	}
+	fmt.Printf("Invited %d attendee(s); invitations are sent by the calendar account.\n", count)
+}
+
 // PrintCreatedCalendar prints summary info for a newly created calendar.
 func PrintCreatedCalendar(c *calendar.Calendar) {
 	green := color.New(color.FgGreen, color.Bold)

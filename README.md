@@ -251,7 +251,12 @@ ical update 3 -s "tomorrow 2pm" -e "tomorrow 3pm"
 
 # Update future occurrences of recurring event
 ical update 1 --span future --title "New Series Name"
+
+# Add guests to an existing event
+ical update 2 --invite "Eva <eva@example.com>" --invite bob@example.com
 ```
+
+`update --invite` adds guests without replacing existing attendees. The calendar account sends invitations on save. It uses the same macOS support check as `add --invite` and cannot be combined with `-i`. Attendee removal is not supported.
 
 ## Deleting Events
 

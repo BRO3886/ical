@@ -32,6 +32,7 @@ var (
 	updateRepeatDays     string
 	updateInteractive    bool
 	updateID             string
+	updateInvite         []string
 )
 
 var updateCmd = &cobra.Command{
@@ -46,9 +47,19 @@ Use --id for exact event ID lookup (no prefix matching).
 Use -i for interactive mode with guided prompts.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if updateInteractive && cmd.Flags().Changed("invite") {
+			return fmt.Errorf("--invite is not supported in interactive mode (-i); pass it on the non-interactive command line")
+		}
+		attendees, err := parseAttendees(updateInvite)
+		if err != nil {
+			return err
+		}
 		client, err := calendar.New()
 		if err != nil {
 			return handleClientError(err)
+		}
+		if len(attendees) > 0 && !client.AttendeeWritesSupported() {
+			return fmt.Errorf("inviting attendees is not supported on this macOS version")
 		}
 
 		idFlagSet := cmd.Flags().Changed("id")
@@ -81,7 +92,7 @@ Use -i for interactive mode with guided prompts.`,
 			return runUpdateInteractive(client, event)
 		}
 
-		input := calendar.UpdateEventInput{}
+		input := calendar.UpdateEventInput{Attendees: attendees}
 
 		if cmd.Flags().Changed("title") {
 			input.Title = strPtr(updateTitle)
@@ -175,11 +186,13 @@ Use -i for interactive mode with guided prompts.`,
 		}
 
 		ui.PrintUpdatedEvent(updated)
+		ui.PrintInvitationSummary(len(input.Attendees))
 		return nil
 	},
 }
 
 func init() {
+	updateCmd.Flags().StringArrayVar(&updateInvite, "invite", nil, "Add an attendee by email or \"Name <email>\" — repeatable (sends an invitation)")
 	updateCmd.Flags().StringVarP(&updateTitle, "title", "T", "", "New title")
 	updateCmd.Flags().StringVarP(&updateStart, "start", "s", "", "New start date/time")
 	updateCmd.Flags().StringVarP(&updateEnd, "end", "e", "", "New end date/time")

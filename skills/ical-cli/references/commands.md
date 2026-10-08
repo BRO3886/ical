@@ -231,12 +231,14 @@ ical update 1 --location ""              # Clear location
 ical update 1 --alert none               # Clear alerts
 ical update 1 --repeat none              # Remove recurrence
 ical update 2 --span future --start "next monday at 9am"  # Update future occurrences
+ical update 2 --invite "Eva <eva@example.com>" --invite bob@example.com
 ical update -i                           # Interactive mode with picker
 ical update --id "577B8983-DF44:ABC123" --title "New title"  # Exact ID (agents: use this)
 ```
 
 | Flag                | Short | Description                                  | Default |
 | ------------------- | ----- | -------------------------------------------- | ------- |
+| `--invite` | — | Add an attendee; repeatable; sends an invitation | — |
 | `--id`              | —     | Full event ID (exact match, no prefix search) | —       |
 | `--title`           | `-T`  | New title                                    | —       |
 | `--start`           | `-s`  | New start date/time                          | —       |
@@ -262,6 +264,8 @@ Event selection: same as `show` (no args = picker, number = row, string = event 
 > `update` has **no** `--force` flag and requires no confirmation — changes apply immediately.
 
 Aliases: `edit`
+
+`--invite` adds guests and preserves existing attendees. The calendar account sends invitations on save. Unsupported macOS or calendar backends return an error. This flag cannot be combined with `-i`. Attendee removal is not supported.
 
 ---
 
