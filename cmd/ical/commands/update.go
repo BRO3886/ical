@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/go-eventkit/dateparser"
-	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/go-eventkit/dateparser"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +58,7 @@ Use -i for interactive mode with guided prompts.`,
 
 		var event *calendar.Event
 		if idFlagSet {
-			event, err = client.Event(updateID)
+			event, err = findEventByID(client, updateID)
 			if err != nil {
 				return fmt.Errorf("event not found: %w", err)
 			}
@@ -230,7 +230,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 		return fmt.Errorf("no writable calendars found")
 	}
 
-	fmt.Printf("Editing: %s (ID: %s)\n\n", event.Title, ui.ShortID(event.ID))
+	fmt.Printf("Editing: %s (ID: %s)\n\n", event.Title, event.ID)
 
 	// Page 1: Core fields
 	core := huh.NewGroup(

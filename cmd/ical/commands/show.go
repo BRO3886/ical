@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BRO3886/ical/internal/ui"
 	"github.com/BRO3886/go-eventkit/calendar"
+	"github.com/BRO3886/ical/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +44,7 @@ or a full/partial event ID. Use --id for exact event ID lookup (no prefix matchi
 
 		var event *calendar.Event
 		if idFlagSet {
-			event, err = client.Event(showID)
+			event, err = findEventByID(client, showID)
 			if err != nil {
 				return fmt.Errorf("event not found: %w", err)
 			}
@@ -77,27 +77,51 @@ func init() {
 	rootCmd.AddCommand(showCmd)
 }
 
-// findEventByPrefix finds an event by row number from the last listing,
-// by exact ID, or by ID prefix matching.
-func findEventByPrefix(client *calendar.Client, input string) (*calendar.Event, error) {
-	// Check if input is a row number (e.g. "1", "2") from the last listing
+type eventGetter interface {
+	Event(id string) (*calendar.Event, error)
+}
+
+type eventLookup interface {
+	eventGetter
+	Events(start, end time.Time, opts ...calendar.ListOption) ([]calendar.Event, error)
+}
+
+func findEventByID(client eventGetter, id string) (*calendar.Event, error) {
+	if id == "" {
+		return nil, fmt.Errorf("event ID is empty: %w", calendar.ErrNotFound)
+	}
+	event, err := client.Event(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch event: %w", err)
+	}
+	// A stale identifier must never substitute another event before a write.
+	if event == nil || event.ID != id {
+		return nil, fmt.Errorf("event ID did not match: %w", calendar.ErrNotFound)
+	}
+	return event, nil
+}
+
+// findEventByPrefix finds an event by cached row number, exact ID, or unique prefix.
+func findEventByPrefix(client eventLookup, input string) (*calendar.Event, error) {
+	if input == "" {
+		return nil, fmt.Errorf("event ID is empty: %w", calendar.ErrNotFound)
+	}
 	if n, err := strconv.Atoi(input); err == nil && n > 0 {
 		if id := ui.LookupRowNumber(n); id != "" {
-			event, err := client.Event(id)
-			if err == nil {
-				return event, nil
+			event, err := findEventByID(client, id)
+			if err != nil {
+				return nil, fmt.Errorf("event from row %d is no longer available: %w", n, err)
 			}
-			// Event may have been deleted since listing; fall through to search
+			return event, nil
 		}
 	}
 
-	// Try exact match
-	event, err := client.Event(input)
+	event, err := findEventByID(client, input)
 	if err == nil {
 		return event, nil
 	}
 	if !errors.Is(err, calendar.ErrNotFound) {
-		return nil, fmt.Errorf("failed to fetch event: %w", err)
+		return nil, err
 	}
 
 	// Search recent events for prefix match
@@ -118,7 +142,7 @@ func findEventByPrefix(client *calendar.Client, input string) (*calendar.Event, 
 
 	switch len(matches) {
 	case 0:
-		return nil, fmt.Errorf("no event found matching %q", input)
+		return nil, fmt.Errorf("no event found matching %q: %w", input, calendar.ErrNotFound)
 	case 1:
 		return &matches[0], nil
 	default:
