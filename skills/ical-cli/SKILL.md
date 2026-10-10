@@ -75,7 +75,7 @@ Agents usually can't assume they know the right event ID. The robust pattern:
 2. Note the row number (`#1`, `#2`...) shown in the output.
 3. Act on it by row number: `ical show 2`, `ical update 3 --title "..."`, `ical delete 1 --force`.
 
-Row numbers are cached to `~/.ical-last-list` and stay valid until the next listing command runs. If you need a stable reference across sessions, capture the full event ID with `-o json | jq -r '.[0].id'` and use `--id "<id>"` for exact lookup.
+Row numbers are cached per session and stay valid until the next listing command in the same session runs. The session is the first of `ICAL_SESSION`, `CLAUDE_CODE_SESSION_ID`, `TMUX_PANE`, `WEZTERM_PANE`, `KITTY_WINDOW_ID`, `ITERM_SESSION_ID` or `TERM_SESSION_ID` that is set; with none set, every process shares `~/.ical-last-list`. If you need a stable reference across sessions, capture the full event ID with `-o json | jq -r '.[0].id'` and use `--id "<id>"` for exact lookup.
 
 ## Gotchas (read before running)
 
