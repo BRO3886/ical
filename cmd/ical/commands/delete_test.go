@@ -166,13 +166,3 @@ func TestDeletedMessage(t *testing.T) {
 		})
 	}
 }
-
-// TestStartOfDay verifies the start-of-day helper.
-func TestStartOfDay(t *testing.T) {
-	input := time.Date(2026, 3, 15, 14, 30, 45, 123, time.Local)
-	want := time.Date(2026, 3, 15, 0, 0, 0, 0, time.Local)
-	got := startOfDay(input)
-	if !got.Equal(want) {
-		t.Errorf("got %v, want %v", got, want)
-	}
-}

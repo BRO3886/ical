@@ -426,40 +426,6 @@ func TestParseAlertDuration(t *testing.T) {
 	}
 }
 
-// TestEndOfDayIfMidnight verifies the --to date bumping logic.
-func TestEndOfDayIfMidnight(t *testing.T) {
-	tests := []struct {
-		name string
-		in   time.Time
-		want time.Time
-	}{
-		{
-			"midnight gets bumped",
-			time.Date(2026, 2, 12, 0, 0, 0, 0, time.Local),
-			time.Date(2026, 2, 12, 23, 59, 59, 0, time.Local),
-		},
-		{
-			"non-midnight unchanged",
-			time.Date(2026, 2, 12, 14, 30, 0, 0, time.Local),
-			time.Date(2026, 2, 12, 14, 30, 0, 0, time.Local),
-		},
-		{
-			"1am unchanged",
-			time.Date(2026, 2, 12, 1, 0, 0, 0, time.Local),
-			time.Date(2026, 2, 12, 1, 0, 0, 0, time.Local),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := endOfDayIfMidnight(tt.in)
-			if !got.Equal(tt.want) {
-				t.Errorf("got %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 // TestDateparserWithOptions verifies that go-eventkit v0.4.0 options work.
 func TestDateparserWithOptions(t *testing.T) {
 	ist := mustLoadLoc(t, "Asia/Kolkata")

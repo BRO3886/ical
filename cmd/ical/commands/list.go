@@ -34,7 +34,7 @@ var listCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		now := time.Now()
 
-		from := startOfDay(now)
+		from := dateparser.StartOfDay(now)
 		if listFrom != "" {
 			t, err := dateparser.ParseDate(listFrom)
 			if err != nil {
@@ -49,7 +49,7 @@ var listCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("invalid --to date: %w", err)
 			}
-			to = endOfDayIfMidnight(t)
+			to = dateparser.EndOfDayIfMidnight(t)
 		}
 
 		return listEvents(from, to)
@@ -250,20 +250,6 @@ func filterIncludedCalendars(events []calendar.Event, include []string) []calend
 		}
 	}
 	return filtered
-}
-
-func startOfDay(t time.Time) time.Time {
-	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-}
-
-// endOfDayIfMidnight bumps a midnight time to 23:59:59 so that --to "feb 12"
-// means "through the end of Feb 12" rather than "up to the start of Feb 12".
-// If the time has an explicit hour/minute (not midnight), it's left as-is.
-func endOfDayIfMidnight(t time.Time) time.Time {
-	if t.Hour() == 0 && t.Minute() == 0 && t.Second() == 0 {
-		return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, 0, t.Location())
-	}
-	return t
 }
 
 // attendeeMatches returns true if any attendee name/email or the organizer

@@ -47,7 +47,7 @@ Defaults to the next 24 hours; use --from/--to to change the window.`,
 			if err != nil {
 				return fmt.Errorf("invalid --to: %w", err)
 			}
-			end = endOfDayIfMidnight(t)
+			end = dateparser.EndOfDayIfMidnight(t)
 		}
 
 		client, err := calendar.New()

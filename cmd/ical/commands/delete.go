@@ -217,7 +217,7 @@ func init() {
 func pickEvent(client *calendar.Client, fromStr, toStr string, days int) (*calendar.Event, error) {
 	now := time.Now()
 
-	from := startOfDay(now)
+	from := dateparser.StartOfDay(now)
 	if fromStr != "" {
 		t, err := dateparser.ParseDate(fromStr)
 		if err != nil {
@@ -232,7 +232,7 @@ func pickEvent(client *calendar.Client, fromStr, toStr string, days int) (*calen
 		if err != nil {
 			return nil, fmt.Errorf("invalid --to date: %w", err)
 		}
-		to = endOfDayIfMidnight(t)
+		to = dateparser.EndOfDayIfMidnight(t)
 	}
 
 	events, err := client.Events(from, to)

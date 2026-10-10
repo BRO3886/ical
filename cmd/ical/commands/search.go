@@ -45,7 +45,7 @@ var searchCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("invalid --to date: %w", err)
 			}
-			to = endOfDayIfMidnight(t)
+			to = dateparser.EndOfDayIfMidnight(t)
 		}
 
 		client, err := calendar.New()
