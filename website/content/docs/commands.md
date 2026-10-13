@@ -285,12 +285,13 @@ ical add -i
 | `--timezone`      |       | Timezone (e.g., `America/New_York`)        |
 | `--invite`        |       | Invite an attendee (`email` or `"Name <email>"`) — repeatable; sends an invitation |
 | `--travel`        |       | Travel time before the event (e.g., `30m`, `1h`) |
+| `--availability`  |       | Show as: `busy`, `free`, `tentative`, `unavailable` (the calendar must support it; iCloud supports busy/free) |
 | `--repeat`        |       | Recurrence: `daily`, `weekly`, `monthly`, `yearly` |
 | `--repeat-days`   |       | Days for weekly recurrence (repeatable)    |
 | `--repeat-until`  |       | Recurrence end date (a bare date includes the whole day) |
 | `--interactive`   | `-i`  | Use guided interactive form                |
 
-`--invite` and `--travel` are not available in interactive (`-i`) mode. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
+`--invite`, `--travel` and `--availability` are not available in interactive (`-i`) mode. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
 
 ### Examples
 
@@ -364,6 +365,7 @@ ical update --id "577B8983-DF44:abc" --title "New Title"
 | `--all-day`       |       | Toggle all-day status                      |
 | `--alert`         |       | Replace alerts (repeatable)                |
 | `--timezone`      |       | New timezone                               |
+| `--availability`  |       | Show as: `busy`, `free`, `tentative`, `unavailable` |
 | `--repeat`        |       | New recurrence pattern                     |
 | `--repeat-days`   |       | New recurrence days                        |
 | `--repeat-until`  |       | New recurrence end date                    |

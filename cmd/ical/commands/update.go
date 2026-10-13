@@ -24,6 +24,7 @@ var (
 	updateURL            string
 	updateAlerts         []string
 	updateTimezone       string
+	updateAvailability   string
 	updateSpan           string
 	updateRepeat         string
 	updateRepeatInterval int
@@ -49,6 +50,9 @@ Use -i for interactive mode with guided prompts.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if updateInteractive && cmd.Flags().Changed("invite") {
 			return fmt.Errorf("--invite is not supported in interactive mode (-i); pass it on the non-interactive command line")
+		}
+		if updateInteractive && cmd.Flags().Changed("availability") {
+			return fmt.Errorf("--availability is not supported in interactive mode (-i); pass it on the non-interactive command line")
 		}
 		attendees, err := parseAttendees(updateInvite)
 		if err != nil {
@@ -135,6 +139,13 @@ Use -i for interactive mode with guided prompts.`,
 			}
 			input.TimeZone = strPtr(updateTimezone)
 		}
+		if cmd.Flags().Changed("availability") {
+			a, err := parseAvailability(updateAvailability)
+			if err != nil {
+				return err
+			}
+			input.Availability = &a
+		}
 		if cmd.Flags().Changed("alert") {
 			if len(updateAlerts) == 1 && updateAlerts[0] == "none" {
 				empty := []calendar.Alert{}
@@ -203,6 +214,7 @@ func init() {
 	updateCmd.Flags().StringVarP(&updateURL, "url", "u", "", "New URL (empty to clear)")
 	updateCmd.Flags().StringArrayVar(&updateAlerts, "alert", nil, "Replace alerts (repeatable, 'none' to clear)")
 	updateCmd.Flags().StringVar(&updateTimezone, "timezone", "", "New timezone")
+	updateCmd.Flags().StringVar(&updateAvailability, "availability", "", "Show as: busy, free, tentative, unavailable (calendar must support it)")
 	updateCmd.Flags().StringVar(&updateSpan, "span", "this", "For recurring events: this or future")
 	updateCmd.Flags().StringVarP(&updateRepeat, "repeat", "r", "", "Set/change recurrence (none to remove)")
 	updateCmd.Flags().IntVar(&updateRepeatInterval, "repeat-interval", 1, "Change recurrence interval")
