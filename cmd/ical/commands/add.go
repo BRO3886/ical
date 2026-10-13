@@ -33,6 +33,7 @@ var (
 	addInteractive    bool
 	addInvite         []string
 	addTravel         string
+	addAvailability   string
 )
 
 var addCmd = &cobra.Command{
@@ -42,8 +43,8 @@ var addCmd = &cobra.Command{
 	Long:    "Creates a new calendar event. Title can be passed as argument or via --title flag.\nUse -i for interactive mode with guided prompts.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if addInteractive {
-			if len(addInvite) > 0 || addTravel != "" {
-				return fmt.Errorf("--invite and --travel are not supported in interactive mode (-i); pass them on the non-interactive command line")
+			if len(addInvite) > 0 || addTravel != "" || addAvailability != "" {
+				return fmt.Errorf("--invite, --travel and --availability are not supported in interactive mode (-i); pass them on the non-interactive command line")
 			}
 			return runAddInteractive()
 		}
@@ -133,6 +134,13 @@ var addCmd = &cobra.Command{
 				return fmt.Errorf("invalid --travel duration: %w", err)
 			}
 			input.TravelTime = d
+		}
+		if addAvailability != "" {
+			a, err := parseAvailability(addAvailability)
+			if err != nil {
+				return err
+			}
+			input.Availability = &a
 		}
 
 		client, err := calendar.New()
@@ -224,6 +232,7 @@ func init() {
 	addCmd.Flags().StringVar(&addTimezone, "timezone", "", "IANA timezone (e.g., America/New_York)")
 	addCmd.Flags().StringArrayVar(&addInvite, "invite", nil, "Invite an attendee by email or \"Name <email>\" — repeatable (sends an invitation)")
 	addCmd.Flags().StringVar(&addTravel, "travel", "", "Travel time before the event (e.g., 30m, 1h)")
+	addCmd.Flags().StringVar(&addAvailability, "availability", "", "Show as: busy, free, tentative, unavailable (calendar must support it)")
 	addCmd.Flags().BoolVarP(&addInteractive, "interactive", "i", false, "Interactive mode with guided prompts")
 
 	rootCmd.AddCommand(addCmd)

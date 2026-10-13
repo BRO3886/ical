@@ -212,9 +212,10 @@ ical add -i   # Interactive mode
 | `--timezone`        | —     | IANA timezone (e.g., America/New_York)              | —              |
 | `--invite`          | —     | Invite an attendee (`email` or `"Name <email>"`) — repeatable; sends an invitation | — |
 | `--travel`          | —     | Travel time before the event (e.g., 30m, 1h)        | —              |
+| `--availability`    | —     | Show as: busy, free, tentative, unavailable (calendar must support it; iCloud: busy/free) | — |
 | `--interactive`     | `-i`  | Interactive mode with guided prompts                | false          |
 
-`--invite` and `--travel` are not available with `-i`. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
+`--invite`, `--travel` and `--availability` are not available with `-i`. Inviting an attendee makes the calendar account send a real invitation email on save, and the organizer (you) is added automatically.
 
 Aliases: `create`, `new`
 
@@ -250,6 +251,7 @@ ical update --id "577B8983-DF44:ABC123" --title "New title"  # Exact ID (agents:
 | `--url`             | `-u`  | New URL (empty string to clear)              | —       |
 | `--alert`           | —     | Replace alerts (repeatable, `none` to clear) | —       |
 | `--timezone`        | —     | New IANA timezone                            | —       |
+| `--availability`    | —     | Show as: busy, free, tentative, unavailable  | —       |
 | `--span`            | —     | For recurring: "this" or "future"            | this    |
 | `--repeat`          | `-r`  | Set/change recurrence ("none" to remove)     | —       |
 | `--repeat-interval` | —     | Change recurrence interval                   | 1       |

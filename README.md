@@ -296,6 +296,10 @@ ical add "Design review" --start "tomorrow 3pm" --calendar Work \
 # Add travel time before an event
 ical add "Client visit" --start "friday 2pm" --travel 45m
 
+# Set how an event shows on free/busy ("Show As")
+ical add "Anniversary" --start "oct 15" --all-day --availability free
+ical update 2 --availability busy
+
 # Respond to an invitation
 ical rsvp accepted 3          # accept the event at row 3
 ical rsvp declined <id>       # decline by event ID

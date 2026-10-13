@@ -46,6 +46,7 @@ ical also accepts natural-language strings directly (`today`, `tomorrow`, `next 
 | "When is <person> free / busy" | `ical free a@x.com --from X --to Y` (needs Exchange/Workspace, NOT iCloud) |
 | "What invitations am I waiting on" | `ical inbox` |
 | "Add travel time before an event" | `ical add "title" --start X --travel 30m` |
+| "Show an event as free / busy" | `ical update <row-number> --availability free\|busy` (also on `ical add`) |
 | "List / create / rename / delete calendars" | `ical calendars [create\|update\|delete]` |
 | "Export / back up events" | `ical export --format json --output-file backup.json` |
 
