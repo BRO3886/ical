@@ -185,8 +185,10 @@ Use -i for interactive mode with guided prompts.`,
 			return fmt.Errorf("failed to update event: %w", err)
 		}
 
-		ui.PrintUpdatedEvent(updated)
-		ui.PrintInvitationSummary(len(input.Attendees))
+		ui.PrintUpdatedEvent(updated, outputFormat)
+		if outputFormat != "json" {
+			ui.PrintInvitationSummary(len(input.Attendees))
+		}
 		return nil
 	},
 }
@@ -436,7 +438,7 @@ func runUpdateInteractive(client *calendar.Client, event *calendar.Event) error 
 	}
 
 	fmt.Println()
-	ui.PrintUpdatedEvent(updated)
+	ui.PrintUpdatedEvent(updated, outputFormat)
 	return nil
 }
 
