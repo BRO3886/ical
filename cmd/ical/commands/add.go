@@ -149,8 +149,10 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("failed to create event: %w", err)
 		}
 
-		ui.PrintCreatedEvent(event)
-		ui.PrintInvitationSummary(len(input.Attendees))
+		ui.PrintCreatedEvent(event, outputFormat)
+		if outputFormat != "json" {
+			ui.PrintInvitationSummary(len(input.Attendees))
+		}
 		return nil
 	},
 }
@@ -462,7 +464,7 @@ func runAddInteractive() error {
 	}
 
 	fmt.Println()
-	ui.PrintCreatedEvent(event)
+	ui.PrintCreatedEvent(event, outputFormat)
 	return nil
 }
 

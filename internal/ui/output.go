@@ -641,15 +641,27 @@ func truncate(s string, max int) string {
 }
 
 // PrintCreatedEvent prints summary info for a newly created event.
-func PrintCreatedEvent(e *calendar.Event) {
+func PrintCreatedEvent(e *calendar.Event, format string) {
+	printWrittenEvent(os.Stdout, "Created", e, format)
+}
+
+// printWrittenEvent prints a created or updated event. The ID is always the
+// full identifier: the prefix before ":" is shared by every event in a
+// source, so a truncated ID resolves to an arbitrary event.
+func printWrittenEvent(w io.Writer, verb string, e *calendar.Event, format string) {
+	if format == "json" {
+		data, _ := json.MarshalIndent(toEventJSON(*e), "", "  ")
+		fmt.Fprintln(w, string(data))
+		return
+	}
 	start := localizeTime(e.StartDate, e.TimeZone)
 	end := localizeTime(e.EndDate, e.TimeZone)
 	green := color.New(color.FgGreen, color.Bold)
-	green.Print("Created: ")
-	fmt.Printf("%s\n", e.Title)
-	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
-	fmt.Printf("  ID:       %s\n", e.ID)
+	green.Fprint(w, verb+": ")
+	fmt.Fprintf(w, "%s\n", e.Title)
+	fmt.Fprintf(w, "  Calendar: %s\n", e.Calendar)
+	fmt.Fprintf(w, "  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
+	fmt.Fprintf(w, "  ID:       %s\n", e.ID)
 }
 
 // PrintInvitationSummary prints a notice when attendees were requested.
@@ -685,13 +697,6 @@ func PrintUpdatedCalendar(c *calendar.Calendar) {
 }
 
 // PrintUpdatedEvent prints summary info for an updated event.
-func PrintUpdatedEvent(e *calendar.Event) {
-	start := localizeTime(e.StartDate, e.TimeZone)
-	end := localizeTime(e.EndDate, e.TimeZone)
-	green := color.New(color.FgGreen, color.Bold)
-	green.Print("Updated: ")
-	fmt.Printf("%s\n", e.Title)
-	fmt.Printf("  Calendar: %s\n", e.Calendar)
-	fmt.Printf("  When:     %s\n", dateparser.FormatTimeRange(start, end, e.AllDay))
-	fmt.Printf("  ID:       %s\n", e.ID)
+func PrintUpdatedEvent(e *calendar.Event, format string) {
+	printWrittenEvent(os.Stdout, "Updated", e, format)
 }
