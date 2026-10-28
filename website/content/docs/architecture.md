@@ -81,7 +81,7 @@ ical/
 
 Calendar event identifiers in EventKit share a common prefix per calendar — the UUID before the `:` separator is the calendar ID, not the event ID. This makes short ID prefixes useless for disambiguation when events belong to the same calendar.
 
-Instead, ical uses sequential row numbers (`#1`, `#2`, ...) displayed in table output. These numbers are cached to `~/.ical-last-list` so subsequent commands like `ical show 2` or `ical delete 1` can reference events from the last listing.
+Instead, ical uses sequential row numbers (`#1`, `#2`, ...) displayed in table output. These numbers are cached per session under `~/.cache/ical/rows/` so subsequent commands like `ical show 2` or `ical delete 1` can reference events from the last listing in the same terminal. A session is identified by the first of `ICAL_SESSION`, `CLAUDE_CODE_SESSION_ID`, `TMUX_PANE`, `WEZTERM_PANE`, `KITTY_WINDOW_ID`, `ITERM_SESSION_ID` or `TERM_SESSION_ID` that is set, so parallel terminals or agents never act on each other's rows. With none set, ical falls back to the shared `~/.ical-last-list`.
 
 ### Three Event Selection Methods
 
