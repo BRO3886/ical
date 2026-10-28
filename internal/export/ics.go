@@ -19,13 +19,35 @@ func ICS(events []calendar.Event, w io.Writer) error {
 	fmt.Fprintln(w, "PRODID:-//ical CLI//EN")
 	fmt.Fprintln(w, "CALSCALE:GREGORIAN")
 
+	// A recurring series arrives as one event per occurrence. Emit one master
+	// (with RRULE) per series and a RECURRENCE-ID VEVENT per detached occurrence.
+	seenMaster := map[string]bool{}
 	for _, e := range events {
+		uid := icsSeriesID(e.ID)
+		isOverride := false
+		if e.Recurring || len(e.RecurrenceRules) > 0 {
+			if e.IsDetached {
+				isOverride = true
+			} else if seenMaster[uid] {
+				continue
+			} else {
+				seenMaster[uid] = true
+			}
+		}
+
 		fmt.Fprintln(w, "BEGIN:VEVENT")
-		fmt.Fprintf(w, "UID:%s\n", e.ID)
+		fmt.Fprintf(w, "UID:%s\n", uid)
+		if isOverride && e.OccurrenceDate != nil {
+			if e.AllDay {
+				fmt.Fprintf(w, "RECURRENCE-ID;VALUE=DATE:%s\n", icsLocal(e, *e.OccurrenceDate).Format("20060102"))
+			} else {
+				fmt.Fprintf(w, "RECURRENCE-ID:%s\n", e.OccurrenceDate.UTC().Format("20060102T150405Z"))
+			}
+		}
 
 		if e.AllDay {
-			fmt.Fprintf(w, "DTSTART;VALUE=DATE:%s\n", e.StartDate.Format("20060102"))
-			fmt.Fprintf(w, "DTEND;VALUE=DATE:%s\n", e.EndDate.Format("20060102"))
+			fmt.Fprintf(w, "DTSTART;VALUE=DATE:%s\n", icsLocal(e, e.StartDate).Format("20060102"))
+			fmt.Fprintf(w, "DTEND;VALUE=DATE:%s\n", icsLocal(e, e.EndDate).Format("20060102"))
 		} else {
 			fmt.Fprintf(w, "DTSTART:%s\n", e.StartDate.UTC().Format("20060102T150405Z"))
 			fmt.Fprintf(w, "DTEND:%s\n", e.EndDate.UTC().Format("20060102T150405Z"))
@@ -44,6 +66,9 @@ func ICS(events []calendar.Event, w io.Writer) error {
 		}
 
 		for _, rule := range e.RecurrenceRules {
+			if isOverride {
+				break
+			}
 			fmt.Fprintf(w, "RRULE:%s\n", formatRRule(rule))
 		}
 
@@ -67,6 +92,21 @@ func ICS(events []calendar.Event, w io.Writer) error {
 
 	fmt.Fprintln(w, "END:VCALENDAR")
 	return nil
+}
+
+// icsSeriesID strips the "/RID=..." suffix EventKit adds to detached occurrence IDs.
+func icsSeriesID(id string) string {
+	base, _, _ := strings.Cut(id, "/RID=")
+	return base
+}
+
+// icsLocal converts t to the event's own time zone (system zone if unknown),
+// so all-day dates use the local calendar date rather than the UTC one.
+func icsLocal(e calendar.Event, t time.Time) time.Time {
+	if loc, err := time.LoadLocation(e.TimeZone); err == nil && e.TimeZone != "" {
+		return t.In(loc)
+	}
+	return t.In(time.Local)
 }
 
 func escapeICS(s string) string {
